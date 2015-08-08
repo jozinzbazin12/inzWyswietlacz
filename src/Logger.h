@@ -1,3 +1,12 @@
+/*
+ * Tekstura.h
+ *
+ *  Created on: 8 sie 2015
+ *      Author: Grzegorz
+ */
+
+#ifndef SRC_LOGGER_H_
+#define SRC_LOGGER_H_
 
 class Logger {
 private:
@@ -70,3 +79,5 @@ Logger* Logger::logger=NULL;
 ofstream Logger::outfile("log.txt", ios::out);
 string Logger::LINE = "=========================";
 string Logger::ERR="Stwierdzam b³¹d, bo ";
+
+#endif /* SRC_TEKSTURA_H_ */

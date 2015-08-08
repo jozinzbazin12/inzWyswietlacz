@@ -19,7 +19,7 @@
 #include <windows.h>
 #include <vector>
 using namespace std;
-#include "Logger.h"
+#include "logger.h"
 ////////////////////////////////////////////
 void DrawString(double x, double y, double z, string string);
 string otworz(string nazwa, string koniec);
@@ -28,20 +28,20 @@ void zapisz();
 long long unsigned sprawdz_rozmiar(string nazwa);
 class animacja;
 class obiekt;
-class podobiekt;
+class Subobject;
 class obiekt_final;
-class material;
-class material_lib;
+class Material;
+class MaterialLib;
 class obcinanie;
-class tekstura;
+class Texture;
 ////////////////////////////////////////////
 obcinanie *ciach;
 obiekt_final * obiekty_f[1000];
 obiekt_final ** obiekty_posortowane;
 obiekt_final * obiekty_animowane[100];
 obiekt_final * wybrany;
-material_lib *materialy[ileobj];
-tekstura *tekstury[iletxt];
+MaterialLib *materialy[ileobj];
+Texture *tekstury[iletxt];
 obiekt *obiekty[ileobj];
 tagPOINT *mysz_pozycja;
 float modelview[16];
@@ -55,7 +55,7 @@ int myk = 0;
 int myk2 = 0;
 int kamera = 5;
 double predkosc = 10;
-int licznik = 0;
+int counter = 0;
 int ramki = 0;
 bool obracamy = false;
 GLfloat px = -5, py = 5, pz = 11;
@@ -86,622 +86,15 @@ HANDLE hThread;
 HANDLE hThread2;
 HANDLE hThread3;
 struct informacja {
-	string x1, y1, z1, fps, speed, amb, diff, spec, pos, poss, ob, ob2, ileob, ileob2, licznikob;
+	string x1, y1, z1, fps, speed, amb, diff, spec, pos, poss, ob, ob2, ileob, ileob2, counterob;
 };
 informacja info;
 
-class tekstura {
-public:
-	SDL_Surface *txt;
-	GLenum format;
-	GLenum internalformat;
-	string roz;
-	static GLuint txtid[iletxt];
-	string nazwatxt;
-	bool przezroczysta;
-	void czyprzezroczysta() {
-		unsigned wys;
-		przezroczysta = false;
-		if (format == GL_RGBA || format == GL_BGRA) {
-			for (int i = 0; i < txt->h; i += 16)
-				for (int j = 0; j < txt->w; j += 16) {
-					wys = ((unsigned int*) txt->pixels)[i * (txt->pitch / sizeof(unsigned int)) + j];
-					wys &= 0xFF000000;
-					wys >>= 24;
-					if (wys < 255) {
-						Logger::log("Przezroczysta       " + nazwatxt);
-						przezroczysta = true;
-						return;
-					}
-				}
-		}
-	}
-
-	static int czyjuzjesttekstura(string nazwa) {
-		for (int i = 0; i < iletekstur; i++)
-			if (tekstury[i]->nazwatxt == nazwa)
-				return i;
-		return -1;
-	}
-
-	GLenum jakiformat() {
-		if (roz == ".png")
-			switch (txt->format->BytesPerPixel) {
-			case 4:
-				if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
-					return GL_BGRA;
-				else
-					return GL_RGBA;
-			case 3:
-				if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
-					return GL_BGR;
-				else
-					return GL_RGB;
-			}
-		if (roz == ".tif")
-			return GL_RGBA;
-		if (roz == ".tga")
-			switch (txt->format->BytesPerPixel) {
-			case 4:
-				return GL_BGRA;
-			case 3:
-				return GL_BGR;
-			}
-
-		if (roz == ".bmp")
-			return GL_BGR;
-		if (txt->format->BytesPerPixel == 1)
-			return GL_INTENSITY;
-		return GL_RGB;
-
-	}
-
-	string dej_rozszerzenie(string nazwa) {
-		int pozycja = 0;
-		for (unsigned i = 0; i < nazwa.length(); i++)
-			if (nazwa[i] == '.')
-				pozycja = i;
-		string format = "";
-		for (unsigned i = pozycja; i < nazwa.length(); i++)
-			format += nazwa[i];
-		for (unsigned i = 0; i < format.length(); i++)
-			if (format[i] <= 'Z' && format[i] >= 'A')
-				format[i] += 32;
-		return format;
-	}
-
-	tekstura(string nazwa, string tex) {
-		Logger::log("--Tekstura: " + nazwa);
-		nazwatxt = nazwa;
-		roz = dej_rozszerzenie(nazwa);
-		txt = IMG_Load(nazwa.c_str());
-		if (roz == ".jpg" || roz == ".jpeg" || roz == ".jpe" || roz == ".jif" || roz == ".jfif" || roz == ".jfi")
-			roz = ".jpg";
-		if (roz == ".bmp" || roz == ".dib")
-			roz = ".bmp";
-		if (roz == ".tif" || roz == ".tiff")
-			roz = "tif";
-		if (roz == ".tga" || roz == ".tpic")
-			roz = ".tga";
-
-		if (txt == NULL) {
-			ostringstream ss;
-			Logger::log(Logger::ERR + IMG_GetError());
-			exit(0);
-		}
-		format = jakiformat();
-		czyprzezroczysta();
-		if (format == GL_RGBA || format == GL_BGRA) {
-			if (przezroczysta)
-				internalformat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-			else
-				internalformat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-		}
-		if (format == GL_RGB || format == GL_BGR)
-			internalformat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-		if (format == GL_INTENSITY)
-			internalformat = GL_COMPRESSED_INTENSITY;
-
-		glGenTextures(1, &txtid[iletekstur]);
-		glBindTexture(GL_TEXTURE_2D, txtid[iletekstur]);
-		//glTexStorage2D(GL_TEXTURE_2D, 16 ,txt->format->BytesPerPixel,txt->w,txt->h);
-		glTexImage2D(GL_TEXTURE_2D, 0, internalformat, txt->w, txt->h, 0, format, GL_UNSIGNED_BYTE, txt->pixels);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-		if (tex == "map_Kd") {
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_INTERPOLATE);   //Interpolate RGB with RGB
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB, GL_PREVIOUS);
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB, GL_TEXTURE);
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB, GL_CONSTANT);
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB, GL_SRC_COLOR);
-			glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, kutas);
-
-			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
-			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA, GL_TEXTURE);
-			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-		}
-
-		glTexEnvf(GL_TEXTURE_FILTER_CONTROL, GL_TEXTURE_LOD_BIAS, -2);
-		GLclampf a = 1.0f;
-		glPrioritizeTextures(1, &txtid[iletekstur], &a);
-		SDL_FreeSurface(txt);
-
-	}
-
-};
-GLuint tekstura::txtid[iletxt];
-
-class material {
-public:
-	GLenum s;
-	float kat[4];
-	float kdt[4];
-	float kst[4];
-	int tkat;
-	int tkdt;
-	int tkst;
-	float nst;
-	string imie;
-
-	void dajd(float d) {
-		this->kat[3] = d;
-		this->kdt[3] = d;
-		this->kst[3] = d;
-	}
-	void dajnst(float nst) {
-		this->nst = nst;
-	}
-
-	void dajambient(float kat[3]) {
-		this->kat[0] = kat[0];
-		this->kat[1] = kat[1];
-		this->kat[2] = kat[2];
-	}
-
-	void dajdiffuse(float kdt[3]) {
-		this->kdt[0] = kdt[0];
-		this->kdt[1] = kdt[1];
-		this->kdt[2] = kdt[2];
-	}
-
-	void dajspecular(float kst[3]) {
-		this->kst[0] = kst[0];
-		this->kst[1] = kst[1];
-		this->kst[2] = kst[2];
-	}
-
-	void dajmap_kd(int tkdt) {
-		this->tkdt = tkdt;
-	}
-
-	material(string imie) {
-		tkat = -1;
-		tkdt = -1;
-		tkst = -1;
-		s = GL_SMOOTH;
-		this->imie = imie;
-	}
-};
-
-class material_lib {
-public:
-	material **mtl;
-	int ktorymaterial;
-	string sciezka;
-
-	int jakimaterial(string nazwa) {
-		for (int i = 0; i <= this->ktorymaterial; i++)
-			if (mtl[i]->imie == nazwa)
-				return i;
-		exit(0);
-	}
-
-	void wczytaj(string nazwa) {
-		float k[3];
-		float n;
-		string imie;
-		string napis;
-		ifstream wczytywacz;
-		int pom;
-
-		wczytywacz.open(nazwa.c_str());
-		if (!wczytywacz.is_open()) {
-			Logger::log(Logger::ERR + "brak mtllib");
-			exit(0);
-		}
-
-		while (!wczytywacz.eof()) {
-			wczytywacz >> napis;
-
-			if (napis == "newmtl") {
-				wczytywacz >> napis;
-				mtl[++this->ktorymaterial] = new material(napis);
-			}
-			if (napis == "Ns") {
-				wczytywacz >> napis;
-				n = atof(napis.c_str()) * 128.0 / 1000.0;
-				mtl[this->ktorymaterial]->dajnst(n + 1);
-			}
-
-			if (napis == "Ka") {
-				wczytywacz >> napis;
-				k[0] = atof(napis.c_str());
-				wczytywacz >> napis;
-				k[1] = atof(napis.c_str());
-				wczytywacz >> napis;
-				k[2] = atof(napis.c_str());
-				mtl[this->ktorymaterial]->dajambient(k);
-			}
-
-			if (napis == "Kd") {
-				wczytywacz >> napis;
-				k[0] = atof(napis.c_str());
-				wczytywacz >> napis;
-				k[1] = atof(napis.c_str());
-				wczytywacz >> napis;
-				k[2] = atof(napis.c_str());
-				mtl[this->ktorymaterial]->dajdiffuse(k);
-			}
-
-			if (napis == "Ks") {
-				wczytywacz >> napis;
-				k[0] = atof(napis.c_str());
-				wczytywacz >> napis;
-				k[1] = atof(napis.c_str());
-				wczytywacz >> napis;
-				k[2] = atof(napis.c_str());
-				mtl[this->ktorymaterial]->dajspecular(k);
-			}
-
-			if (napis == "d") {
-				wczytywacz >> napis;
-				n = atof(napis.c_str());
-				mtl[this->ktorymaterial]->dajd(n);
-			}
-
-			if (napis == "map_Kd") {
-				wczytywacz >> napis;
-				string kutas = utnij(sciezka) + "/";
-				pom = tekstura::czyjuzjesttekstura(kutas + napis);
-				if (pom == -1) {
-					tekstury[iletekstur++] = new tekstura(kutas + napis, "map_Kd");
-					mtl[this->ktorymaterial]->dajmap_kd(iletekstur - 1);
-				} else
-					mtl[this->ktorymaterial]->dajmap_kd(pom);
-
-			}
-		}
-		ostringstream stream;
-		stream << "Utworzono " << ktorymaterial + 1 << " materialow";
-		Logger::log(stream.str());
-	}
-
-	material_lib(string nazwa) {
-		Logger::log("-MTL Lib: " + nazwa);
-		sciezka = nazwa;
-		ktorymaterial = -1;
-		mtl = new material*[ilemtl];
-		wczytaj(nazwa);
-	}
-	~material_lib() {
-		for (int i = 0; i < this->ktorymaterial; i++)
-			delete mtl;
-	}
-
-};
-
-class podobiekt {
-public:
-	long long unsigned ilewierzcholkow;
-	material *mtl;
-	int ktorybuff[3];
-
-	podobiekt(int ilewierzcholkow, int ktorymtl, material_lib* mtl, int ktorybuff) {
-		this->ilewierzcholkow = ilewierzcholkow;
-		this->mtl = mtl->mtl[ktorymtl];
-		this->ktorybuff[0] = ktorybuff;
-		this->ktorybuff[1] = ktorybuff + 1;
-		this->ktorybuff[2] = ktorybuff + 2;
-	}
-};
-
-class obiekt {
-public:
-	podobiekt **podobiekty;
-	int ileobiektow;
-	material_lib *mtl;
-	static GLuint buff[ile * ileobj * 3 + 1];
-	static int ilebuforow;
-	static GLuint numerkowybuforXD;
-	string nazwa;
-	GLfloat min[3][3];
-	GLfloat max[3][3];
-	int licznik;
-	int tmpmtl;
-
-	int zwroc1(string a) {
-		int x;
-		string tmp = "";
-		for (unsigned i = 0; i < a.size(); i++) {
-			tmp += a[i];
-			if (a[i] == '/')
-				break;
-		}
-		x = atoi(tmp.c_str());
-		if (x < 0)
-			x *= -1;
-		return x;
-	}
-
-	int zwroc2(string a) {
-		int x = 0;
-		unsigned i = 0;
-		string tmp = "";
-		while (x < 1)
-			if (a[i++] == '/')
-				x++;
-
-		for (; i < a.size(); i++) {
-			tmp += a[i];
-			if (a[i] == '/')
-				break;
-		}
-		x = atoi(tmp.c_str());
-		if (x < 0)
-			x *= -1;
-		return x;
-	}
-
-	int zwroc3(string a) {
-		int x = 0;
-		unsigned i = 0;
-		string tmp = "";
-		while (x < 2)
-			if (a[i++] == '/')
-				x++;
-
-		for (; i < a.size(); i++) {
-			tmp += a[i];
-			if (a[i] == '/')
-				break;
-		}
-		x = atoi(tmp.c_str());
-		if (x < 0)
-			x *= -1;
-		return x;
-	}
-
-	void takietamwczytywanie(string nazwa, bool tag) {
-		Logger::log("Obiekt: " + nazwa);
-		long long unsigned rozmiarpliku;
-		long long unsigned ktorywierzcholek = 0;
-		long long unsigned ktorynormalny = 0;
-		long long unsigned ktoratekstura = 0;
-		long long unsigned ktorywierzcholek2 = 0;
-		long long unsigned ktorynormalny2 = 0;
-		long long unsigned ktoratekstura2 = 0;
-		long long unsigned ktoryfejs = 0;
-		string napis;
-		bool silnik_od_tostera = true;
-		ifstream wczytywacz;
-		wczytywacz.open(nazwa.c_str(), ios::binary);
-		if (!wczytywacz.is_open()) {
-			Logger::log(Logger::ERR + "brak .obj");
-			exit(0);
-		}
-		wczytywacz.seekg(0, ios::end);
-		rozmiarpliku = wczytywacz.tellg();
-		wczytywacz.seekg(0, ios::beg);
-		ostringstream stream;
-		stream << "Rozmiar pliku " << rozmiarpliku << "B";
-		Logger::log(stream.str());
-		if (tag)
-			rozmiarpliku = rozmiarpliku / 60 * 5;   //  /60
-		else
-			rozmiarpliku = rozmiarpliku / 60 * 3;
-		float *w = new float[rozmiarpliku];
-		float *n = new float[rozmiarpliku];
-		float *t = new float[rozmiarpliku];
-		int **f = new int*[rozmiarpliku];
-		for (long long unsigned i = 0; i < rozmiarpliku; i++)
-			f[i] = new int[3];
-
-		while (!wczytywacz.eof() && napis != "mtllib") {
-			wczytywacz >> napis;
-		}
-		wczytywacz >> napis;
-		//xd << this->nazwa << endl;
-		materialy[ilematerialow] = new material_lib(utnij(this->nazwa) + "/" + napis);
-		mtl = materialy[ilematerialow++];
-
-		while (!wczytywacz.eof()) {
-			wczytywacz >> napis;
-			if (napis == "o") {
-				if (this->ileobiektow != -1)
-					dorup(w, n, t, f, ktoryfejs, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
-				this->ileobiektow++;
-				wczytywacz >> napis;
-				silnik_od_tostera = true;
-			}
-
-			if (napis == "usemtl") {
-				wczytywacz >> napis;
-				if (!silnik_od_tostera) {
-					if (this->ileobiektow != -1)
-						dorup(w, n, t, f, ktoryfejs, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
-					this->ileobiektow++;
-				}
-				silnik_od_tostera = false;
-				tmpmtl = mtl->jakimaterial(napis);
-
-			}
-
-			if (napis == "s") {
-				wczytywacz >> napis;
-				if (napis == "1")
-					mtl->mtl[mtl->ktorymaterial]->s = GL_SMOOTH;
-				else
-					mtl->mtl[mtl->ktorymaterial]->s = GL_FLAT;
-			}
-
-			if (napis == "v") {
-
-				wczytywacz >> napis;
-				w[ktorywierzcholek++] = atof(napis.c_str());
-				wczytywacz >> napis;
-				w[ktorywierzcholek++] = atof(napis.c_str());
-				wczytywacz >> napis;
-				w[ktorywierzcholek++] = atof(napis.c_str());
-				napis = "";
-			}
-
-			if (napis == "vt") {
-				wczytywacz >> napis;
-				t[ktoratekstura++] = atof(napis.c_str());
-				wczytywacz >> napis;
-				t[ktoratekstura++] = 1 - atof(napis.c_str());
-				napis = "";
-			}
-
-			if (napis == "vn") {
-				wczytywacz >> napis;
-				n[ktorynormalny++] = atof(napis.c_str());
-				wczytywacz >> napis;
-				n[ktorynormalny++] = atof(napis.c_str());
-				wczytywacz >> napis;
-				n[ktorynormalny++] = atof(napis.c_str());
-				napis = "";
-			}
-
-			if (napis == "f") {
-				int tmp;
-				for (int i = 0; i < 3; i++) {
-					wczytywacz >> napis;
-					tmp = zwroc1(napis) - 1;
-					f[ktoryfejs][0] = tmp;
-					tmp = zwroc2(napis) - 1;
-					f[ktoryfejs][1] = tmp;
-					tmp = zwroc3(napis) - 1;
-					f[ktoryfejs++][2] = tmp;
-				}
-			}
-		}
-		int lol = 0;
-		dorup(w, n, t, f, ktoryfejs, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
-		for (int i = 0; i <= this->ileobiektow; i++)
-			lol += podobiekty[i]->ilewierzcholkow;
-		lol /= 3;
-		ilee += lol;
-		minimax(w, ktorywierzcholek);
-		for (unsigned i = 0; i < rozmiarpliku; i++)
-			delete[] f[i];
-		delete[] f;
-		delete[] w;
-		delete[] n;
-		delete[] t;
-		stream.str("");
-		Logger::log(Logger::LINE);
-		stream << "Wczytano " << this->ileobiektow + 1 << " podobiektow";
-		Logger::log(stream.str());
-		stream.str("");
-		stream << "Utworzono " << lol << " trojkatow\n\n";
-		Logger::log(stream.str());
-	}
-
-	void dorup(float *w, float *n, float *t, int **f, long long unsigned &ktoryfejs,
-			long long unsigned &ktorywierzcholek2, long long unsigned &ktorynormalny2,
-			long long unsigned &ktoratekstura2) {
-		GLfloat *normalne = new GLfloat[ktoryfejs * 3];
-		GLfloat *wierzcholki = new GLfloat[ktoryfejs * 3];
-		GLfloat *tekstury = new GLfloat[ktoryfejs * 2];
-		for (long long unsigned i = 0; i < ktoryfejs; i++) {
-			wierzcholki[ktorywierzcholek2++] = w[f[i][0] * 3];
-			wierzcholki[ktorywierzcholek2++] = w[f[i][0] * 3 + 1];
-			wierzcholki[ktorywierzcholek2++] = w[f[i][0] * 3 + 2];
-
-			normalne[ktorynormalny2++] = n[f[i][2] * 3];
-			normalne[ktorynormalny2++] = n[f[i][2] * 3 + 1];
-			normalne[ktorynormalny2++] = n[f[i][2] * 3 + 2];
-
-			tekstury[ktoratekstura2++] = t[f[i][1] * 2];
-			tekstury[ktoratekstura2++] = t[f[i][1] * 2 + 1];
-		}
-
-		amore_bufore(normalne, wierzcholki, tekstury, ktoryfejs);
-		delete[] wierzcholki;
-		delete[] normalne;
-		delete[] tekstury;
-		podobiekty[this->ileobiektow] = new podobiekt(ktoryfejs, tmpmtl, mtl, ilebuforow);
-		ilebuforow += 3;
-		ktorynormalny2 = 0;
-		ktoratekstura2 = 0;
-		ktorywierzcholek2 = 0;
-		ktoryfejs = 0;
-	}
-
-	void amore_bufore(GLfloat *normalne, GLfloat *wierzcholki, GLfloat *tekstury, int ktoryfejs) {
-		//ilebuforow chujowe
-		glGenBuffers(3, &buff[ilebuforow]);
-		glBindBuffer(GL_ARRAY_BUFFER, buff[ilebuforow]);
-		glBufferData(GL_ARRAY_BUFFER, ktoryfejs * 3 * sizeof(GLfloat), wierzcholki, GL_STATIC_READ);
-		glBindBuffer(GL_ARRAY_BUFFER, buff[ilebuforow + 1]);
-		glBufferData(GL_ARRAY_BUFFER, ktoryfejs * 3 * sizeof(GLfloat), normalne, GL_STATIC_READ);
-		glBindBuffer(GL_ARRAY_BUFFER, buff[ilebuforow + 2]);
-		glBufferData(GL_ARRAY_BUFFER, ktoryfejs * 2 * sizeof(GLfloat), tekstury, GL_STATIC_READ);
-	}
-
-	void ustaw(GLfloat t[3], GLfloat *w, int a) {
-		t[0] = w[a];
-		t[1] = w[a + 1];
-		t[2] = w[a + 2];
-	}
-
-	void minimax(GLfloat *w, int ktorywierzcholek) {
-		for (int i = 0; i < 3; i++)
-			for (int j = 0; j < 3; j++)
-				min[i][j] = numeric_limits<GLfloat>::infinity();
-		for (int i = 0; i < 3; i++)
-			for (int j = 0; j < 3; j++)
-				max[i][j] = -numeric_limits<GLfloat>::infinity();
-		for (int i = 0; i < ktorywierzcholek; i += 3) {
-			if (w[i] > max[0][0])
-				ustaw(max[0], w, i);
-			if (w[i + 1] > max[1][1])
-				ustaw(max[1], w, i);
-			if (w[i + 2] > max[2][2])
-				ustaw(max[2], w, i);
-			if (w[i] < min[0][0])
-				ustaw(min[0], w, i);
-			if (w[i + 1] < min[1][1])
-				ustaw(min[1], w, i);
-			if (w[i + 2] < min[2][2])
-				ustaw(min[2], w, i);
-		}
-	}
-
-	obiekt(string nazwa, bool tag = false) {
-		podobiekty = new podobiekt*[ile];
-		this->ileobiektow = -1;
-		this->nazwa = otworz(nazwa, ".obj");
-		tmpmtl = 0;
-		takietamwczytywanie(this->nazwa, tag);
-		licznik = 0;
-		this->ileobiektow++;
-	}
-	~obiekt() {
-		for (int i = 0; i < this->ileobiektow; i++)
-			delete podobiekty[i];
-		delete[] podobiekty;
-		delete mtl;
-	}
-};
+#include "texture.h"
+#include "material.h"
+#include "material_lib.h"
+#include "subobject.h"
+#include "object.h"
 
 class obiekt_final {
 public:
@@ -813,7 +206,7 @@ public:
 		this->rx = 0;
 		this->ry = 0;
 		this->rz = 0;
-		ob->licznik++;
+		ob->counter++;
 		Logger::log("Tworze obiekt " + this->ob->nazwa, true);
 	}
 
@@ -825,7 +218,7 @@ public:
 		for (unsigned i = 0; i < obiekt_final::granica2; i++)
 			if (obiekty_posortowane[i] == this)
 				obiekty_posortowane[i] = NULL;
-		ob->licznik--;
+		ob->counter--;
 		ileobiektow--;
 	}
 };
@@ -848,7 +241,7 @@ public:
 	int ktorykrok;
 	int ilekrokow;
 	float speed[ilekrokowwanimacji];
-	int licznik;
+	int counter;
 	string nazwa;
 	void dodaj_p(float a, float b, float c) {
 		p[ilekrokow][0] = a;
@@ -885,17 +278,17 @@ public:
 				ob->ry -= 360;
 			if (ob->rz > 360)
 				ob->rz -= 360;
-			licznik--;
-			if (licznik == 0) {
+			counter--;
+			if (counter == 0) {
 				ktorykrok++;
 				if (ktorykrok >= ilekrokow) {
 					if (petla) {
 						ktorykrok = 0;
-						licznik = 1 / speed[ktorykrok];
+						counter = 1 / speed[ktorykrok];
 					} else
 						ktorykrok = -1;
 				} else
-					licznik = 1 / speed[ktorykrok];
+					counter = 1 / speed[ktorykrok];
 			}
 		}
 
@@ -960,7 +353,7 @@ public:
 
 		}
 		ilekrokow++;
-		licznik = 1 / speed[0];
+		counter = 1 / speed[0];
 	}
 
 };
@@ -1461,7 +854,7 @@ void rysuj(obiekt_final *ob) {
 	glRotatef(ob->rz, 0, 0, 1);
 	glScalef(ob->sx, ob->sy, ob->sz);
 
-	for (int j = 0; j < ob->ob->ileobiektow; j++) {
+	for (int j = 0; j < ob->ob->counter; j++) {
 		glShadeModel(ob->ob->podobiekty[j]->mtl->s);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ob->ob->podobiekty[j]->mtl->kat);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, ob->ob->podobiekty[j]->mtl->kdt);
@@ -1486,7 +879,7 @@ void rysuj(obiekt_final *ob) {
 			glEnable(GL_TEXTURE_2D);
 			glBindBuffer(GL_ARRAY_BUFFER, obiekt::buff[ob->ob->podobiekty[j]->ktorybuff[2]]);
 			glTexCoordPointer(2, GL_FLOAT, 0, 0);
-			glBindTexture(GL_TEXTURE_2D, tekstura::txtid[ob->ob->podobiekty[j]->mtl->tkdt]);
+			glBindTexture(GL_TEXTURE_2D, Texture::txtid[ob->ob->podobiekty[j]->mtl->tkdt]);
 			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		}
 
@@ -1495,7 +888,7 @@ void rysuj(obiekt_final *ob) {
 		glBindBuffer(GL_ARRAY_BUFFER, obiekt::buff[ob->ob->podobiekty[j]->ktorybuff[1]]);
 		glNormalPointer(GL_FLOAT, 0, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glDrawArrays(GL_TRIANGLES, 0, ob->ob->podobiekty[j]->ilewierzcholkow);
+		glDrawArrays(GL_TRIANGLES, 0, ob->ob->podobiekty[j]->vertexCount);
 		//glDrawElements(GL_TRIANGLES,ob->ob->podobiekty[j]->ilewierzcholkow, GL_UNSIGNED_INT, 0);
 
 		//	glDisable(GL_TEXTURE1);
@@ -1508,7 +901,7 @@ void rysuj(obiekt_final *ob) {
 void display(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	if (!ramki++)
-		licznik = clock();
+		counter = clock();
 	if (czywsp) {
 		glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
 		glLoadIdentity();
@@ -1526,7 +919,7 @@ void display(void) {
 		DrawString(-2.32, 0.75, -2.5, "Pos: " + info.poss);
 		DrawString(-2.32, 0.7, -2.5, "Wszystkie obiekty: " + info.ileob + "   Wyswietlone obiekty: " + info.ileob2);
 		DrawString(-2.32, 0.65, -2.5,
-				"Obiekt: " + info.ob2 + "  " + obiekty[ktorykutas2]->nazwa + "   sztuk: " + info.licznikob);
+				"Obiekt: " + info.ob2 + "  " + obiekty[ktorykutas2]->nazwa + "   sztuk: " + info.counterob);
 		if (ktorykutas != -1) {
 			DrawString(-2.32, 0.6, -2.5, "Zaznaczony obiekt: " + info.ob + "  " + wybrany->ob->nazwa);
 			if (obiekty_f[ktorykutas]->ociec)
@@ -1925,15 +1318,15 @@ void wczytaj() {
 
 	ostringstream stream;
 	Logger::log(Logger::LINE);
-	stream << "Utworzono " << ilee << " trojkatow";
+	stream << "Utworzono " << ilee << " trojkatów";
 	Logger::log(stream.str());
 	stream.str("");
-	stream << "Wczytanych obiektow: " << ileobiektow2 << ", wyswietlonych obiektow:\n\n" << ileobiektow;
+	stream << "Wczytanych obiektów: " << ileobiektow2 << ", wyœwietlonych obiektów: " << ileobiektow;
 	Logger::log(stream.str());
 
 	int ilerez = 0;
 	GLboolean *czyrezydentne = new GLboolean[iletekstur];
-	glAreTexturesResident(iletekstur, tekstura::txtid, czyrezydentne);
+	glAreTexturesResident(iletekstur, Texture::txtid, czyrezydentne);
 
 	for (int i = 0; i < iletekstur; i++)
 		if (czyrezydentne[i]) {
@@ -1943,6 +1336,7 @@ void wczytaj() {
 
 	ostringstream steam;
 
+	stream.str("");
 	stream << "Tekstur: " << iletekstur << ", rezydentne: " << ilerez << endl;
 	Logger::log(stream.str());
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obiekt::numerkowybuforXD);
@@ -2004,7 +1398,7 @@ void __cdecl animuj(void *kutas) {
 
 void __cdecl informuj(void *kutas) {
 	while (1) {
-		stringstream x1, y1, z1, fps, speed, amb, diff, spec, pos, poss, ob, ob2, ileob, ileob2, licznikob;
+		stringstream x1, y1, z1, fps, speed, amb, diff, spec, pos, poss, ob, ob2, ileob, ileob2, counterob;
 		x1 << px;
 		y1 << py;
 		z1 << pz;
@@ -2017,9 +1411,9 @@ void __cdecl informuj(void *kutas) {
 		ob2 << ktorykutas2;
 		ileob << ileobiektow;
 		ileob2 << obiekt_final::granica2;
-		licznikob << obiekty[ktorykutas2]->licznik;
+		counterob << obiekty[ktorykutas2]->counter;
 		speed << predkosc;
-		if (clock() - licznik >= CLOCKS_PER_SEC) {
+		if (clock() - counter >= CLOCKS_PER_SEC) {
 			fps << ramki;
 			info.fps = fps.str();
 			ramki = 0;
@@ -2038,7 +1432,7 @@ void __cdecl informuj(void *kutas) {
 		info.ob2 = ob2.str();
 		info.ileob = ileob.str();
 		info.ileob2 = ileob2.str();
-		info.licznikob = licznikob.str();
+		info.counterob = counterob.str();
 		Sleep(100);
 	}
 }
@@ -2050,29 +1444,29 @@ void __cdecl sortuj(void *dupa) {
 		int granica2 = 0;
 		obiekt_final **obiekty_pom;
 		obiekty_pom = new obiekt_final*[ileobiektow];
-		int licznik = 0;
+		int counter = 0;
 		bool cycki;
 		for (int i = 0; i < ileobiektow; i++) {
 			cycki = false;
 			for (int j = 0; j < obiekty_f[i]->ob->ileobiektow; j++)
 				if (obiekty_f[i]->ob->podobiekty[j]->mtl->kat[3] < 1
 						|| (obiekty_f[i]->ob->podobiekty[j]->mtl->tkdt != -1
-								&& tekstury[obiekty_f[i]->ob->podobiekty[j]->mtl->tkdt]->przezroczysta)) {
+								&& tekstury[obiekty_f[i]->ob->podobiekty[j]->mtl->tkdt]->transparent)) {
 					cycki = true;
 					break;
 				}
 			if (ciach->nalezy(i)) {
 				if (cycki)
-					obiekty_pom[licznik++] = obiekty_f[i];
+					obiekty_pom[counter++] = obiekty_f[i];
 				else
 					obiekty_posortowane2[granica1++] = obiekty_f[i];
 			}
 		}
 		granica2 = granica1;
 
-		if (licznik) {
-			float *tab = new float[licznik];
-			for (int i = 0; i < licznik; i++) {
+		if (counter) {
+			float *tab = new float[counter];
+			for (int i = 0; i < counter; i++) {
 				tab[i] = pow(px - obiekty_pom[i]->px, 2) + pow(py - obiekty_pom[i]->py, 2)
 						+ pow(pz - obiekty_pom[i]->pz, 2);
 				if (tab[i] < 0)
@@ -2080,17 +1474,17 @@ void __cdecl sortuj(void *dupa) {
 			}
 			int a;
 
-			while (licznik > 0) {
+			while (counter > 0) {
 				a = 0;
-				for (int i = 0; i < licznik; i++)
+				for (int i = 0; i < counter; i++)
 					if (tab[a] < tab[i])
 						a = i;
 				obiekty_posortowane2[granica2++] = obiekty_pom[a];
-				if (a != licznik - 1) {
-					obiekty_pom[a] = obiekty_pom[licznik - 1];
-					tab[a] = tab[licznik - 1];
+				if (a != counter - 1) {
+					obiekty_pom[a] = obiekty_pom[counter - 1];
+					tab[a] = tab[counter - 1];
 				}
-				licznik--;
+				counter--;
 
 			}
 			delete[] tab;
@@ -2104,7 +1498,7 @@ void __cdecl sortuj(void *dupa) {
 		Sleep(100);
 	}
 }
-
+//todo
 string utnij(string kutas) {
 	string dupa = "";
 	int a = -1;

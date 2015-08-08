@@ -1,0 +1,290 @@
+class obiekt {
+public:
+	Subobject **podobiekty;
+	int ileobiektow;
+	MaterialLib *mtl;
+	static GLuint buff[ile * ileobj * 3 + 1];
+	static int ilebuforow;
+	static GLuint numerkowybuforXD;
+	string nazwa;
+	GLfloat min[3][3];
+	GLfloat max[3][3];
+	int counter;
+	int tmpmtl;
+
+	int zwroc1(string a) {
+		int x;
+		string tmp = "";
+		for (unsigned i = 0; i < a.size(); i++) {
+			tmp += a[i];
+			if (a[i] == '/')
+				break;
+		}
+		x = atoi(tmp.c_str());
+		if (x < 0)
+			x *= -1;
+		return x;
+	}
+
+	int zwroc2(string a) {
+		int x = 0;
+		unsigned i = 0;
+		string tmp = "";
+		while (x < 1)
+			if (a[i++] == '/')
+				x++;
+
+		for (; i < a.size(); i++) {
+			tmp += a[i];
+			if (a[i] == '/')
+				break;
+		}
+		x = atoi(tmp.c_str());
+		if (x < 0)
+			x *= -1;
+		return x;
+	}
+
+	int zwroc3(string a) {
+		int x = 0;
+		unsigned i = 0;
+		string tmp = "";
+		while (x < 2)
+			if (a[i++] == '/')
+				x++;
+
+		for (; i < a.size(); i++) {
+			tmp += a[i];
+			if (a[i] == '/')
+				break;
+		}
+		x = atoi(tmp.c_str());
+		if (x < 0)
+			x *= -1;
+		return x;
+	}
+
+	void takietamwczytywanie(string nazwa, bool tag) {
+		Logger::log("Obiekt: " + nazwa);
+		long long unsigned rozmiarpliku;
+		long long unsigned ktorywierzcholek = 0;
+		long long unsigned ktorynormalny = 0;
+		long long unsigned ktoratekstura = 0;
+		long long unsigned ktorywierzcholek2 = 0;
+		long long unsigned ktorynormalny2 = 0;
+		long long unsigned ktoratekstura2 = 0;
+		long long unsigned ktoryfejs = 0;
+		string napis;
+		bool silnik_od_tostera = true;
+		ifstream wczytywacz;
+		wczytywacz.open(nazwa.c_str(), ios::binary);
+		if (!wczytywacz.is_open()) {
+			Logger::log(Logger::ERR + "brak .obj");
+			exit(0);
+		}
+		wczytywacz.seekg(0, ios::end);
+		rozmiarpliku = wczytywacz.tellg();
+		wczytywacz.seekg(0, ios::beg);
+		ostringstream stream;
+		stream << "Rozmiar pliku " << rozmiarpliku << "B";
+		Logger::log(stream.str());
+		if (tag)
+			rozmiarpliku = rozmiarpliku / 60 * 5;   //  /60
+		else
+			rozmiarpliku = rozmiarpliku / 60 * 3;
+		float *w = new float[rozmiarpliku];
+		float *n = new float[rozmiarpliku];
+		float *t = new float[rozmiarpliku];
+		int **f = new int*[rozmiarpliku];
+		for (long long unsigned i = 0; i < rozmiarpliku; i++)
+			f[i] = new int[3];
+
+		while (!wczytywacz.eof() && napis != "mtllib") {
+			wczytywacz >> napis;
+		}
+		wczytywacz >> napis;
+		//xd << this->nazwa << endl;
+		materialy[ilematerialow] = new MaterialLib(utnij(this->nazwa) + "/" + napis);
+		mtl = materialy[ilematerialow++];
+
+		while (!wczytywacz.eof()) {
+			wczytywacz >> napis;
+			if (napis == "o") {
+				if (this->ileobiektow != -1)
+					dorup(w, n, t, f, ktoryfejs, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
+				this->ileobiektow++;
+				wczytywacz >> napis;
+				silnik_od_tostera = true;
+			}
+
+			if (napis == "usemtl") {
+				wczytywacz >> napis;
+				if (!silnik_od_tostera) {
+					if (this->ileobiektow != -1)
+						dorup(w, n, t, f, ktoryfejs, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
+					this->ileobiektow++;
+				}
+				silnik_od_tostera = false;
+				tmpmtl = mtl->searchMaterial(napis);
+
+			}
+
+			if (napis == "s") {
+				wczytywacz >> napis;
+				if (napis == "1")
+					mtl->mtl[mtl->whichMaterial]->s = GL_SMOOTH;
+				else
+					mtl->mtl[mtl->whichMaterial]->s = GL_FLAT;
+			}
+
+			if (napis == "v") {
+
+				wczytywacz >> napis;
+				w[ktorywierzcholek++] = atof(napis.c_str());
+				wczytywacz >> napis;
+				w[ktorywierzcholek++] = atof(napis.c_str());
+				wczytywacz >> napis;
+				w[ktorywierzcholek++] = atof(napis.c_str());
+				napis = "";
+			}
+
+			if (napis == "vt") {
+				wczytywacz >> napis;
+				t[ktoratekstura++] = atof(napis.c_str());
+				wczytywacz >> napis;
+				t[ktoratekstura++] = 1 - atof(napis.c_str());
+				napis = "";
+			}
+
+			if (napis == "vn") {
+				wczytywacz >> napis;
+				n[ktorynormalny++] = atof(napis.c_str());
+				wczytywacz >> napis;
+				n[ktorynormalny++] = atof(napis.c_str());
+				wczytywacz >> napis;
+				n[ktorynormalny++] = atof(napis.c_str());
+				napis = "";
+			}
+
+			if (napis == "f") {
+				int tmp;
+				for (int i = 0; i < 3; i++) {
+					wczytywacz >> napis;
+					tmp = zwroc1(napis) - 1;
+					f[ktoryfejs][0] = tmp;
+					tmp = zwroc2(napis) - 1;
+					f[ktoryfejs][1] = tmp;
+					tmp = zwroc3(napis) - 1;
+					f[ktoryfejs++][2] = tmp;
+				}
+			}
+		}
+		int lol = 0;
+		dorup(w, n, t, f, ktoryfejs, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
+		for (int i = 0; i <= this->ileobiektow; i++)
+			lol += podobiekty[i]->vertexCount;
+		lol /= 3;
+		ilee += lol;
+		minimax(w, ktorywierzcholek);
+		for (unsigned i = 0; i < rozmiarpliku; i++)
+			delete[] f[i];
+		delete[] f;
+		delete[] w;
+		delete[] n;
+		delete[] t;
+		stream.str("");
+		Logger::log(Logger::LINE);
+		stream << "Wczytano " << this->ileobiektow + 1 << " podobiektow";
+		Logger::log(stream.str());
+		stream.str("");
+		stream << "Utworzono " << lol << " trojkatow\n\n";
+		Logger::log(stream.str());
+	}
+
+	void dorup(float *w, float *n, float *t, int **f, long long unsigned &ktoryfejs,
+			long long unsigned &ktorywierzcholek2, long long unsigned &ktorynormalny2,
+			long long unsigned &ktoratekstura2) {
+		GLfloat *normalne = new GLfloat[ktoryfejs * 3];
+		GLfloat *wierzcholki = new GLfloat[ktoryfejs * 3];
+		GLfloat *tekstury = new GLfloat[ktoryfejs * 2];
+		for (long long unsigned i = 0; i < ktoryfejs; i++) {
+			wierzcholki[ktorywierzcholek2++] = w[f[i][0] * 3];
+			wierzcholki[ktorywierzcholek2++] = w[f[i][0] * 3 + 1];
+			wierzcholki[ktorywierzcholek2++] = w[f[i][0] * 3 + 2];
+
+			normalne[ktorynormalny2++] = n[f[i][2] * 3];
+			normalne[ktorynormalny2++] = n[f[i][2] * 3 + 1];
+			normalne[ktorynormalny2++] = n[f[i][2] * 3 + 2];
+
+			tekstury[ktoratekstura2++] = t[f[i][1] * 2];
+			tekstury[ktoratekstura2++] = t[f[i][1] * 2 + 1];
+		}
+
+		amore_bufore(normalne, wierzcholki, tekstury, ktoryfejs);
+		delete[] wierzcholki;
+		delete[] normalne;
+		delete[] tekstury;
+		podobiekty[this->ileobiektow] = new Subobject(ktoryfejs, tmpmtl, mtl, ilebuforow);
+		ilebuforow += 3;
+		ktorynormalny2 = 0;
+		ktoratekstura2 = 0;
+		ktorywierzcholek2 = 0;
+		ktoryfejs = 0;
+	}
+
+	void amore_bufore(GLfloat *normalne, GLfloat *wierzcholki, GLfloat *tekstury, int ktoryfejs) {
+		//ilebuforow chujowe
+		glGenBuffers(3, &buff[ilebuforow]);
+		glBindBuffer(GL_ARRAY_BUFFER, buff[ilebuforow]);
+		glBufferData(GL_ARRAY_BUFFER, ktoryfejs * 3 * sizeof(GLfloat), wierzcholki, GL_STATIC_READ);
+		glBindBuffer(GL_ARRAY_BUFFER, buff[ilebuforow + 1]);
+		glBufferData(GL_ARRAY_BUFFER, ktoryfejs * 3 * sizeof(GLfloat), normalne, GL_STATIC_READ);
+		glBindBuffer(GL_ARRAY_BUFFER, buff[ilebuforow + 2]);
+		glBufferData(GL_ARRAY_BUFFER, ktoryfejs * 2 * sizeof(GLfloat), tekstury, GL_STATIC_READ);
+	}
+
+	void ustaw(GLfloat t[3], GLfloat *w, int a) {
+		t[0] = w[a];
+		t[1] = w[a + 1];
+		t[2] = w[a + 2];
+	}
+
+	void minimax(GLfloat *w, int ktorywierzcholek) {
+		for (int i = 0; i < 3; i++)
+			for (int j = 0; j < 3; j++)
+				min[i][j] = numeric_limits<GLfloat>::infinity();
+		for (int i = 0; i < 3; i++)
+			for (int j = 0; j < 3; j++)
+				max[i][j] = -numeric_limits<GLfloat>::infinity();
+		for (int i = 0; i < ktorywierzcholek; i += 3) {
+			if (w[i] > max[0][0])
+				ustaw(max[0], w, i);
+			if (w[i + 1] > max[1][1])
+				ustaw(max[1], w, i);
+			if (w[i + 2] > max[2][2])
+				ustaw(max[2], w, i);
+			if (w[i] < min[0][0])
+				ustaw(min[0], w, i);
+			if (w[i + 1] < min[1][1])
+				ustaw(min[1], w, i);
+			if (w[i + 2] < min[2][2])
+				ustaw(min[2], w, i);
+		}
+	}
+
+	obiekt(string nazwa, bool tag = false) {
+		podobiekty = new Subobject*[ile];
+		this->ileobiektow = -1;
+		this->nazwa = otworz(nazwa, ".obj");
+		tmpmtl = 0;
+		takietamwczytywanie(this->nazwa, tag);
+		counter = 0;
+		this->ileobiektow++;
+	}
+	~obiekt() {
+		for (int i = 0; i < this->ileobiektow; i++)
+			delete podobiekty[i];
+		delete[] podobiekty;
+		delete mtl;
+	}
+};
