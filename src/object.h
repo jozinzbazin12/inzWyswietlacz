@@ -2,67 +2,32 @@ class Object {
 public:
 	vector<Subobject*> subobjects;
 	MaterialLib *mtl;
-	static GLuint buff[ile * ileobj * 3 + 1];
-	static int ilebuforow;
-	static GLuint numerkowybuforXD;
-	string nazwa;
+	static vector<GLuint> buff;
+	static GLuint numerkowybuforXD; //todo
+	string name;
 	GLfloat min[3][3];
 	GLfloat max[3][3];
 	int counter;
 	int tmpmtl;
 
-	int zwroc1(string a) {
+	int getNextFaceNumber(string& a) {
 		int x;
 		string tmp = "";
-		for (unsigned i = 0; i < a.size(); i++) {
+		unsigned i;
+		for (i = 0; i < a.size(); i++) {
 			tmp += a[i];
 			if (a[i] == '/')
 				break;
+		}
+		if (i + 1 < a.size()) {
+			a = a.substr(i + 1, a.size());
 		}
 		x = atoi(tmp.c_str());
 		if (x < 0)
 			x *= -1;
 		return x;
 	}
-
-	int zwroc2(string a) {
-		int x = 0;
-		unsigned i = 0;
-		string tmp = "";
-		while (x < 1)
-			if (a[i++] == '/')
-				x++;
-
-		for (; i < a.size(); i++) {
-			tmp += a[i];
-			if (a[i] == '/')
-				break;
-		}
-		x = atoi(tmp.c_str());
-		if (x < 0)
-			x *= -1;
-		return x;
-	}
-
-	int zwroc3(string a) {
-		int x = 0;
-		unsigned i = 0;
-		string tmp = "";
-		while (x < 2)
-			if (a[i++] == '/')
-				x++;
-
-		for (; i < a.size(); i++) {
-			tmp += a[i];
-			if (a[i] == '/')
-				break;
-		}
-		x = atoi(tmp.c_str());
-		if (x < 0)
-			x *= -1;
-		return x;
-	}
-
+//todo
 	void takietamwczytywanie(string nazwa, bool tag) {
 		Logger::log("Obiekt: " + nazwa);
 		long long unsigned rozmiarpliku;
@@ -103,14 +68,14 @@ public:
 		}
 		wczytywacz >> napis;
 		//xd << this->nazwa << endl;
-		materialy[ilematerialow] = new MaterialLib(utnij(this->nazwa) + "/" + napis);
+		materialy[ilematerialow] = new MaterialLib(utnij(this->name) + "/" + napis);
 		mtl = materialy[ilematerialow++];
 
 		while (!wczytywacz.eof()) {
 			wczytywacz >> napis;
 			if (napis == "o") {
-				if (subobjects.size()==0)
-					dorup(w, n, t, f, ktoryfejs, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
+				if (subobjects.size() == 0)
+					bindObject(w, n, t, f, ktoryfejs, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
 				wczytywacz >> napis;
 				silnik_od_tostera = true;
 			}
@@ -118,8 +83,8 @@ public:
 			if (napis == "usemtl") {
 				wczytywacz >> napis;
 				if (!silnik_od_tostera) {
-					if (subobjects.size()==0)
-						dorup(w, n, t, f, ktoryfejs, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
+					if (subobjects.size() == 0)
+						bindObject(w, n, t, f, ktoryfejs, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
 				}
 				silnik_od_tostera = false;
 				tmpmtl = mtl->searchMaterial(napis);
@@ -167,18 +132,18 @@ public:
 				int tmp;
 				for (int i = 0; i < 3; i++) {
 					wczytywacz >> napis;
-					tmp = zwroc1(napis) - 1;
+					tmp = getNextFaceNumber(napis) - 1;
 					f[ktoryfejs][0] = tmp;
-					tmp = zwroc2(napis) - 1;
+					tmp = getNextFaceNumber(napis) - 1;
 					f[ktoryfejs][1] = tmp;
-					tmp = zwroc3(napis) - 1;
+					tmp = getNextFaceNumber(napis) - 1;
 					f[ktoryfejs++][2] = tmp;
 				}
 			}
 		}
 		int lol = 0;
-		dorup(w, n, t, f, ktoryfejs, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
-		for (unsigned i = 0; i < subobjects.size(); i++){
+		bindObject(w, n, t, f, ktoryfejs, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
+		for (unsigned i = 0; i < subobjects.size(); i++) {
 			lol += subobjects[i]->vertexCount;
 		}
 
@@ -200,7 +165,7 @@ public:
 		Logger::log(stream.str());
 	}
 
-	void dorup(float *w, float *n, float *t, int **f, long long unsigned &ktoryfejs,
+	void bindObject(float *w, float *n, float *t, int **f, long long unsigned &ktoryfejs,
 			long long unsigned &ktorywierzcholek2, long long unsigned &ktorynormalny2,
 			long long unsigned &ktoratekstura2) {
 		GLfloat *normalne = new GLfloat[ktoryfejs * 3];
@@ -219,26 +184,31 @@ public:
 			tekstury[ktoratekstura2++] = t[f[i][1] * 2 + 1];
 		}
 
-		amore_bufore(normalne, wierzcholki, tekstury, ktoryfejs);
+		sendToBuffer(normalne, wierzcholki, tekstury, ktoryfejs);
 		delete[] wierzcholki;
 		delete[] normalne;
 		delete[] tekstury;
-		subobjects.push_back(new Subobject(ktoryfejs, tmpmtl, mtl, ilebuforow));
-		ilebuforow += 3;
+		subobjects.push_back(new Subobject(ktoryfejs, tmpmtl, mtl, buff.size() - 3));
 		ktorynormalny2 = 0;
 		ktoratekstura2 = 0;
 		ktorywierzcholek2 = 0;
 		ktoryfejs = 0;
 	}
 
-	void amore_bufore(GLfloat *normalne, GLfloat *wierzcholki, GLfloat *tekstury, int ktoryfejs) {
+	void sendToBuffer(GLfloat *normalne, GLfloat *wierzcholki, GLfloat *tekstury, int ktoryfejs) {
 		//ilebuforow chujowe
-		glGenBuffers(3, &buff[ilebuforow]);
-		glBindBuffer(GL_ARRAY_BUFFER, buff[ilebuforow]);
+		unsigned size = buff.size();
+		GLuint buffers[3];
+		glGenBuffers(3, &buffers[0]);
+		buff.push_back(buffers[0]);
+		buff.push_back(buffers[1]);
+		buff.push_back(buffers[2]);
+
+		glBindBuffer(GL_ARRAY_BUFFER, buff[size]);
 		glBufferData(GL_ARRAY_BUFFER, ktoryfejs * 3 * sizeof(GLfloat), wierzcholki, GL_STATIC_READ);
-		glBindBuffer(GL_ARRAY_BUFFER, buff[ilebuforow + 1]);
+		glBindBuffer(GL_ARRAY_BUFFER, buff[size + 1]);
 		glBufferData(GL_ARRAY_BUFFER, ktoryfejs * 3 * sizeof(GLfloat), normalne, GL_STATIC_READ);
-		glBindBuffer(GL_ARRAY_BUFFER, buff[ilebuforow + 2]);
+		glBindBuffer(GL_ARRAY_BUFFER, buff[size + 2]);
 		glBufferData(GL_ARRAY_BUFFER, ktoryfejs * 2 * sizeof(GLfloat), tekstury, GL_STATIC_READ);
 	}
 
@@ -251,10 +221,10 @@ public:
 	void minimax(GLfloat *w, int ktorywierzcholek) {
 		for (int i = 0; i < 3; i++)
 			for (int j = 0; j < 3; j++)
-				min[i][j] = numeric_limits<GLfloat>::infinity();
+				min[i][j] = numeric_limits < GLfloat > ::infinity();
 		for (int i = 0; i < 3; i++)
 			for (int j = 0; j < 3; j++)
-				max[i][j] = -numeric_limits<GLfloat>::infinity();
+				max[i][j] = -numeric_limits < GLfloat > ::infinity();
 		for (int i = 0; i < ktorywierzcholek; i += 3) {
 			if (w[i] > max[0][0])
 				ustaw(max[0], w, i);
@@ -272,9 +242,9 @@ public:
 	}
 
 	Object(string nazwa, bool tag = false) {
-		this->nazwa = otworz(nazwa, ".obj");
+		this->name = otworz(nazwa, ".obj");
 		tmpmtl = 0;
-		takietamwczytywanie(this->nazwa, tag);
+		takietamwczytywanie(this->name, tag);
 		this->counter = 0;
 	}
 	~Object() {
@@ -283,3 +253,5 @@ public:
 		delete mtl;
 	}
 };
+
+vector<GLuint> Object::buff;

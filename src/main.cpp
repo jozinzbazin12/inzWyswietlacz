@@ -64,7 +64,6 @@ int ileobiektow = 0;
 int ileobiektow2 = 0;
 int ilematerialow = 0;
 int iletekstur = 0;
-int ilebuforow = 0;
 int ileanimacji = 0;
 int wys = 700, szer = 1300;
 long long unsigned ilee = 0;
@@ -208,11 +207,11 @@ public:
 		this->ry = 0;
 		this->rz = 0;
 		ob->counter++;
-		Logger::log("Tworze obiekt " + this->ob->nazwa, true);
+		Logger::log("Tworze obiekt " + this->ob->name, true);
 	}
 
 	~obiekt_final() {
-		Logger::log("Usuwam obiekt " + this->ob->nazwa, true);
+		Logger::log("Usuwam obiekt " + this->ob->name, true);
 		for (int i = 0; i < ileobiektow; i++)
 			if (obiekty_f[i]->ociec == this)
 				obiekty_f[i]->ociec = ociec;
@@ -223,9 +222,6 @@ public:
 		ileobiektow--;
 	}
 };
-
-GLuint Object::buff[ile * ileobj * 3 + 1];
-int Object::ilebuforow = 0;
 GLuint Object::numerkowybuforXD;
 unsigned int obiekt_final::granica1 = 0;
 unsigned int obiekt_final::granica2 = 0;
@@ -920,11 +916,11 @@ void display(void) {
 		DrawString(-2.32, 0.75, -2.5, "Pos: " + info.poss);
 		DrawString(-2.32, 0.7, -2.5, "Wszystkie obiekty: " + info.ileob + "   Wyswietlone obiekty: " + info.ileob2);
 		DrawString(-2.32, 0.65, -2.5,
-				"Obiekt: " + info.ob2 + "  " + obiekty[ktorykutas2]->nazwa + "   sztuk: " + info.licznikob);
+				"Obiekt: " + info.ob2 + "  " + obiekty[ktorykutas2]->name + "   sztuk: " + info.licznikob);
 		if (ktorykutas != -1) {
-			DrawString(-2.32, 0.6, -2.5, "Zaznaczony obiekt: " + info.ob + "  " + wybrany->ob->nazwa);
+			DrawString(-2.32, 0.6, -2.5, "Zaznaczony obiekt: " + info.ob + "  " + wybrany->ob->name);
 			if (obiekty_f[ktorykutas]->ociec)
-				DrawString(-2.32, 0.55, -2.5, "Dziecko obiektu: " + wybrany->ociec->ob->nazwa);
+				DrawString(-2.32, 0.55, -2.5, "Dziecko obiektu: " + wybrany->ociec->ob->name);
 		}
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
@@ -1304,7 +1300,7 @@ void wczytaj() {
 		if (nazwaobiektu == "a") {
 			wczytywacz >> nazwaobiektu;
 			//xd << "animacja " + nazwaobiektu << endl;
-			obiekty_f[ileobiektow - 1]->anim = new animacja("modele/" + obiekty_f[ileobiektow - 1]->ob->nazwa,
+			obiekty_f[ileobiektow - 1]->anim = new animacja("modele/" + obiekty_f[ileobiektow - 1]->ob->name,
 					nazwaobiektu, obiekty_f[ileobiektow - 1]);
 			obiekty_animowane[ileanimacji++] = obiekty_f[ileobiektow - 1];
 		}
@@ -1322,7 +1318,7 @@ void wczytaj() {
 	stream << "Utworzono " << ilee << " trojkatow";
 	Logger::log(stream.str());
 	stream.str("");
-	stream << "Wczytanych obiektow: " << ileobiektow2 << ", wyswietlonych obiektow:\n\n" << ileobiektow;
+	stream << "Wczytanych obiektow: " << ileobiektow2 << ", wyswietlonych obiektow:" << ileobiektow;
 	Logger::log(stream.str());
 
 	int ilerez = 0;
