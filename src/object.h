@@ -1,7 +1,6 @@
-class obiekt {
+class Object {
 public:
-	Subobject **podobiekty;
-	int ileobiektow;
+	vector<Subobject*> subobjects;
 	MaterialLib *mtl;
 	static GLuint buff[ile * ileobj * 3 + 1];
 	static int ilebuforow;
@@ -110,9 +109,8 @@ public:
 		while (!wczytywacz.eof()) {
 			wczytywacz >> napis;
 			if (napis == "o") {
-				if (this->ileobiektow != -1)
+				if (subobjects.size()==0)
 					dorup(w, n, t, f, ktoryfejs, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
-				this->ileobiektow++;
 				wczytywacz >> napis;
 				silnik_od_tostera = true;
 			}
@@ -120,9 +118,8 @@ public:
 			if (napis == "usemtl") {
 				wczytywacz >> napis;
 				if (!silnik_od_tostera) {
-					if (this->ileobiektow != -1)
+					if (subobjects.size()==0)
 						dorup(w, n, t, f, ktoryfejs, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
-					this->ileobiektow++;
 				}
 				silnik_od_tostera = false;
 				tmpmtl = mtl->searchMaterial(napis);
@@ -181,8 +178,10 @@ public:
 		}
 		int lol = 0;
 		dorup(w, n, t, f, ktoryfejs, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
-		for (int i = 0; i <= this->ileobiektow; i++)
-			lol += podobiekty[i]->vertexCount;
+		for (unsigned i = 0; i < subobjects.size(); i++){
+			lol += subobjects[i]->vertexCount;
+		}
+
 		lol /= 3;
 		ilee += lol;
 		minimax(w, ktorywierzcholek);
@@ -194,7 +193,7 @@ public:
 		delete[] t;
 		stream.str("");
 		Logger::log(Logger::LINE);
-		stream << "Wczytano " << this->ileobiektow + 1 << " podobiektow";
+		stream << "Wczytano " << subobjects.size() << " podobiektow";
 		Logger::log(stream.str());
 		stream.str("");
 		stream << "Utworzono " << lol << " trojkatow\n\n";
@@ -224,7 +223,7 @@ public:
 		delete[] wierzcholki;
 		delete[] normalne;
 		delete[] tekstury;
-		podobiekty[this->ileobiektow] = new Subobject(ktoryfejs, tmpmtl, mtl, ilebuforow);
+		subobjects.push_back(new Subobject(ktoryfejs, tmpmtl, mtl, ilebuforow));
 		ilebuforow += 3;
 		ktorynormalny2 = 0;
 		ktoratekstura2 = 0;
@@ -272,19 +271,15 @@ public:
 		}
 	}
 
-	obiekt(string nazwa, bool tag = false) {
-		podobiekty = new Subobject*[ile];
-		this->ileobiektow = -1;
+	Object(string nazwa, bool tag = false) {
 		this->nazwa = otworz(nazwa, ".obj");
 		tmpmtl = 0;
 		takietamwczytywanie(this->nazwa, tag);
-		counter = 0;
-		this->ileobiektow++;
+		this->counter = 0;
 	}
-	~obiekt() {
-		for (int i = 0; i < this->ileobiektow; i++)
-			delete podobiekty[i];
-		delete[] podobiekty;
+	~Object() {
+		for (unsigned i = 0; i < subobjects.size(); i++)
+			delete subobjects[i];
 		delete mtl;
 	}
 };

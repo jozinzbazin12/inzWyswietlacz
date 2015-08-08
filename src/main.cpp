@@ -18,8 +18,9 @@
 #include <process.h>
 #include <windows.h>
 #include <vector>
+#include <list>
 using namespace std;
-#include "logger.h"
+#include "Logger.h"
 ////////////////////////////////////////////
 void DrawString(double x, double y, double z, string string);
 string otworz(string nazwa, string koniec);
@@ -27,7 +28,7 @@ string utnij(string dupa);
 void zapisz();
 long long unsigned sprawdz_rozmiar(string nazwa);
 class animacja;
-class obiekt;
+class Object;
 class Subobject;
 class obiekt_final;
 class Material;
@@ -42,7 +43,7 @@ obiekt_final * obiekty_animowane[100];
 obiekt_final * wybrany;
 MaterialLib *materialy[ileobj];
 Texture *tekstury[iletxt];
-obiekt *obiekty[ileobj];
+Object *obiekty[ileobj];
 tagPOINT *mysz_pozycja;
 float modelview[16];
 bool czywsp = true;
@@ -55,7 +56,7 @@ int myk = 0;
 int myk2 = 0;
 int kamera = 5;
 double predkosc = 10;
-int counter = 0;
+int licznik = 0;
 int ramki = 0;
 bool obracamy = false;
 GLfloat px = -5, py = 5, pz = 11;
@@ -86,7 +87,7 @@ HANDLE hThread;
 HANDLE hThread2;
 HANDLE hThread3;
 struct informacja {
-	string x1, y1, z1, fps, speed, amb, diff, spec, pos, poss, ob, ob2, ileob, ileob2, counterob;
+	string x1, y1, z1, fps, speed, amb, diff, spec, pos, poss, ob, ob2, ileob, ileob2, licznikob;
 };
 informacja info;
 
@@ -98,7 +99,7 @@ informacja info;
 
 class obiekt_final {
 public:
-	obiekt *ob;
+	Object *ob;
 	obiekt_final *ociec;
 	GLfloat px, py, pz;
 	GLfloat sx, sy, sz;
@@ -186,7 +187,7 @@ public:
 		this->rz = rz;
 	}
 
-	obiekt_final(obiekt *ktoryobiekt) {
+	obiekt_final(Object *ktoryobiekt) {
 		zawsze = false;
 		anim = NULL;
 		ociec = NULL;
@@ -223,9 +224,9 @@ public:
 	}
 };
 
-GLuint obiekt::buff[ile * ileobj * 3 + 1];
-int obiekt::ilebuforow = 0;
-GLuint obiekt::numerkowybuforXD;
+GLuint Object::buff[ile * ileobj * 3 + 1];
+int Object::ilebuforow = 0;
+GLuint Object::numerkowybuforXD;
 unsigned int obiekt_final::granica1 = 0;
 unsigned int obiekt_final::granica2 = 0;
 
@@ -241,7 +242,7 @@ public:
 	int ktorykrok;
 	int ilekrokow;
 	float speed[ilekrokowwanimacji];
-	int counter;
+	int licznik;
 	string nazwa;
 	void dodaj_p(float a, float b, float c) {
 		p[ilekrokow][0] = a;
@@ -278,17 +279,17 @@ public:
 				ob->ry -= 360;
 			if (ob->rz > 360)
 				ob->rz -= 360;
-			counter--;
-			if (counter == 0) {
+			licznik--;
+			if (licznik == 0) {
 				ktorykrok++;
 				if (ktorykrok >= ilekrokow) {
 					if (petla) {
 						ktorykrok = 0;
-						counter = 1 / speed[ktorykrok];
+						licznik = 1 / speed[ktorykrok];
 					} else
 						ktorykrok = -1;
 				} else
-					counter = 1 / speed[ktorykrok];
+					licznik = 1 / speed[ktorykrok];
 			}
 		}
 
@@ -353,7 +354,7 @@ public:
 
 		}
 		ilekrokow++;
-		counter = 1 / speed[0];
+		licznik = 1 / speed[0];
 	}
 
 };
@@ -542,7 +543,7 @@ public:
 					stosunekx = (float) wymx / (float) map_x;
 					stosunekz = (float) wymz / (float) map_z;
 					stosuneky = 2;
-					obiekty[ileobiektow2++] = new obiekt("0", true);
+					obiekty[ileobiektow2++] = new Object("0", true);
 				}
 
 			}
@@ -720,7 +721,7 @@ public:
 		for (int i = 0; i < v; i++)
 			delete[] vec[i];
 		delete[] vec;
-		obiekty[ileobiektow2++] = new obiekt("0", true);
+		obiekty[ileobiektow2++] = new Object("0", true);
 		zapisywacz.close();
 	}
 
@@ -854,12 +855,12 @@ void rysuj(obiekt_final *ob) {
 	glRotatef(ob->rz, 0, 0, 1);
 	glScalef(ob->sx, ob->sy, ob->sz);
 
-	for (int j = 0; j < ob->ob->counter; j++) {
-		glShadeModel(ob->ob->podobiekty[j]->mtl->s);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ob->ob->podobiekty[j]->mtl->kat);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, ob->ob->podobiekty[j]->mtl->kdt);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, ob->ob->podobiekty[j]->mtl->kst);
-		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, ob->ob->podobiekty[j]->mtl->nst);
+	for (int j = 0; j < ob->ob->subobjects.size(); j++) {
+		glShadeModel(ob->ob->subobjects[j]->mtl->s);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ob->ob->subobjects[j]->mtl->kat);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, ob->ob->subobjects[j]->mtl->kdt);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, ob->ob->subobjects[j]->mtl->kst);
+		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, ob->ob->subobjects[j]->mtl->nst);
 		/*
 		 if(ob->ob->mtl->td[ob->ob->ktorymtl[j]])
 		 {
@@ -873,23 +874,23 @@ void rysuj(obiekt_final *ob) {
 		 glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		 }
 		 */
-		if (ob->ob->podobiekty[j]->mtl->tkdt != -1) {
+		if (ob->ob->subobjects[j]->mtl->tkdt != -1) {
 			//	glActiveTexture(GL_TEXTURE0);
 			//	glClientActiveTexture( GL_TEXTURE0 );
 			glEnable(GL_TEXTURE_2D);
-			glBindBuffer(GL_ARRAY_BUFFER, obiekt::buff[ob->ob->podobiekty[j]->ktorybuff[2]]);
+			glBindBuffer(GL_ARRAY_BUFFER, Object::buff[ob->ob->subobjects[j]->ktorybuff[2]]);
 			glTexCoordPointer(2, GL_FLOAT, 0, 0);
-			glBindTexture(GL_TEXTURE_2D, Texture::txtid[ob->ob->podobiekty[j]->mtl->tkdt]);
+			glBindTexture(GL_TEXTURE_2D, Texture::txtid[ob->ob->subobjects[j]->mtl->tkdt]);
 			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		}
 
-		glBindBuffer(GL_ARRAY_BUFFER, obiekt::buff[ob->ob->podobiekty[j]->ktorybuff[0]]);
+		glBindBuffer(GL_ARRAY_BUFFER, Object::buff[ob->ob->subobjects[j]->ktorybuff[0]]);
 		glVertexPointer(3, GL_FLOAT, 0, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, obiekt::buff[ob->ob->podobiekty[j]->ktorybuff[1]]);
+		glBindBuffer(GL_ARRAY_BUFFER, Object::buff[ob->ob->subobjects[j]->ktorybuff[1]]);
 		glNormalPointer(GL_FLOAT, 0, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glDrawArrays(GL_TRIANGLES, 0, ob->ob->podobiekty[j]->vertexCount);
-		//glDrawElements(GL_TRIANGLES,ob->ob->podobiekty[j]->ilewierzcholkow, GL_UNSIGNED_INT, 0);
+		glDrawArrays(GL_TRIANGLES, 0, ob->ob->subobjects[j]->vertexCount);
+		//glDrawElements(GL_TRIANGLES,ob->ob->subobjects[j]->ilewierzcholkow, GL_UNSIGNED_INT, 0);
 
 		//	glDisable(GL_TEXTURE1);
 		glDisable(GL_TEXTURE_2D);
@@ -901,7 +902,7 @@ void rysuj(obiekt_final *ob) {
 void display(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	if (!ramki++)
-		counter = clock();
+		licznik = clock();
 	if (czywsp) {
 		glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
 		glLoadIdentity();
@@ -919,7 +920,7 @@ void display(void) {
 		DrawString(-2.32, 0.75, -2.5, "Pos: " + info.poss);
 		DrawString(-2.32, 0.7, -2.5, "Wszystkie obiekty: " + info.ileob + "   Wyswietlone obiekty: " + info.ileob2);
 		DrawString(-2.32, 0.65, -2.5,
-				"Obiekt: " + info.ob2 + "  " + obiekty[ktorykutas2]->nazwa + "   sztuk: " + info.counterob);
+				"Obiekt: " + info.ob2 + "  " + obiekty[ktorykutas2]->nazwa + "   sztuk: " + info.licznikob);
 		if (ktorykutas != -1) {
 			DrawString(-2.32, 0.6, -2.5, "Zaznaczony obiekt: " + info.ob + "  " + wybrany->ob->nazwa);
 			if (obiekty_f[ktorykutas]->ociec)
@@ -1247,7 +1248,7 @@ void wczytaj() {
 	while (!wczytywacz2.eof()) {
 		wczytywacz2 >> nazwaobiektu;
 		Logger::log(nazwaobiektu);
-		obiekty[ileobiektow2++] = new obiekt(nazwaobiektu);
+		obiekty[ileobiektow2++] = new Object(nazwaobiektu);
 	}
 	wczytywacz2.close();
 	mapa *map = new mapa();
@@ -1318,10 +1319,10 @@ void wczytaj() {
 
 	ostringstream stream;
 	Logger::log(Logger::LINE);
-	stream << "Utworzono " << ilee << " trojkatów";
+	stream << "Utworzono " << ilee << " trojkatow";
 	Logger::log(stream.str());
 	stream.str("");
-	stream << "Wczytanych obiektów: " << ileobiektow2 << ", wyœwietlonych obiektów: " << ileobiektow;
+	stream << "Wczytanych obiektow: " << ileobiektow2 << ", wyswietlonych obiektow:\n\n" << ileobiektow;
 	Logger::log(stream.str());
 
 	int ilerez = 0;
@@ -1336,10 +1337,9 @@ void wczytaj() {
 
 	ostringstream steam;
 
-	stream.str("");
 	stream << "Tekstur: " << iletekstur << ", rezydentne: " << ilerez << endl;
 	Logger::log(stream.str());
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obiekt::numerkowybuforXD);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Object::numerkowybuforXD);
 }
 
 void zapisz() {
@@ -1398,7 +1398,7 @@ void __cdecl animuj(void *kutas) {
 
 void __cdecl informuj(void *kutas) {
 	while (1) {
-		stringstream x1, y1, z1, fps, speed, amb, diff, spec, pos, poss, ob, ob2, ileob, ileob2, counterob;
+		stringstream x1, y1, z1, fps, speed, amb, diff, spec, pos, poss, ob, ob2, ileob, ileob2, licznikob;
 		x1 << px;
 		y1 << py;
 		z1 << pz;
@@ -1411,9 +1411,9 @@ void __cdecl informuj(void *kutas) {
 		ob2 << ktorykutas2;
 		ileob << ileobiektow;
 		ileob2 << obiekt_final::granica2;
-		counterob << obiekty[ktorykutas2]->counter;
+		licznikob << obiekty[ktorykutas2]->counter;
 		speed << predkosc;
-		if (clock() - counter >= CLOCKS_PER_SEC) {
+		if (clock() - licznik >= CLOCKS_PER_SEC) {
 			fps << ramki;
 			info.fps = fps.str();
 			ramki = 0;
@@ -1432,7 +1432,7 @@ void __cdecl informuj(void *kutas) {
 		info.ob2 = ob2.str();
 		info.ileob = ileob.str();
 		info.ileob2 = ileob2.str();
-		info.counterob = counterob.str();
+		info.licznikob = licznikob.str();
 		Sleep(100);
 	}
 }
@@ -1444,29 +1444,29 @@ void __cdecl sortuj(void *dupa) {
 		int granica2 = 0;
 		obiekt_final **obiekty_pom;
 		obiekty_pom = new obiekt_final*[ileobiektow];
-		int counter = 0;
+		int licznik = 0;
 		bool cycki;
 		for (int i = 0; i < ileobiektow; i++) {
 			cycki = false;
-			for (int j = 0; j < obiekty_f[i]->ob->ileobiektow; j++)
-				if (obiekty_f[i]->ob->podobiekty[j]->mtl->kat[3] < 1
-						|| (obiekty_f[i]->ob->podobiekty[j]->mtl->tkdt != -1
-								&& tekstury[obiekty_f[i]->ob->podobiekty[j]->mtl->tkdt]->transparent)) {
+			for (int j = 0; j < obiekty_f[i]->ob->subobjects.size(); j++)
+				if (obiekty_f[i]->ob->subobjects[j]->mtl->kat[3] < 1
+						|| (obiekty_f[i]->ob->subobjects[j]->mtl->tkdt != -1
+								&& tekstury[obiekty_f[i]->ob->subobjects[j]->mtl->tkdt]->transparent)) {
 					cycki = true;
 					break;
 				}
 			if (ciach->nalezy(i)) {
 				if (cycki)
-					obiekty_pom[counter++] = obiekty_f[i];
+					obiekty_pom[licznik++] = obiekty_f[i];
 				else
 					obiekty_posortowane2[granica1++] = obiekty_f[i];
 			}
 		}
 		granica2 = granica1;
 
-		if (counter) {
-			float *tab = new float[counter];
-			for (int i = 0; i < counter; i++) {
+		if (licznik) {
+			float *tab = new float[licznik];
+			for (int i = 0; i < licznik; i++) {
 				tab[i] = pow(px - obiekty_pom[i]->px, 2) + pow(py - obiekty_pom[i]->py, 2)
 						+ pow(pz - obiekty_pom[i]->pz, 2);
 				if (tab[i] < 0)
@@ -1474,17 +1474,17 @@ void __cdecl sortuj(void *dupa) {
 			}
 			int a;
 
-			while (counter > 0) {
+			while (licznik > 0) {
 				a = 0;
-				for (int i = 0; i < counter; i++)
+				for (int i = 0; i < licznik; i++)
 					if (tab[a] < tab[i])
 						a = i;
 				obiekty_posortowane2[granica2++] = obiekty_pom[a];
-				if (a != counter - 1) {
-					obiekty_pom[a] = obiekty_pom[counter - 1];
-					tab[a] = tab[counter - 1];
+				if (a != licznik - 1) {
+					obiekty_pom[a] = obiekty_pom[licznik - 1];
+					tab[a] = tab[licznik - 1];
 				}
-				counter--;
+				licznik--;
 
 			}
 			delete[] tab;
@@ -1498,7 +1498,7 @@ void __cdecl sortuj(void *dupa) {
 		Sleep(100);
 	}
 }
-//todo
+
 string utnij(string kutas) {
 	string dupa = "";
 	int a = -1;
