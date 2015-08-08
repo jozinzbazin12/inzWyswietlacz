@@ -19,6 +19,7 @@
 #include <windows.h>
 #include <vector>
 using namespace std;
+#include "Logger.h"
 ////////////////////////////////////////////
 void DrawString(double x, double y, double z, string string);
 string otworz(string nazwa, string koniec);
@@ -88,78 +89,6 @@ struct informacja {
 	string x1, y1, z1, fps, speed, amb, diff, spec, pos, poss, ob, ob2, ileob, ileob2, licznikob;
 };
 informacja info;
-
-class Logger {
-private:
-	static ofstream outfile;
-	static Logger* logger;
-	ostringstream buffer;
-
-	string constructTime(time_t time) {
-		struct tm * now = localtime(&time);
-		ostringstream ss;
-		ss << '[';
-		if (now->tm_mday >= 10) {
-			ss << now->tm_mday;
-		} else {
-			ss << 0 << now->tm_mday;
-		}
-		ss << '-';
-		if (now->tm_mon + 1 >= 10) {
-			ss << now->tm_mon + 1;
-		} else {
-			ss << 0 << now->tm_mon + 1;
-		}
-		ss << '-' << (now->tm_year + 1900) << ' ';
-		if (now->tm_hour >= 10) {
-			ss << now->tm_hour;
-		} else {
-			ss << 0 << now->tm_hour;
-		}
-		ss << ':';
-		if (now->tm_min >= 10) {
-			ss << now->tm_min;
-		} else {
-			ss << 0 << now->tm_min;
-		}
-		ss << ':';
-		if (now->tm_sec >= 10) {
-			ss << now->tm_sec;
-		} else {
-			ss << 0 << now->tm_sec;
-		}
-		ss << "] - ";
-		return ss.str();
-	}
-
-public:
-	static string LINE;
-	static string ERR;
-	static void log(string text, bool newline = true, bool showTime = true) {
-		if (!logger) {
-			logger = new Logger();
-		}
-		string output = text;
-		if (showTime) {
-			output = logger->constructTime((long long unsigned) time(0)) + output;
-		}
-		if (newline) {
-			output+="\n";
-		}
-		outfile << output;
-		outfile.flush();
-	}
-
-	Logger(){
-	}
-	~Logger(){
-		outfile.close();
-	}
-};
-Logger* Logger::logger=NULL;
-ofstream Logger::outfile("log.txt", ios::out);
-string Logger::LINE = "=========================";
-string Logger::ERR="Stwierdzam b³¹d, bo ";
 
 class tekstura {
 public:
@@ -1916,7 +1845,7 @@ void wczytaj() {
 	GLfloat a, b, c, d;
 	fstream wczytywacz, wczytywacz2;
 	string nazwaobiektu;
-	wczytywacz2.open("ustawienia/pliki.txt");
+	wczytywacz2.open("ustawienia/pliki2.txt");
 	if (!wczytywacz2.is_open()) {
 		Logger::log(Logger::ERR + "brak pliku z plikami");
 		exit(0);
@@ -1929,7 +1858,7 @@ void wczytaj() {
 	}
 	wczytywacz2.close();
 	mapa *map = new mapa();
-	wczytywacz.open("ustawienia/ustawienia.txt");
+	wczytywacz.open("ustawienia/ustawienia2.txt");
 	if (!wczytywacz.is_open()) {
 		Logger::log(Logger::ERR + "brak pliku z ustawieniami");
 		exit(0);
