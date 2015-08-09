@@ -1,3 +1,19 @@
+class Row {
+public:
+	GLfloat* data;
+
+	Row(GLfloat data[3]) {
+		this->data = data;
+	}
+	~Row() {
+		delete[] data;
+	}
+
+	GLfloat operator [](const unsigned pos) {
+		return data[pos];
+	}
+};
+
 class Object {
 public:
 	vector<Subobject*> subobjects;
@@ -52,16 +68,11 @@ public:
 		ostringstream stream;
 		stream << "Rozmiar pliku " << rozmiarpliku << "B";
 		Logger::log(stream.str());
-		if (tag)
-			rozmiarpliku = rozmiarpliku / 60 * 5;   //  /60
-		else
-			rozmiarpliku = rozmiarpliku / 60 * 3;
-		float *w = new float[rozmiarpliku];
-		float *n = new float[rozmiarpliku];
-		float *t = new float[rozmiarpliku];
-		int **f = new int*[rozmiarpliku];
-		for (long long unsigned i = 0; i < rozmiarpliku; i++)
-			f[i] = new int[3];
+
+		vector<GLfloat> w;
+		vector<GLfloat> n;
+		vector<GLfloat> t;
+		vector<Row> f;
 
 		while (!wczytywacz.eof() && napis != "mtllib") {
 			wczytywacz >> napis;
@@ -102,42 +113,47 @@ public:
 			if (napis == "v") {
 
 				wczytywacz >> napis;
-				w[ktorywierzcholek++] = atof(napis.c_str());
+				w.push_back(atof(napis.c_str()));
 				wczytywacz >> napis;
-				w[ktorywierzcholek++] = atof(napis.c_str());
+				w.push_back(atof(napis.c_str()));
 				wczytywacz >> napis;
-				w[ktorywierzcholek++] = atof(napis.c_str());
+				w.push_back(atof(napis.c_str()));
+				ktorywierzcholek+=3;
 				napis = "";
 			}
 
 			if (napis == "vt") {
 				wczytywacz >> napis;
-				t[ktoratekstura++] = atof(napis.c_str());
+				t.push_back(atof(napis.c_str()));
 				wczytywacz >> napis;
-				t[ktoratekstura++] = 1 - atof(napis.c_str());
+				t.push_back(1 - atof(napis.c_str()));
 				napis = "";
+				ktoratekstura+=2;
 			}
 
 			if (napis == "vn") {
 				wczytywacz >> napis;
-				n[ktorynormalny++] = atof(napis.c_str());
+				n.push_back(atof(napis.c_str()));
 				wczytywacz >> napis;
-				n[ktorynormalny++] = atof(napis.c_str());
+				n.push_back(atof(napis.c_str()));
 				wczytywacz >> napis;
-				n[ktorynormalny++] = atof(napis.c_str());
+				n.push_back(atof(napis.c_str()));
 				napis = "";
+				ktorynormalny+=3;
 			}
 
 			if (napis == "f") {
 				int tmp;
 				for (int i = 0; i < 3; i++) {
+					GLfloat* tab = new GLfloat[3];
 					wczytywacz >> napis;
 					tmp = getNextFaceNumber(napis) - 1;
-					f[ktoryfejs][0] = tmp;
+					tab[0] = tmp;
 					tmp = getNextFaceNumber(napis) - 1;
-					f[ktoryfejs][1] = tmp;
+					tab[1] = tmp;
 					tmp = getNextFaceNumber(napis) - 1;
-					f[ktoryfejs++][2] = tmp;
+					tab[2] = tmp;
+					//f.push_back(Row(tab));
 				}
 			}
 		}
@@ -150,12 +166,7 @@ public:
 		lol /= 3;
 		ilee += lol;
 		minimax(w, ktorywierzcholek);
-		for (unsigned i = 0; i < rozmiarpliku; i++)
-			delete[] f[i];
-		delete[] f;
-		delete[] w;
-		delete[] n;
-		delete[] t;
+
 		stream.str("");
 		Logger::log(Logger::LINE);
 		stream << "Wczytano " << subobjects.size() << " podobiektow";
@@ -165,29 +176,29 @@ public:
 		Logger::log(stream.str());
 	}
 
-	void bindObject(float *w, float *n, float *t, int **f, long long unsigned &ktoryfejs,
-			long long unsigned &ktorywierzcholek2, long long unsigned &ktorynormalny2,
+	void bindObject(vector<GLfloat> w, vector<GLfloat> n, vector<GLfloat> t, vector<Row> f,
+			long long unsigned &ktoryfejs, long long unsigned &ktorywierzcholek2, long long unsigned &ktorynormalny2,
 			long long unsigned &ktoratekstura2) {
-		GLfloat *normalne = new GLfloat[ktoryfejs * 3];
-		GLfloat *wierzcholki = new GLfloat[ktoryfejs * 3];
-		GLfloat *tekstury = new GLfloat[ktoryfejs * 2];
+		vector<GLfloat> normalne;
+		vector<GLfloat> wierzcholki;
+		vector < GLfloat > tekstury;
 		for (long long unsigned i = 0; i < ktoryfejs; i++) {
-			wierzcholki[ktorywierzcholek2++] = w[f[i][0] * 3];
-			wierzcholki[ktorywierzcholek2++] = w[f[i][0] * 3 + 1];
-			wierzcholki[ktorywierzcholek2++] = w[f[i][0] * 3 + 2];
+			wierzcholki.push_back(w[f[i][0] * 3]);
+			wierzcholki.push_back(w[f[i][0] * 3 + 1]);
+			wierzcholki.push_back(w[f[i][0] * 3 + 2]);
 
-			normalne[ktorynormalny2++] = n[f[i][2] * 3];
-			normalne[ktorynormalny2++] = n[f[i][2] * 3 + 1];
-			normalne[ktorynormalny2++] = n[f[i][2] * 3 + 2];
+			ktorywierzcholek2 += 3;
+			normalne.push_back(n[f[i][2] * 3]);
+			normalne.push_back(n[f[i][2] * 3 + 1]);
+			normalne.push_back(n[f[i][2] * 3 + 2]);
+			ktorynormalny2 += 3;
 
-			tekstury[ktoratekstura2++] = t[f[i][1] * 2];
-			tekstury[ktoratekstura2++] = t[f[i][1] * 2 + 1];
+			tekstury.push_back(t[f[i][1] * 2]);
+			tekstury.push_back(t[f[i][1] * 2 + 1]);
+			ktoratekstura2 += 2;
 		}
 
 		sendToBuffer(normalne, wierzcholki, tekstury, ktoryfejs);
-		delete[] wierzcholki;
-		delete[] normalne;
-		delete[] tekstury;
 		subobjects.push_back(new Subobject(ktoryfejs, tmpmtl, mtl, buff.size() - 3));
 		ktorynormalny2 = 0;
 		ktoratekstura2 = 0;
@@ -195,7 +206,7 @@ public:
 		ktoryfejs = 0;
 	}
 
-	void sendToBuffer(GLfloat *normalne, GLfloat *wierzcholki, GLfloat *tekstury, int ktoryfejs) {
+	void sendToBuffer(vector<GLfloat> normalne, vector<GLfloat> wierzcholki, vector<GLfloat> tekstury, int ktoryfejs) {
 		//ilebuforow chujowe
 		unsigned size = buff.size();
 		GLuint buffers[3];
@@ -205,20 +216,20 @@ public:
 		buff.push_back(buffers[2]);
 
 		glBindBuffer(GL_ARRAY_BUFFER, buff[size]);
-		glBufferData(GL_ARRAY_BUFFER, ktoryfejs * 3 * sizeof(GLfloat), wierzcholki, GL_STATIC_READ);
+		glBufferData(GL_ARRAY_BUFFER, ktoryfejs * 3 * sizeof(GLfloat), &wierzcholki[0], GL_STATIC_READ);
 		glBindBuffer(GL_ARRAY_BUFFER, buff[size + 1]);
-		glBufferData(GL_ARRAY_BUFFER, ktoryfejs * 3 * sizeof(GLfloat), normalne, GL_STATIC_READ);
+		glBufferData(GL_ARRAY_BUFFER, ktoryfejs * 3 * sizeof(GLfloat), &normalne[0], GL_STATIC_READ);
 		glBindBuffer(GL_ARRAY_BUFFER, buff[size + 2]);
-		glBufferData(GL_ARRAY_BUFFER, ktoryfejs * 2 * sizeof(GLfloat), tekstury, GL_STATIC_READ);
+		glBufferData(GL_ARRAY_BUFFER, ktoryfejs * 2 * sizeof(GLfloat), &tekstury[0], GL_STATIC_READ);
 	}
 
-	void ustaw(GLfloat t[3], GLfloat *w, int a) {
+	void ustaw(GLfloat t[3], vector<GLfloat> w, int a) {
 		t[0] = w[a];
 		t[1] = w[a + 1];
 		t[2] = w[a + 2];
 	}
 
-	void minimax(GLfloat *w, int ktorywierzcholek) {
+	void minimax(vector<GLfloat> w, int ktorywierzcholek) {
 		for (int i = 0; i < 3; i++)
 			for (int j = 0; j < 3; j++)
 				min[i][j] = numeric_limits < GLfloat > ::infinity();

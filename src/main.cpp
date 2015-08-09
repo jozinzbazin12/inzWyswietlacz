@@ -19,6 +19,7 @@
 #include <windows.h>
 #include <vector>
 #include <list>
+#include <array>
 using namespace std;
 #include "Logger.h"
 ////////////////////////////////////////////
