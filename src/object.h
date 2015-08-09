@@ -53,7 +53,6 @@ public:
 		long long unsigned ktorywierzcholek2 = 0;
 		long long unsigned ktorynormalny2 = 0;
 		long long unsigned ktoratekstura2 = 0;
-		long long unsigned ktoryfejs = 0;
 		string napis;
 		bool silnik_od_tostera = true;
 		ifstream wczytywacz;
@@ -69,10 +68,10 @@ public:
 		stream << "Rozmiar pliku " << rozmiarpliku << "B";
 		Logger::log(stream.str());
 
-		vector<GLfloat> w;
-		vector<GLfloat> n;
-		vector<GLfloat> t;
-		vector<Row*> f;
+		vector<GLfloat> vertices;
+		vector<GLfloat> normals;
+		vector<GLfloat> textureCords;
+		vector<Row*> faces;
 
 		while (!wczytywacz.eof() && napis != "mtllib") {
 			wczytywacz >> napis;
@@ -86,7 +85,7 @@ public:
 			wczytywacz >> napis;
 			if (napis == "o") {
 				if (subobjects.size() == 0)
-					bindObject(w, n, t, f, ktoryfejs, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
+					bindObject(vertices, normals, textureCords, faces, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
 				wczytywacz >> napis;
 				silnik_od_tostera = true;
 			}
@@ -95,7 +94,7 @@ public:
 				wczytywacz >> napis;
 				if (!silnik_od_tostera) {
 					if (subobjects.size() == 0)
-						bindObject(w, n, t, f, ktoryfejs, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
+						bindObject(vertices, normals, textureCords, faces, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
 				}
 				silnik_od_tostera = false;
 				tmpmtl = mtl->searchMaterial(napis);
@@ -113,31 +112,31 @@ public:
 			if (napis == "v") {
 
 				wczytywacz >> napis;
-				w.push_back(atof(napis.c_str()));
+				vertices.push_back(atof(napis.c_str()));
 				wczytywacz >> napis;
-				w.push_back(atof(napis.c_str()));
+				vertices.push_back(atof(napis.c_str()));
 				wczytywacz >> napis;
-				w.push_back(atof(napis.c_str()));
+				vertices.push_back(atof(napis.c_str()));
 				ktorywierzcholek+=3;
 				napis = "";
 			}
 
 			if (napis == "vt") {
 				wczytywacz >> napis;
-				t.push_back(atof(napis.c_str()));
+				textureCords.push_back(atof(napis.c_str()));
 				wczytywacz >> napis;
-				t.push_back(1 - atof(napis.c_str()));
+				textureCords.push_back(1 - atof(napis.c_str()));
 				napis = "";
 				ktoratekstura+=2;
 			}
 
 			if (napis == "vn") {
 				wczytywacz >> napis;
-				n.push_back(atof(napis.c_str()));
+				normals.push_back(atof(napis.c_str()));
 				wczytywacz >> napis;
-				n.push_back(atof(napis.c_str()));
+				normals.push_back(atof(napis.c_str()));
 				wczytywacz >> napis;
-				n.push_back(atof(napis.c_str()));
+				normals.push_back(atof(napis.c_str()));
 				napis = "";
 				ktorynormalny+=3;
 			}
@@ -153,20 +152,19 @@ public:
 					tab[1] = tmp;
 					tmp = getNextFaceNumber(napis) - 1;
 					tab[2] = tmp;
-					f.push_back(new Row(tab));
-					ktoryfejs++;
+					faces.push_back(new Row(tab));
 				}
 			}
 		}
 		int lol = 0;
-		bindObject(w, n, t, f, ktoryfejs, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
+		bindObject(vertices, normals, textureCords, faces, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
 		for (unsigned i = 0; i < subobjects.size(); i++) {
 			lol += subobjects[i]->vertexCount;
 		}
 
 		lol /= 3;
 		ilee += lol;
-		minimax(w, ktorywierzcholek);
+		minimax(vertices, ktorywierzcholek);
 
 		stream.str("");
 		Logger::log(Logger::LINE);
@@ -177,37 +175,36 @@ public:
 		Logger::log(stream.str());
 	}
 
-	void bindObject(vector<GLfloat> w, vector<GLfloat> n, vector<GLfloat> t, vector<Row*> f,
-			long long unsigned &ktoryfejs, long long unsigned &ktorywierzcholek2, long long unsigned &ktorynormalny2,
+	void bindObject(vector<GLfloat> vertices, vector<GLfloat> normals, vector<GLfloat> textureCords, vector<Row*> faces,
+			 long long unsigned &ktorywierzcholek2, long long unsigned &ktorynormalny2,
 			long long unsigned &ktoratekstura2) {
 		vector<GLfloat> normalne;
 		vector<GLfloat> wierzcholki;
 		vector < GLfloat > tekstury;
-		for (long long unsigned i = 0; i < ktoryfejs; i++) {
-			wierzcholki.push_back(w[f[i][0][0] * 3]);
-			wierzcholki.push_back(w[f[i][0][0] * 3 + 1]);
-			wierzcholki.push_back(w[f[i][0][0] * 3 + 2]);
+		for (long long unsigned i = 0; i < faces.size(); i++) {
+			wierzcholki.push_back(vertices[faces[i][0][0] * 3]);
+			wierzcholki.push_back(vertices[faces[i][0][0] * 3 + 1]);
+			wierzcholki.push_back(vertices[faces[i][0][0] * 3 + 2]);
 
 			ktorywierzcholek2 += 3;
-			normalne.push_back(n[f[i][0][2] * 3]);
-			normalne.push_back(n[f[i][0][2] * 3 + 1]);
-			normalne.push_back(n[f[i][0][2] * 3 + 2]);
+			normalne.push_back(normals[faces[i][0][2] * 3]);
+			normalne.push_back(normals[faces[i][0][2] * 3 + 1]);
+			normalne.push_back(normals[faces[i][0][2] * 3 + 2]);
 			ktorynormalny2 += 3;
 
-			tekstury.push_back(t[f[i][0][1] * 2]);
-			tekstury.push_back(t[f[i][0][1] * 2 + 1]);
+			tekstury.push_back(textureCords[faces[i][0][1] * 2]);
+			tekstury.push_back(textureCords[faces[i][0][1] * 2 + 1]);
 			ktoratekstura2 += 2;
 		}
 
-		sendToBuffer(normalne, wierzcholki, tekstury, ktoryfejs);
-		subobjects.push_back(new Subobject(ktoryfejs, tmpmtl, mtl, buff.size() - 3));
+		sendToBuffer(normalne, wierzcholki, tekstury, faces.size());
+		subobjects.push_back(new Subobject(faces.size(), tmpmtl, mtl, buff.size() - 3));
 		ktorynormalny2 = 0;
 		ktoratekstura2 = 0;
 		ktorywierzcholek2 = 0;
-		ktoryfejs = 0;
 	}
 
-	void sendToBuffer(vector<GLfloat> normalne, vector<GLfloat> wierzcholki, vector<GLfloat> tekstury, int ktoryfejs) {
+	void sendToBuffer(vector<GLfloat> normalne, vector<GLfloat> wierzcholki, vector<GLfloat> tekstury, int facesSize) {
 		//ilebuforow chujowe
 		unsigned size = buff.size();
 		GLuint buffers[3];
@@ -217,11 +214,11 @@ public:
 		buff.push_back(buffers[2]);
 
 		glBindBuffer(GL_ARRAY_BUFFER, buff[size]);
-		glBufferData(GL_ARRAY_BUFFER, ktoryfejs * 3 * sizeof(GLfloat), &wierzcholki[0], GL_STATIC_READ);
+		glBufferData(GL_ARRAY_BUFFER, facesSize * 3 * sizeof(GLfloat), &wierzcholki[0], GL_STATIC_READ);
 		glBindBuffer(GL_ARRAY_BUFFER, buff[size + 1]);
-		glBufferData(GL_ARRAY_BUFFER, ktoryfejs * 3 * sizeof(GLfloat), &normalne[0], GL_STATIC_READ);
+		glBufferData(GL_ARRAY_BUFFER, facesSize * 3 * sizeof(GLfloat), &normalne[0], GL_STATIC_READ);
 		glBindBuffer(GL_ARRAY_BUFFER, buff[size + 2]);
-		glBufferData(GL_ARRAY_BUFFER, ktoryfejs * 2 * sizeof(GLfloat), &tekstury[0], GL_STATIC_READ);
+		glBufferData(GL_ARRAY_BUFFER, facesSize * 2 * sizeof(GLfloat), &tekstury[0], GL_STATIC_READ);
 	}
 
 	void ustaw(GLfloat t[3], vector<GLfloat> w, int a) {
