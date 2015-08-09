@@ -91,7 +91,7 @@ public:
 				textureNumber = Texture::isTextureAlreadyDefined(textureName + text);
 				if (textureNumber == -1) {
 					Texture::textures.push_back(new Texture(textureName + text, "map_Kd"));
-					material->setMapKd(Texture::textures.size()-1);
+					material->setMapKd(Texture::textures.size() - 1);
 				} else
 					material->setMapKd(textureNumber);
 			}

@@ -157,6 +157,6 @@ public:
 
 };
 vector<GLuint> Texture::txtid;
-vector<Texture*> Texture::textures;
+vector<Texture*> Texture::textures(10);
 
 #endif /* SRC_TEXTURE_H_ */
