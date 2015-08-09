@@ -44,13 +44,13 @@ public:
 		return x;
 	}
 //todo
-	void loadObject(string nazwa, bool tag) {
-		Logger::log("Obiekt: " + nazwa);
+	void loadObject(string objectName, bool tag) {
+		Logger::log("Obiekt: " + objectName);
 		long long unsigned fileSize;
 		string text;
 		bool useMtl = true;
 		ifstream file;
-		file.open(nazwa.c_str(), ios::binary);
+		file.open(objectName.c_str(), ios::binary);
 		if (!file.is_open()) {
 			Logger::log(Logger::ERR + "brak .obj");
 			exit(0);
@@ -75,10 +75,16 @@ public:
 		materialy[ilematerialow] = new MaterialLib(utnij(this->name) + "/" + text);
 		mtl = materialy[ilematerialow++];
 
+		bool first = true;
 		while (!file.eof()) {
 			file >> text;
 			if (text == "o") {
-				bindObject(vertices, normals, textureCords, faces);
+				if (first) {
+					bindObject(vertices, normals, textureCords, faces);
+					faces.clear();
+				} else {
+					first = false;
+				}
 				file >> text;
 				useMtl = true;
 			}
@@ -87,6 +93,7 @@ public:
 				file >> text;
 				if (!useMtl) {
 					bindObject(vertices, normals, textureCords, faces);
+					faces.clear();
 				}
 				useMtl = false;
 				tmpmtl = mtl->searchMaterial(text);
