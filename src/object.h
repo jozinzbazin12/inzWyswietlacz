@@ -154,6 +154,7 @@ public:
 					tmp = getNextFaceNumber(napis) - 1;
 					tab[2] = tmp;
 					f.push_back(new Row(tab));
+					ktoryfejs++;
 				}
 			}
 		}
