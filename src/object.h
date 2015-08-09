@@ -2,7 +2,7 @@ class Row {
 public:
 	GLfloat* data;
 
-	Row(GLfloat data[3]) {
+	Row(GLfloat *data) {
 		this->data = data;
 	}
 	~Row() {
@@ -72,7 +72,7 @@ public:
 		vector<GLfloat> w;
 		vector<GLfloat> n;
 		vector<GLfloat> t;
-		vector<Row> f;
+		vector<Row*> f;
 
 		while (!wczytywacz.eof() && napis != "mtllib") {
 			wczytywacz >> napis;
@@ -153,7 +153,7 @@ public:
 					tab[1] = tmp;
 					tmp = getNextFaceNumber(napis) - 1;
 					tab[2] = tmp;
-					//f.push_back(Row(tab));
+					f.push_back(new Row(tab));
 				}
 			}
 		}
@@ -176,25 +176,25 @@ public:
 		Logger::log(stream.str());
 	}
 
-	void bindObject(vector<GLfloat> w, vector<GLfloat> n, vector<GLfloat> t, vector<Row> f,
+	void bindObject(vector<GLfloat> w, vector<GLfloat> n, vector<GLfloat> t, vector<Row*> f,
 			long long unsigned &ktoryfejs, long long unsigned &ktorywierzcholek2, long long unsigned &ktorynormalny2,
 			long long unsigned &ktoratekstura2) {
 		vector<GLfloat> normalne;
 		vector<GLfloat> wierzcholki;
 		vector < GLfloat > tekstury;
 		for (long long unsigned i = 0; i < ktoryfejs; i++) {
-			wierzcholki.push_back(w[f[i][0] * 3]);
-			wierzcholki.push_back(w[f[i][0] * 3 + 1]);
-			wierzcholki.push_back(w[f[i][0] * 3 + 2]);
+			wierzcholki.push_back(w[f[i][0][0] * 3]);
+			wierzcholki.push_back(w[f[i][0][0] * 3 + 1]);
+			wierzcholki.push_back(w[f[i][0][0] * 3 + 2]);
 
 			ktorywierzcholek2 += 3;
-			normalne.push_back(n[f[i][2] * 3]);
-			normalne.push_back(n[f[i][2] * 3 + 1]);
-			normalne.push_back(n[f[i][2] * 3 + 2]);
+			normalne.push_back(n[f[i][0][2] * 3]);
+			normalne.push_back(n[f[i][0][2] * 3 + 1]);
+			normalne.push_back(n[f[i][0][2] * 3 + 2]);
 			ktorynormalny2 += 3;
 
-			tekstury.push_back(t[f[i][1] * 2]);
-			tekstury.push_back(t[f[i][1] * 2 + 1]);
+			tekstury.push_back(t[f[i][0][1] * 2]);
+			tekstury.push_back(t[f[i][0][1] * 2 + 1]);
 			ktoratekstura2 += 2;
 		}
 
