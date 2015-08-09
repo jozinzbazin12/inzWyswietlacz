@@ -44,28 +44,22 @@ public:
 		return x;
 	}
 //todo
-	void takietamwczytywanie(string nazwa, bool tag) {
+	void loadObject(string nazwa, bool tag) {
 		Logger::log("Obiekt: " + nazwa);
-		long long unsigned rozmiarpliku;
-		long long unsigned ktorywierzcholek = 0;
-		long long unsigned ktorynormalny = 0;
-		long long unsigned ktoratekstura = 0;
-		long long unsigned ktorywierzcholek2 = 0;
-		long long unsigned ktorynormalny2 = 0;
-		long long unsigned ktoratekstura2 = 0;
-		string napis;
-		bool silnik_od_tostera = true;
-		ifstream wczytywacz;
-		wczytywacz.open(nazwa.c_str(), ios::binary);
-		if (!wczytywacz.is_open()) {
+		long long unsigned fileSize;
+		string text;
+		bool useMtl = true;
+		ifstream file;
+		file.open(nazwa.c_str(), ios::binary);
+		if (!file.is_open()) {
 			Logger::log(Logger::ERR + "brak .obj");
 			exit(0);
 		}
-		wczytywacz.seekg(0, ios::end);
-		rozmiarpliku = wczytywacz.tellg();
-		wczytywacz.seekg(0, ios::beg);
+		file.seekg(0, ios::end);
+		fileSize = file.tellg();
+		file.seekg(0, ios::beg);
 		ostringstream stream;
-		stream << "Rozmiar pliku " << rozmiarpliku << "B";
+		stream << "Rozmiar pliku " << fileSize << "B";
 		Logger::log(stream.str());
 
 		vector<GLfloat> vertices;
@@ -73,139 +67,126 @@ public:
 		vector<GLfloat> textureCords;
 		vector<Row*> faces;
 
-		while (!wczytywacz.eof() && napis != "mtllib") {
-			wczytywacz >> napis;
+		while (!file.eof() && text != "mtllib") {
+			file >> text;
 		}
-		wczytywacz >> napis;
+		file >> text;
 		//xd << this->nazwa << endl;
-		materialy[ilematerialow] = new MaterialLib(utnij(this->name) + "/" + napis);
+		materialy[ilematerialow] = new MaterialLib(utnij(this->name) + "/" + text);
 		mtl = materialy[ilematerialow++];
 
-		while (!wczytywacz.eof()) {
-			wczytywacz >> napis;
-			if (napis == "o") {
+		while (!file.eof()) {
+			file >> text;
+			if (text == "o") {
 				if (subobjects.size() == 0)
-					bindObject(vertices, normals, textureCords, faces, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
-				wczytywacz >> napis;
-				silnik_od_tostera = true;
+					bindObject(vertices, normals, textureCords, faces);
+				file >> text;
+				useMtl = true;
 			}
 
-			if (napis == "usemtl") {
-				wczytywacz >> napis;
-				if (!silnik_od_tostera) {
+			if (text == "usemtl") {
+				file >> text;
+				if (!useMtl) {
 					if (subobjects.size() == 0)
-						bindObject(vertices, normals, textureCords, faces, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
+						bindObject(vertices, normals, textureCords, faces);
 				}
-				silnik_od_tostera = false;
-				tmpmtl = mtl->searchMaterial(napis);
+				useMtl = false;
+				tmpmtl = mtl->searchMaterial(text);
 
 			}
 
-			if (napis == "s") {
-				wczytywacz >> napis;
-				if (napis == "1")
+			if (text == "s") {
+				file >> text;
+				if (text == "1")
 					mtl->mtl[mtl->whichMaterial]->s = GL_SMOOTH;
 				else
 					mtl->mtl[mtl->whichMaterial]->s = GL_FLAT;
 			}
 
-			if (napis == "v") {
+			if (text == "v") {
 
-				wczytywacz >> napis;
-				vertices.push_back(atof(napis.c_str()));
-				wczytywacz >> napis;
-				vertices.push_back(atof(napis.c_str()));
-				wczytywacz >> napis;
-				vertices.push_back(atof(napis.c_str()));
-				ktorywierzcholek+=3;
-				napis = "";
+				file >> text;
+				vertices.push_back(atof(text.c_str()));
+				file >> text;
+				vertices.push_back(atof(text.c_str()));
+				file >> text;
+				vertices.push_back(atof(text.c_str()));
+				text = "";
 			}
 
-			if (napis == "vt") {
-				wczytywacz >> napis;
-				textureCords.push_back(atof(napis.c_str()));
-				wczytywacz >> napis;
-				textureCords.push_back(1 - atof(napis.c_str()));
-				napis = "";
-				ktoratekstura+=2;
+			if (text == "vt") {
+				file >> text;
+				textureCords.push_back(atof(text.c_str()));
+				file >> text;
+				textureCords.push_back(1 - atof(text.c_str()));
+				text = "";
 			}
 
-			if (napis == "vn") {
-				wczytywacz >> napis;
-				normals.push_back(atof(napis.c_str()));
-				wczytywacz >> napis;
-				normals.push_back(atof(napis.c_str()));
-				wczytywacz >> napis;
-				normals.push_back(atof(napis.c_str()));
-				napis = "";
-				ktorynormalny+=3;
+			if (text == "vn") {
+				file >> text;
+				normals.push_back(atof(text.c_str()));
+				file >> text;
+				normals.push_back(atof(text.c_str()));
+				file >> text;
+				normals.push_back(atof(text.c_str()));
+				text = "";
 			}
 
-			if (napis == "f") {
-				int tmp;
+			if (text == "f") {
 				for (int i = 0; i < 3; i++) {
 					GLfloat* tab = new GLfloat[3];
-					wczytywacz >> napis;
-					tmp = getNextFaceNumber(napis) - 1;
-					tab[0] = tmp;
-					tmp = getNextFaceNumber(napis) - 1;
-					tab[1] = tmp;
-					tmp = getNextFaceNumber(napis) - 1;
-					tab[2] = tmp;
+					file >> text;
+					tab[0] = getNextFaceNumber(text) - 1;
+					tab[1] = getNextFaceNumber(text) - 1;
+					tab[2] = getNextFaceNumber(text) - 1;
 					faces.push_back(new Row(tab));
 				}
 			}
 		}
-		int lol = 0;
-		bindObject(vertices, normals, textureCords, faces, ktorywierzcholek2, ktorynormalny2, ktoratekstura2);
+		int vertexCount = 0;
+		bindObject(vertices, normals, textureCords, faces);
 		for (unsigned i = 0; i < subobjects.size(); i++) {
-			lol += subobjects[i]->vertexCount;
+			vertexCount += subobjects[i]->vertexCount;
 		}
 
-		lol /= 3;
-		ilee += lol;
-		minimax(vertices, ktorywierzcholek);
+		vertexCount /= 3;
+		totalVerticesCount += vertexCount;
+		minimax(vertices);
 
 		stream.str("");
 		Logger::log(Logger::LINE);
 		stream << "Wczytano " << subobjects.size() << " podobiektow";
 		Logger::log(stream.str());
 		stream.str("");
-		stream << "Utworzono " << lol << " trojkatow\n\n";
+		stream << "Utworzono " << vertexCount << " trojkatow\n\n";
 		Logger::log(stream.str());
 	}
 
-	void bindObject(vector<GLfloat> vertices, vector<GLfloat> normals, vector<GLfloat> textureCords, vector<Row*> faces,
-			 long long unsigned &ktorywierzcholek2, long long unsigned &ktorynormalny2,
-			long long unsigned &ktoratekstura2) {
-		vector<GLfloat> normalne;
-		vector<GLfloat> wierzcholki;
-		vector < GLfloat > tekstury;
+	void bindObject(vector<GLfloat> vertices, vector<GLfloat> normals, vector<GLfloat> textureCords, vector<Row*> faces) {
+		vector<GLfloat> newNormals;
+		vector<GLfloat> newVertices;
+		vector < GLfloat > newTextureCords;
 		for (long long unsigned i = 0; i < faces.size(); i++) {
-			wierzcholki.push_back(vertices[faces[i][0][0] * 3]);
-			wierzcholki.push_back(vertices[faces[i][0][0] * 3 + 1]);
-			wierzcholki.push_back(vertices[faces[i][0][0] * 3 + 2]);
+			//faces[i]-> Row*
+			//faces[i][0]->Row
+			//faces[i][0][n]->GlFloat[3]
+			newVertices.push_back(vertices[faces[i][0][0] * 3]);
+			newVertices.push_back(vertices[faces[i][0][0] * 3 + 1]);
+			newVertices.push_back(vertices[faces[i][0][0] * 3 + 2]);
 
-			ktorywierzcholek2 += 3;
-			normalne.push_back(normals[faces[i][0][2] * 3]);
-			normalne.push_back(normals[faces[i][0][2] * 3 + 1]);
-			normalne.push_back(normals[faces[i][0][2] * 3 + 2]);
-			ktorynormalny2 += 3;
+			newNormals.push_back(normals[faces[i][0][2] * 3]);
+			newNormals.push_back(normals[faces[i][0][2] * 3 + 1]);
+			newNormals.push_back(normals[faces[i][0][2] * 3 + 2]);
 
-			tekstury.push_back(textureCords[faces[i][0][1] * 2]);
-			tekstury.push_back(textureCords[faces[i][0][1] * 2 + 1]);
-			ktoratekstura2 += 2;
+			newTextureCords.push_back(textureCords[faces[i][0][1] * 2]);
+			newTextureCords.push_back(textureCords[faces[i][0][1] * 2 + 1]);
 		}
 
-		sendToBuffer(normalne, wierzcholki, tekstury, faces.size());
+		sendToBuffer(newNormals, newVertices, newTextureCords, faces.size());
 		subobjects.push_back(new Subobject(faces.size(), tmpmtl, mtl, buff.size() - 3));
-		ktorynormalny2 = 0;
-		ktoratekstura2 = 0;
-		ktorywierzcholek2 = 0;
 	}
 
-	void sendToBuffer(vector<GLfloat> normalne, vector<GLfloat> wierzcholki, vector<GLfloat> tekstury, int facesSize) {
-		//ilebuforow chujowe
+	void sendToBuffer(vector<GLfloat> normals, vector<GLfloat> vertices, vector<GLfloat> textureCords, int facesSize) {
 		unsigned size = buff.size();
 		GLuint buffers[3];
 		glGenBuffers(3, &buffers[0]);
@@ -214,46 +195,46 @@ public:
 		buff.push_back(buffers[2]);
 
 		glBindBuffer(GL_ARRAY_BUFFER, buff[size]);
-		glBufferData(GL_ARRAY_BUFFER, facesSize * 3 * sizeof(GLfloat), &wierzcholki[0], GL_STATIC_READ);
+		glBufferData(GL_ARRAY_BUFFER, facesSize * 3 * sizeof(GLfloat), &vertices[0], GL_STATIC_READ);
 		glBindBuffer(GL_ARRAY_BUFFER, buff[size + 1]);
-		glBufferData(GL_ARRAY_BUFFER, facesSize * 3 * sizeof(GLfloat), &normalne[0], GL_STATIC_READ);
+		glBufferData(GL_ARRAY_BUFFER, facesSize * 3 * sizeof(GLfloat), &normals[0], GL_STATIC_READ);
 		glBindBuffer(GL_ARRAY_BUFFER, buff[size + 2]);
-		glBufferData(GL_ARRAY_BUFFER, facesSize * 2 * sizeof(GLfloat), &tekstury[0], GL_STATIC_READ);
+		glBufferData(GL_ARRAY_BUFFER, facesSize * 2 * sizeof(GLfloat), &textureCords[0], GL_STATIC_READ);
 	}
 
-	void ustaw(GLfloat t[3], vector<GLfloat> w, int a) {
+	void copyElements(GLfloat t[3], vector<GLfloat> w, int a) {
 		t[0] = w[a];
 		t[1] = w[a + 1];
 		t[2] = w[a + 2];
 	}
 
-	void minimax(vector<GLfloat> w, int ktorywierzcholek) {
+	void minimax(vector<GLfloat> vertices) {
 		for (int i = 0; i < 3; i++)
 			for (int j = 0; j < 3; j++)
 				min[i][j] = numeric_limits < GLfloat > ::infinity();
 		for (int i = 0; i < 3; i++)
 			for (int j = 0; j < 3; j++)
 				max[i][j] = -numeric_limits < GLfloat > ::infinity();
-		for (int i = 0; i < ktorywierzcholek; i += 3) {
-			if (w[i] > max[0][0])
-				ustaw(max[0], w, i);
-			if (w[i + 1] > max[1][1])
-				ustaw(max[1], w, i);
-			if (w[i + 2] > max[2][2])
-				ustaw(max[2], w, i);
-			if (w[i] < min[0][0])
-				ustaw(min[0], w, i);
-			if (w[i + 1] < min[1][1])
-				ustaw(min[1], w, i);
-			if (w[i + 2] < min[2][2])
-				ustaw(min[2], w, i);
+		for (unsigned i = 0; i < vertices.size(); i += 3) {
+			if (vertices[i] > max[0][0])
+				copyElements(max[0], vertices, i);
+			if (vertices[i + 1] > max[1][1])
+				copyElements(max[1], vertices, i);
+			if (vertices[i + 2] > max[2][2])
+				copyElements(max[2], vertices, i);
+			if (vertices[i] < min[0][0])
+				copyElements(min[0], vertices, i);
+			if (vertices[i + 1] < min[1][1])
+				copyElements(min[1], vertices, i);
+			if (vertices[i + 2] < min[2][2])
+				copyElements(min[2], vertices, i);
 		}
 	}
 
 	Object(string nazwa, bool tag = false) {
 		this->name = otworz(nazwa, ".obj");
 		tmpmtl = 0;
-		takietamwczytywanie(this->name, tag);
+		loadObject(this->name, tag);
 		this->counter = 0;
 	}
 	~Object() {

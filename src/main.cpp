@@ -67,7 +67,7 @@ int ilematerialow = 0;
 int iletekstur = 0;
 int ileanimacji = 0;
 int wys = 700, szer = 1300;
-long long unsigned ilee = 0;
+long long unsigned totalVerticesCount = 0;
 int ktoreswiatlo = 0;
 int ktorapos = 0;
 GLfloat kutas[] = { 0.4f, 0.4f, 0.4f, 0.4f };
@@ -1236,7 +1236,7 @@ void wczytaj() {
 	GLfloat a, b, c, d;
 	fstream wczytywacz, wczytywacz2;
 	string nazwaobiektu;
-	wczytywacz2.open("ustawienia/pliki2.txt");
+	wczytywacz2.open("ustawienia/pliki.txt");
 	if (!wczytywacz2.is_open()) {
 		Logger::log(Logger::ERR + "brak pliku z plikami");
 		exit(0);
@@ -1249,7 +1249,7 @@ void wczytaj() {
 	}
 	wczytywacz2.close();
 	mapa *map = new mapa();
-	wczytywacz.open("ustawienia/ustawienia2.txt");
+	wczytywacz.open("ustawienia/ustawienia.txt");
 	if (!wczytywacz.is_open()) {
 		Logger::log(Logger::ERR + "brak pliku z ustawieniami");
 		exit(0);
@@ -1316,7 +1316,7 @@ void wczytaj() {
 
 	ostringstream stream;
 	Logger::log(Logger::LINE);
-	stream << "Utworzono " << ilee << " trojkatow";
+	stream << "Utworzono " << totalVerticesCount << " trojkatow";
 	Logger::log(stream.str());
 	stream.str("");
 	stream << "Wczytanych obiektow: " << ileobiektow2 << ", wyswietlonych obiektow:" << ileobiektow;
