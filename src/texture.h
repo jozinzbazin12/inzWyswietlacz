@@ -8,14 +8,14 @@
 #ifndef SRC_TEXTURE_H_
 #define SRC_TEXTURE_H_
 
-
 class Texture {
 public:
+	static vector<Texture*> textures;
 	SDL_Surface *txt;
 	GLenum format;
 	GLenum internalformat;
 	string extension;
-	static GLuint txtid[iletxt];
+	static vector<GLuint> txtid;
 	string textureName;
 	bool transparent;
 	void isTransparent() {
@@ -37,8 +37,8 @@ public:
 	}
 
 	static int isTextureAlreadyDefined(string nazwa) {
-		for (int i = 0; i < iletekstur; i++)
-			if (tekstury[i]->textureName == nazwa)
+		for (unsigned i = 0; i < textures.size(); i++)
+			if (textures[i]->textureName == nazwa)
 				return i;
 		return -1;
 	}
@@ -94,7 +94,8 @@ public:
 		textureName = nazwa;
 		extension = getExtension(nazwa);
 		txt = IMG_Load(nazwa.c_str());
-		if (extension == ".jpg" || extension == ".jpeg" || extension == ".jpe" || extension == ".jif" || extension == ".jfif" || extension == ".jfi")
+		if (extension == ".jpg" || extension == ".jpeg" || extension == ".jpe" || extension == ".jif"
+				|| extension == ".jfif" || extension == ".jfi")
 			extension = ".jpg";
 		if (extension == ".bmp" || extension == ".dib")
 			extension = ".bmp";
@@ -120,12 +121,12 @@ public:
 			internalformat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
 		if (format == GL_INTENSITY)
 			internalformat = GL_COMPRESSED_INTENSITY;
-
-		glGenTextures(1, &txtid[iletekstur]);
-		glBindTexture(GL_TEXTURE_2D, txtid[iletekstur]);
-		//glTexStorage2D(GL_TEXTURE_2D, 16 ,txt->format->BytesPerPixel,txt->w,txt->h);
+		GLuint tab[1];
+		glGenTextures(1, &tab[0]);
+		glBindTexture(GL_TEXTURE_2D, tab[0]);
+		txtid.push_back(tab[0]);
 		glTexImage2D(GL_TEXTURE_2D, 0, internalformat, txt->w, txt->h, 0, format, GL_UNSIGNED_BYTE, txt->pixels);
-		glGenerateMipmap(GL_TEXTURE_2D);
+		glGenerateMipmap (GL_TEXTURE_2D);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -149,13 +150,13 @@ public:
 
 		glTexEnvf(GL_TEXTURE_FILTER_CONTROL, GL_TEXTURE_LOD_BIAS, -2);
 		GLclampf a = 1.0f;
-		glPrioritizeTextures(1, &txtid[iletekstur], &a);
+		glPrioritizeTextures(1, &txtid[txtid.size()-1], &a);
 		SDL_FreeSurface(txt);
 
 	}
 
 };
-GLuint Texture::txtid[iletxt];
-
+vector<GLuint> Texture::txtid;
+vector<Texture*> Texture::textures;
 
 #endif /* SRC_TEXTURE_H_ */

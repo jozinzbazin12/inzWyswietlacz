@@ -90,8 +90,8 @@ public:
 				string textureName = utnij(path) + "/";
 				textureNumber = Texture::isTextureAlreadyDefined(textureName + text);
 				if (textureNumber == -1) {
-					tekstury[iletekstur] = new Texture(textureName + text, "map_Kd");
-					material->setMapKd(iletekstur++);
+					Texture::textures.push_back(new Texture(textureName + text, "map_Kd"));
+					material->setMapKd(Texture::textures.size()-1);
 				} else
 					material->setMapKd(textureNumber);
 			}
@@ -112,5 +112,4 @@ public:
 			delete mtl[i];
 	}
 };
-
 #endif /* SRC_MATERIAL_LIB_H_ */

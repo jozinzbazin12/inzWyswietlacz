@@ -2,8 +2,6 @@
 #define coileklatek 10
 #define ilekrokowwanimacji 30
 #define ile 200
-#define ilemtl 150
-#define iletxt 300
 #define ileobj 100
 #include <GL/glew.h>
 #include <GL/freeglut.h>
@@ -43,7 +41,6 @@ obiekt_final ** obiekty_posortowane;
 obiekt_final * obiekty_animowane[100];
 obiekt_final * wybrany;
 MaterialLib *materialy[ileobj];
-Texture *tekstury[iletxt];
 Object *obiekty[ileobj];
 tagPOINT *mysz_pozycja;
 float modelview[16];
@@ -64,7 +61,6 @@ GLfloat px = -5, py = 5, pz = 11;
 int ileobiektow = 0;
 int ileobiektow2 = 0;
 int ilematerialow = 0;
-int iletekstur = 0;
 int ileanimacji = 0;
 int wys = 700, szer = 1300;
 long long unsigned totalVerticesCount = 0;
@@ -1323,10 +1319,11 @@ void wczytaj() {
 	Logger::log(stream.str());
 
 	int ilerez = 0;
-	GLboolean *czyrezydentne = new GLboolean[iletekstur];
-	glAreTexturesResident(iletekstur, Texture::txtid, czyrezydentne);
+	unsigned texturesCount=Texture::textures.size();
+	GLboolean *czyrezydentne = new GLboolean[texturesCount];
+	glAreTexturesResident(texturesCount, &Texture::txtid[0], czyrezydentne);
 
-	for (int i = 0; i < iletekstur; i++)
+	for (unsigned i = 0; i < texturesCount; i++)
 		if (czyrezydentne[i]) {
 			ilerez++;
 		}
@@ -1334,7 +1331,7 @@ void wczytaj() {
 
 	ostringstream steam;
 
-	stream << "Tekstur: " << iletekstur << ", rezydentne: " << ilerez << endl;
+	stream << "Tekstur: " << texturesCount << ", rezydentne: " << ilerez << endl;
 	Logger::log(stream.str());
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Object::numerkowybuforXD);
 }
@@ -1445,10 +1442,10 @@ void __cdecl sortuj(void *dupa) {
 		bool cycki;
 		for (int i = 0; i < ileobiektow; i++) {
 			cycki = false;
-			for (int j = 0; j < obiekty_f[i]->ob->subobjects.size(); j++)
+			for (unsigned j = 0; j < obiekty_f[i]->ob->subobjects.size(); j++)
 				if (obiekty_f[i]->ob->subobjects[j]->mtl->kat[3] < 1
 						|| (obiekty_f[i]->ob->subobjects[j]->mtl->tkdt != -1
-								&& tekstury[obiekty_f[i]->ob->subobjects[j]->mtl->tkdt]->transparent)) {
+								&& Texture::textures[obiekty_f[i]->ob->subobjects[j]->mtl->tkdt]->transparent)) {
 					cycki = true;
 					break;
 				}
