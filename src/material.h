@@ -18,7 +18,7 @@ public:
 	int tkdt;
 	int tkst;
 	float nst;
-	string imie;
+	string name;
 
 	void setD(float d) {
 		this->kat[3] = d;
@@ -56,7 +56,7 @@ public:
 		tkdt = -1;
 		tkst = -1;
 		s = GL_SMOOTH;
-		this->imie = imie;
+		this->name = imie;
 	}
 };
 

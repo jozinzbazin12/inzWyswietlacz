@@ -10,13 +10,12 @@
 
 class MaterialLib {
 public:
-	Material **mtl;
-	int whichMaterial;
+	vector<Material*> mtl;
 	string path;
 
 	int searchMaterial(string name) {
-		for (int i = 0; i <= this->whichMaterial; i++)
-			if (mtl[i]->imie == name)
+		for (unsigned i = 0; i < mtl.size(); i++)
+			if (mtl[i]->name == name)
 				return i;
 		exit(0);
 	}
@@ -34,17 +33,20 @@ public:
 			exit(0);
 		}
 
+		Material *material = NULL;
 		while (!file.eof()) {
 			file >> text;
-
 			if (text == "newmtl") {
+				if (material) {
+					mtl.push_back(material);
+				}
 				file >> text;
-				mtl[++this->whichMaterial] = new Material(text);
+				material = new Material(text);
 			}
 			if (text == "Ns") {
 				file >> text;
 				floatValue = atof(text.c_str()) * 128.0 / 1000.0;
-				mtl[this->whichMaterial]->setNst(floatValue + 1);
+				material->setNst(floatValue + 1);
 			}
 
 			if (text == "Ka") {
@@ -54,7 +56,7 @@ public:
 				tab[1] = atof(text.c_str());
 				file >> text;
 				tab[2] = atof(text.c_str());
-				mtl[this->whichMaterial]->setAmbient(tab);
+				material->setAmbient(tab);
 			}
 
 			if (text == "Kd") {
@@ -64,7 +66,7 @@ public:
 				tab[1] = atof(text.c_str());
 				file >> text;
 				tab[2] = atof(text.c_str());
-				mtl[this->whichMaterial]->setDiffuse(tab);
+				material->setDiffuse(tab);
 			}
 
 			if (text == "Ks") {
@@ -74,13 +76,13 @@ public:
 				tab[1] = atof(text.c_str());
 				file >> text;
 				tab[2] = atof(text.c_str());
-				mtl[this->whichMaterial]->setSpecular(tab);
+				material->setSpecular(tab);
 			}
 
 			if (text == "d") {
 				file >> text;
 				floatValue = atof(text.c_str());
-				mtl[this->whichMaterial]->setD(floatValue);
+				material->setD(floatValue);
 			}
 
 			if (text == "map_Kd") {
@@ -88,28 +90,26 @@ public:
 				string textureName = utnij(path) + "/";
 				textureNumber = Texture::isTextureAlreadyDefined(textureName + text);
 				if (textureNumber == -1) {
-					tekstury[iletekstur++] = new Texture(textureName + text, "map_Kd");
-					mtl[this->whichMaterial]->setMapKd(iletekstur - 1);
+					tekstury[iletekstur] = new Texture(textureName + text, "map_Kd");
+					material->setMapKd(iletekstur++);
 				} else
-					mtl[this->whichMaterial]->setMapKd(textureNumber);
-
+					material->setMapKd(textureNumber);
 			}
 		}
+		mtl.push_back(material);
 		ostringstream stream;
-		stream << "Utworzono " << whichMaterial + 1 << " materialow";
+		stream << "Utworzono " << mtl.size() << " materialow";
 		Logger::log(stream.str());
 	}
 
 	MaterialLib(string nazwa) {
 		Logger::log("-MTL Lib: " + nazwa);
 		path = nazwa;
-		whichMaterial = -1;
-		mtl = new Material*[ilemtl];
 		loadMtl(nazwa);
 	}
 	~MaterialLib() {
-		for (int i = 0; i < this->whichMaterial; i++)
-			delete mtl;
+		for (unsigned i = 0; i < mtl.size(); i++)
+			delete mtl[i];
 	}
 };
 

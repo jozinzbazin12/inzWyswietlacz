@@ -852,7 +852,7 @@ void rysuj(obiekt_final *ob) {
 	glRotatef(ob->rz, 0, 0, 1);
 	glScalef(ob->sx, ob->sy, ob->sz);
 
-	for (int j = 0; j < ob->ob->subobjects.size(); j++) {
+	for (unsigned j = 0; j < ob->ob->subobjects.size(); j++) {
 		glShadeModel(ob->ob->subobjects[j]->mtl->s);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ob->ob->subobjects[j]->mtl->kat);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, ob->ob->subobjects[j]->mtl->kdt);

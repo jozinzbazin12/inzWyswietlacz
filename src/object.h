@@ -78,8 +78,7 @@ public:
 		while (!file.eof()) {
 			file >> text;
 			if (text == "o") {
-				if (subobjects.size() == 0)
-					bindObject(vertices, normals, textureCords, faces);
+				bindObject(vertices, normals, textureCords, faces);
 				file >> text;
 				useMtl = true;
 			}
@@ -87,8 +86,7 @@ public:
 			if (text == "usemtl") {
 				file >> text;
 				if (!useMtl) {
-					if (subobjects.size() == 0)
-						bindObject(vertices, normals, textureCords, faces);
+					bindObject(vertices, normals, textureCords, faces);
 				}
 				useMtl = false;
 				tmpmtl = mtl->searchMaterial(text);
@@ -98,9 +96,9 @@ public:
 			if (text == "s") {
 				file >> text;
 				if (text == "1")
-					mtl->mtl[mtl->whichMaterial]->s = GL_SMOOTH;
+					mtl->mtl[tmpmtl]->s = GL_SMOOTH;
 				else
-					mtl->mtl[mtl->whichMaterial]->s = GL_FLAT;
+					mtl->mtl[tmpmtl]->s = GL_FLAT;
 			}
 
 			if (text == "v") {
@@ -162,10 +160,11 @@ public:
 		Logger::log(stream.str());
 	}
 
-	void bindObject(vector<GLfloat> vertices, vector<GLfloat> normals, vector<GLfloat> textureCords, vector<Row*> faces) {
+	void bindObject(vector<GLfloat> vertices, vector<GLfloat> normals, vector<GLfloat> textureCords,
+			vector<Row*> faces) {
 		vector<GLfloat> newNormals;
 		vector<GLfloat> newVertices;
-		vector < GLfloat > newTextureCords;
+		vector<GLfloat> newTextureCords;
 		for (long long unsigned i = 0; i < faces.size(); i++) {
 			//faces[i]-> Row*
 			//faces[i][0]->Row
@@ -183,7 +182,7 @@ public:
 		}
 
 		sendToBuffer(newNormals, newVertices, newTextureCords, faces.size());
-		subobjects.push_back(new Subobject(faces.size(), tmpmtl, mtl, buff.size() - 3));
+		subobjects.push_back(new Subobject(faces.size(), mtl->mtl[tmpmtl], buff.size() - 3));
 	}
 
 	void sendToBuffer(vector<GLfloat> normals, vector<GLfloat> vertices, vector<GLfloat> textureCords, int facesSize) {
