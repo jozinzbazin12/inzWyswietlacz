@@ -243,4 +243,4 @@ public:
 	}
 };
 
-vector<GLuint> Object::buff(20);
+vector<GLuint> Object::buff;

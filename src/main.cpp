@@ -1,4 +1,6 @@
 #define GLEW_STATIC
+#define _SECURE_SCL 0
+#define _HAS_ITERATOR_DEBUGGING 0
 #define coileklatek 10
 #define ilekrokowwanimacji 30
 #define ile 200
@@ -848,12 +850,17 @@ void rysuj(obiekt_final *ob) {
 	glRotatef(ob->rz, 0, 0, 1);
 	glScalef(ob->sx, ob->sy, ob->sz);
 
-	for (unsigned j = 0; j < ob->ob->subobjects.size(); j++) {
-		glShadeModel(ob->ob->subobjects[j]->mtl->s);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ob->ob->subobjects[j]->mtl->kat);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, ob->ob->subobjects[j]->mtl->kdt);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, ob->ob->subobjects[j]->mtl->kst);
-		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, ob->ob->subobjects[j]->mtl->nst);
+	Material* mtl;
+	Subobject* object;
+	for (unsigned j = 0; j <ob->ob->subobjects.size() ; j++) {
+		object=ob->ob->subobjects[j];
+		mtl = object->mtl;
+
+		glShadeModel(mtl->s);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mtl->kat);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mtl->kdt);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mtl->kst);
+		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, mtl->nst);
 		/*
 		 if(ob->ob->mtl->td[ob->ob->ktorymtl[j]])
 		 {
@@ -867,22 +874,22 @@ void rysuj(obiekt_final *ob) {
 		 glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		 }
 		 */
-		if (ob->ob->subobjects[j]->mtl->tkdt != -1) {
+		if (mtl->tkdt != -1) {
 			//	glActiveTexture(GL_TEXTURE0);
 			//	glClientActiveTexture( GL_TEXTURE0 );
 			glEnable(GL_TEXTURE_2D);
-			glBindBuffer(GL_ARRAY_BUFFER, Object::buff[ob->ob->subobjects[j]->ktorybuff[2]]);
+			glBindBuffer(GL_ARRAY_BUFFER, Object::buff[object->ktorybuff[2]]);
 			glTexCoordPointer(2, GL_FLOAT, 0, 0);
-			glBindTexture(GL_TEXTURE_2D, Texture::txtid[ob->ob->subobjects[j]->mtl->tkdt]);
+			glBindTexture(GL_TEXTURE_2D, Texture::txtid[mtl->tkdt]);
 			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		}
 
-		glBindBuffer(GL_ARRAY_BUFFER, Object::buff[ob->ob->subobjects[j]->ktorybuff[0]]);
+		glBindBuffer(GL_ARRAY_BUFFER, Object::buff[object->ktorybuff[0]]);
 		glVertexPointer(3, GL_FLOAT, 0, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, Object::buff[ob->ob->subobjects[j]->ktorybuff[1]]);
+		glBindBuffer(GL_ARRAY_BUFFER, Object::buff[object->ktorybuff[1]]);
 		glNormalPointer(GL_FLOAT, 0, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glDrawArrays(GL_TRIANGLES, 0, ob->ob->subobjects[j]->vertexCount);
+		glDrawArrays(GL_TRIANGLES, 0, object->vertexCount);
 		//glDrawElements(GL_TRIANGLES,ob->ob->subobjects[j]->ilewierzcholkow, GL_UNSIGNED_INT, 0);
 
 		//	glDisable(GL_TEXTURE1);
@@ -1319,7 +1326,7 @@ void wczytaj() {
 	Logger::log(stream.str());
 
 	int ilerez = 0;
-	unsigned texturesCount=Texture::textures.size();
+	unsigned texturesCount = Texture::textures.size();
 	GLboolean *czyrezydentne = new GLboolean[texturesCount];
 	glAreTexturesResident(texturesCount, &Texture::txtid[0], czyrezydentne);
 
