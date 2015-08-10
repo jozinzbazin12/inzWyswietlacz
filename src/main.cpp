@@ -755,9 +755,10 @@ void rysuj(Entity *ob) {
 		glDrawArrays(GL_TRIANGLES, 0, object->vertexCount);
 		//glDrawElements(GL_TRIANGLES,ob->ob->subobjects[j]->ilewierzcholkow, GL_UNSIGNED_INT, 0);
 
-		//	glDisable(GL_TEXTURE1);
-		glDisable(GL_TEXTURE_2D);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		if (mtl->tkdt != -1) {
+			glDisable(GL_TEXTURE_2D);
+			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		}
 	}
 	glPopMatrix();
 }
@@ -992,7 +993,7 @@ void klawiaturka(unsigned char key, int x, int y) {
 		break;
 
 	case '6':
-		if (ktorykutas < Entity::allObjects.size() - 1) {
+		if (ktorykutas < (int)Entity::allObjects.size() - 1) {
 			wybrany = Entity::allObjects[++ktorykutas];
 			posX = Entity::allObjects[ktorykutas]->px;
 			posY = Entity::allObjects[ktorykutas]->py;
@@ -1314,29 +1315,29 @@ void __cdecl sortuj(void *dupa) {
 	while (1) {
 		unsigned objectsCount = Entity::allObjects.size();
 		vector<Entity*> transparentObjects;
-		//transparentObjects.reserve(objectsCount);
 		vector<Entity*> solidObjects;
-		//solidObjects.reserve(objectsCount);
-		//int objectCounter = 0;
-		//int transparentCounter = 0;
+		bool transparent;
 		for (unsigned i = 0; i < objectsCount; i++) {
 			if (ciach->nalezy(i)) {
+				transparent = false;
 				Subobject* subobject;
 				for (unsigned j = 0; j < Entity::allObjects[i]->object->subobjects.size(); j++) {
 					subobject = Entity::allObjects[i]->object->subobjects[j];
+
 					if (subobject->mtl->kat[3] < 1
 							|| (subobject->mtl->tkdt != -1 && Texture::textures[subobject->mtl->tkdt]->transparent)) {
-
 						transparentObjects.push_back(Entity::allObjects[i]);
+						transparent = true;
 						break;
 					}
 				}
-				solidObjects.push_back(Entity::allObjects[i]);
+				if (!transparent) {
+					solidObjects.push_back(Entity::allObjects[i]);
+				}
 			}
 		}
 
 		sort(transparentObjects.begin(), transparentObjects.end(), Entity::compare);
-		Logger::log("zwykle " + to_string(solidObjects.size()) + ",  " + to_string(transparentObjects.size()));
 		Entity::transparentObjectsToDisplay = transparentObjects;
 		Entity::solidObjectsToDisplay = solidObjects;
 		Sleep(100);
@@ -1473,6 +1474,7 @@ int main(int argc, char* args[]) {
 	return 0;
 }
 //TODO zapis
+//todo przezroczystosc  gore do obiektu
 /*
  x86/zlib1.dll
  x86/freeglut.dll
