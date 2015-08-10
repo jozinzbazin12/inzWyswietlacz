@@ -1,3 +1,4 @@
+
 #define GLEW_STATIC
 #define _SECURE_SCL 0
 #define _HAS_ITERATOR_DEBUGGING 0
@@ -527,7 +528,7 @@ void wczytaj() {
 	}
 	wczytywacz2.close();
 	mapa *map = new mapa();
-	wczytywacz.open("ustawienia/ustawienia.txt");
+	wczytywacz.open("ustawienia/dupa.txt");
 	if (!wczytywacz.is_open()) {
 		Logger::log(Logger::ERR + "brak pliku z ustawieniami");
 		exit(0);

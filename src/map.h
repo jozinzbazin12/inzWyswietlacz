@@ -78,10 +78,7 @@ public:
 		c = (long double) ((c2) / stosunekz) + (long double) (mapZ / 2);		//0
 		aa = (int) a;
 		cc = (int) c;
-		ostringstream ss;
-					ss<<"map x "<<mapX<<" map z "<<mapZ<<"  aa "<<aa<<"  cc "<<cc;
-					Logger::log(ss.str());
-		if (aa < 0 || a >= mapX || cc < 0 || cc >= mapZ)
+		if (aa < 1 || aa >= mapX || cc < 0 || cc >= mapZ)
 			return 0;
 		if (a == aa && c == cc)
 			return heights[mapX - aa][cc] * stosuneky + b2;
@@ -155,7 +152,7 @@ public:
 		for (int i = 0; i < mapX; i++)
 			heights[i] = new int[mapZ];
 		fstream file;
-		file.open("mapy/wysokosc.txt");
+		file.open("mapy/wysokosci.txt");
 		if (!file.is_open()) {
 			Logger::log(Logger::ERR + "nie ma wysokosci");
 			exit(0);
@@ -243,7 +240,7 @@ public:
 		long double wys2;
 		fstream zapisywacz, zapisywacz2;
 		zapisywacz.open("modele/0/0.obj", ios::out);
-		zapisywacz2.open("mapy/heights.txt", ios::out);
+		zapisywacz2.open("mapy/wysokosci.txt", ios::out);
 		zapisywacz << "mtllib 0.mtl\no kutas" << endl;
 		int bpp = txt->format->BytesPerPixel;
 

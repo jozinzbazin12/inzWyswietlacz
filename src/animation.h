@@ -2,6 +2,19 @@ class Animation {
 private:
 	unsigned steps = 0;
 	float emptyArray[3] = { 0, 0, 0 };
+	void newStep() {
+		steps++;
+		if (position.size() != steps) {
+			position.push_back(emptyArray);
+		}
+		if (rotation.size() != steps) {
+			rotation.push_back(emptyArray);
+		}
+		if (scale.size() != steps) {
+			scale.push_back(emptyArray);
+		}
+	}
+
 public:
 	GLfloat startX, startY, startZ;
 	GLfloat startSx, startSy, startSz;
@@ -39,6 +52,7 @@ public:
 	}
 
 	void animuj(Entity *ob) {
+		Logger::log(name);
 		ob->px += position[actualStep][0] * speed[actualStep];
 		ob->py += position[actualStep][1] * speed[actualStep];
 		ob->pz += position[actualStep][2] * speed[actualStep];
@@ -123,19 +137,10 @@ public:
 			}
 
 			if (data == "#") {
-				steps++;
-				if (position.size() != steps) {
-					position.push_back(emptyArray);
-				}
-				if (rotation.size() != steps) {
-					rotation.push_back(emptyArray);
-				}
-				if (scale.size() != steps) {
-					scale.push_back(emptyArray);
-				}
+				newStep();
 			}
 		}
-		steps++;
+		newStep();
 		counter = 1 / speed[0];
 	}
 };
