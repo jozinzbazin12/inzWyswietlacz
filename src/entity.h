@@ -20,9 +20,14 @@ public:
 	animacja *anim;
 	bool alwaysDisplay;
 	static vector<Entity*> allObjects;
-	static vector<Entity*> sortedObjects;
-	static vector<Entity*> sortedTransparentObjects;
+	static vector<Entity*> solidObjectsToDisplay;
+	static vector<Entity*> transparentObjectsToDisplay;
 
+	static bool compare(Entity* e1, Entity* e2) {
+		int val = pow(posX - e1->px, 2) + pow(posY - e1->py, 2) + pow(posZ - e1->pz, 2);
+		int val2 = pow(posX - e2->px, 2) + pow(posY - e2->py, 2) + pow(posZ - e2->pz, 2);
+		return val > val2;
+	}
 	void recalculate() {
 		for (int i = 0; i < 3; i++)
 			for (int j = 0; j < 3; j++) {
@@ -131,14 +136,14 @@ public:
 				allObjects[i]->parent = parent;
 			}
 		}
-		for (unsigned i = 0; i < sortedObjects.size(); i++) {
-			if (sortedObjects[i] == this) {
-				sortedObjects[i] = NULL;
+		for (unsigned i = 0; i < solidObjectsToDisplay.size(); i++) {
+			if (solidObjectsToDisplay[i] == this) {
+				solidObjectsToDisplay[i] = NULL;
 			}
 		}
-		for (unsigned i = 0; i < sortedTransparentObjects.size(); i++) {
-			if (sortedTransparentObjects[i] == this) {
-				sortedTransparentObjects[i] = NULL;
+		for (unsigned i = 0; i < transparentObjectsToDisplay.size(); i++) {
+			if (transparentObjectsToDisplay[i] == this) {
+				transparentObjectsToDisplay[i] = NULL;
 			}
 		}
 		object->counter--;
@@ -146,7 +151,7 @@ public:
 };
 
 vector<Entity*> Entity::allObjects;
-vector<Entity*> Entity::sortedObjects;
-vector<Entity*> Entity::sortedTransparentObjects;
+vector<Entity*> Entity::solidObjectsToDisplay;
+vector<Entity*> Entity::transparentObjectsToDisplay;
 
 #endif /* SRC_ENTITY_H_ */

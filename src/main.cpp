@@ -18,8 +18,9 @@
 #include <vector>
 #include <list>
 #include <array>
+#include <algorithm>
 using namespace std;
-#include "Logger.h"
+#include "logger.h"
 ////////////////////////////////////////////
 void DrawString(double x, double y, double z, string string);
 string otworz(string nazwa, string koniec);
@@ -53,7 +54,7 @@ double predkosc = 10;
 int licznik = 0;
 int ramki = 0;
 bool obracamy = false;
-GLfloat px = -5, py = 5, pz = 11;
+GLfloat posX = -5, posY = 5, posZ = 11;
 int ileanimacji = 0;
 int wys = 700, szer = 1300;
 long long unsigned totalVerticesCount = 0;
@@ -647,9 +648,9 @@ public:
 		if (Entity::allObjects[i]->alwaysDisplay)
 			return true;
 		if (ktorykutas == -1) {
-			px2 = px;
-			py2 = py;
-			pz2 = pz;
+			px2 = posX;
+			py2 = posY;
+			pz2 = posZ;
 		} else {
 			pz2 = kamera;
 			const double a = 0.01745329251;
@@ -798,19 +799,19 @@ void display(void) {
 	glRotatef(cy, 0, 1, 0);
 
 	if (ktorykutas == -1)
-		glTranslatef(-px, -py, -pz);
+		glTranslatef(-posX, -posY, -posZ);
 	else {
 		if (obracamy) {
 			wybrany->rx = cx2;
 			wybrany->ry = -cy2;
 			wybrany->rz = cz2;
 		}
-		wybrany->px = px;
-		wybrany->py = py;
-		wybrany->pz = pz;
-		GLfloat p1 = px;
-		GLfloat p2 = py;
-		GLfloat p3 = pz;
+		wybrany->px = posX;
+		wybrany->py = posY;
+		wybrany->pz = posZ;
+		GLfloat p1 = posX;
+		GLfloat p2 = posY;
+		GLfloat p3 = posZ;
 		Entity *kutas = wybrany->parent;
 		while (kutas) {
 			p1 += kutas->px;
@@ -822,21 +823,16 @@ void display(void) {
 	}
 	glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
 
-//	glDisable(GL_BLEND);
-//	for (unsigned i = 0; i < Entity::sortedObjects.size(); i++)
-//		if (Entity::sortedObjects[i]) {
-//			rysuj(Entity::sortedObjects[i]);
-//		}
-//	glEnable(GL_BLEND);
-//	for (unsigned i = 0; i < Entity::sortedTransparentObjects.size(); i++) {
-//		if (Entity::sortedTransparentObjects[i]) {
-//			rysuj(Entity::sortedTransparentObjects[i]);
-//		}
-//
-		for (unsigned i = 0; i < Entity::allObjects.size(); i++) {
-			if (Entity::allObjects[i]) {
-				rysuj(Entity::allObjects[i]);
-			}
+	glDisable(GL_BLEND);
+	for (unsigned i = 0; i < Entity::solidObjectsToDisplay.size(); i++)
+		if (Entity::solidObjectsToDisplay[i]) {
+			rysuj(Entity::solidObjectsToDisplay[i]);
+		}
+	glEnable(GL_BLEND);
+	for (unsigned i = 0; i < Entity::transparentObjectsToDisplay.size(); i++) {
+		if (Entity::transparentObjectsToDisplay[i]) {
+			rysuj(Entity::transparentObjectsToDisplay[i]);
+		}
 	}
 
 	//for(int i=0; i<ileobiektow; i++) rysuj(Entity::allObjects[i]);
@@ -850,31 +846,31 @@ void klawiaturka(unsigned char key, int x, int y) {
 		break;
 
 	case 'w':
-		pz -= modelview[10] * predkosc;
-		px -= modelview[2] * predkosc;
+		posZ -= modelview[10] * predkosc;
+		posX -= modelview[2] * predkosc;
 		break;
 
 	case 's':
-		pz += modelview[10] * predkosc;
-		px += modelview[2] * predkosc;
+		posZ += modelview[10] * predkosc;
+		posX += modelview[2] * predkosc;
 		break;
 
 	case 'd':
-		px += modelview[10] * predkosc;
-		pz -= modelview[2] * predkosc;
+		posX += modelview[10] * predkosc;
+		posZ -= modelview[2] * predkosc;
 		break;
 
 	case 'a':
-		px -= modelview[10] * predkosc;
-		pz += modelview[2] * predkosc;
+		posX -= modelview[10] * predkosc;
+		posZ += modelview[2] * predkosc;
 		break;
 
 	case 'q':
-		py += predkosc;
+		posY += predkosc;
 		break;
 
 	case 'e':
-		py -= predkosc;
+		posY -= predkosc;
 		break;
 
 	case 'o':
@@ -987,9 +983,9 @@ void klawiaturka(unsigned char key, int x, int y) {
 	case '4':
 		if (ktorykutas > -1) {
 			wybrany = Entity::allObjects[--ktorykutas];
-			px = Entity::allObjects[ktorykutas]->px;
-			py = Entity::allObjects[ktorykutas]->py;
-			pz = Entity::allObjects[ktorykutas]->pz;
+			posX = Entity::allObjects[ktorykutas]->px;
+			posY = Entity::allObjects[ktorykutas]->py;
+			posZ = Entity::allObjects[ktorykutas]->pz;
 			cx2 = -Entity::allObjects[ktorykutas]->rx;
 			cy2 = -Entity::allObjects[ktorykutas]->ry;
 		}
@@ -998,9 +994,9 @@ void klawiaturka(unsigned char key, int x, int y) {
 	case '6':
 		if (ktorykutas < Object::objects.size() - 1) {
 			wybrany = Entity::allObjects[++ktorykutas];
-			px = Entity::allObjects[ktorykutas]->px;
-			py = Entity::allObjects[ktorykutas]->py;
-			pz = Entity::allObjects[ktorykutas]->pz;
+			posX = Entity::allObjects[ktorykutas]->px;
+			posY = Entity::allObjects[ktorykutas]->py;
+			posZ = Entity::allObjects[ktorykutas]->pz;
 			cx2 = -Entity::allObjects[ktorykutas]->rx;
 			cy2 = -Entity::allObjects[ktorykutas]->ry;
 		}
@@ -1207,8 +1203,7 @@ void wczytaj() {
 		}
 	delete[] czyrezydentne;
 
-	ostringstream steam;
-
+	stream.str("");
 	stream << "Tekstur: " << texturesCount << ", rezydentne: " << ilerez << endl;
 	Logger::log(stream.str());
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Object::numerkowybuforXD);
@@ -1277,9 +1272,9 @@ void __cdecl animuj(void *kutas) {
 void __cdecl informuj(void *kutas) {
 	while (1) {
 		stringstream x1, y1, z1, fps, speed, amb, diff, spec, pos, poss, ob, ob2, ileob, ileob2, licznikob;
-		x1 << px;
-		y1 << py;
-		z1 << pz;
+		x1 << posX;
+		y1 << posY;
+		z1 << posZ;
 		amb << light_ambient[0] << " " << light_ambient[1] << " " << light_ambient[2] << " " << light_ambient[3];
 		diff << light_diffuse[0] << " " << light_diffuse[1] << " " << light_diffuse[2] << " " << light_diffuse[3];
 		spec << light_specular[0] << " " << light_specular[1] << " " << light_specular[2] << " " << light_specular[3];
@@ -1287,8 +1282,8 @@ void __cdecl informuj(void *kutas) {
 		poss << "Swiatlo: " << ktoreswiatlo << " Pozycja: " << ktorapos;
 		ob << ktorykutas;
 		ob2 << ktorykutas2;
-		ileob << Object::objects.size();
-		ileob2 << Entity::allObjects.size();
+		ileob << Entity::allObjects.size();
+		ileob2 << Entity::solidObjectsToDisplay.size() + Entity::transparentObjectsToDisplay.size();
 		licznikob << Object::objects[ktorykutas2]->counter;
 		speed << predkosc;
 		if (clock() - licznik >= CLOCKS_PER_SEC) {
@@ -1318,59 +1313,32 @@ void __cdecl informuj(void *kutas) {
 void __cdecl sortuj(void *dupa) {
 	while (1) {
 		unsigned objectsCount = Entity::allObjects.size();
-		vector<Entity*> sortedTransparentObjects;
-		sortedTransparentObjects.reserve(objectsCount);
-		int transparentCounter = 0;
-		vector<Entity*> sortedObjects;
-		sortedObjects.reserve(objectsCount);
-		int objectCounter = 0;
-		bool cycki;
+		vector<Entity*> transparentObjects;
+		//transparentObjects.reserve(objectsCount);
+		vector<Entity*> solidObjects;
+		//solidObjects.reserve(objectsCount);
+		//int objectCounter = 0;
+		//int transparentCounter = 0;
 		for (unsigned i = 0; i < objectsCount; i++) {
-			cycki = false;
-			for (unsigned j = 0; j < Entity::allObjects[i]->object->subobjects.size(); j++)
-				if (Entity::allObjects[i]->object->subobjects[j]->mtl->kat[3] < 1
-						|| (Entity::allObjects[i]->object->subobjects[j]->mtl->tkdt != -1
-								&& Texture::textures[Entity::allObjects[i]->object->subobjects[j]->mtl->tkdt]->transparent)) {
-					cycki = true;
-					break;
-				}
 			if (ciach->nalezy(i)) {
-				if (cycki) {
-					sortedObjects[objectCounter++] = Entity::allObjects[i];
-				} else {
-					sortedTransparentObjects[transparentCounter++] = Entity::allObjects[i];
+
+				for (unsigned j = 0; j < Entity::allObjects[i]->object->subobjects.size(); j++) {
+					if (Entity::allObjects[i]->object->subobjects[j]->mtl->kat[3] < 1
+							|| (Entity::allObjects[i]->object->subobjects[j]->mtl->tkdt != -1
+									&& Texture::textures[Entity::allObjects[i]->object->subobjects[j]->mtl->tkdt]->transparent)) {
+
+						transparentObjects.push_back(Entity::allObjects[i]);
+						break;
+					}
 				}
+				solidObjects.push_back(Entity::allObjects[i]);
 			}
 		}
 
-		if (objectCounter) {
-			float *tab = new float[objectCounter];
-			for (int i = 0; i < objectCounter; i++) {
-				tab[i] = pow(px - sortedObjects[i]->px, 2) + pow(py - sortedObjects[i]->py, 2)
-						+ pow(pz - sortedObjects[i]->pz, 2);
-				if (tab[i] < 0)
-					tab[i] *= -1;
-			}
-			int a;
-
-//			while (objectCounter > 0) {
-//				a = 0;
-//				for (int i = 0; i < objectCounter; i++)
-//					if (tab[a] < tab[i])
-//						a = i;
-//				sortedTransparentObjects[granica2++] = sortedObjects[a];
-//				if (a != objectCounter - 1) {
-//					sortedObjects[a] = sortedObjects[objectCounter - 1];
-//					tab[a] = tab[objectCounter - 1];
-//				}
-//				objectCounter--;
-//
-//			}
-//			delete[] tab;
-		}
-		Entity::sortedTransparentObjects = sortedTransparentObjects;
-		Entity::sortedObjects = sortedObjects;
-		Logger::log("zwykle "+to_string(sortedObjects.size())+",  "+ to_string(sortedTransparentObjects.size()));
+		sort(transparentObjects.begin(), transparentObjects.end(), Entity::compare);
+		Logger::log("zwykle " + to_string(solidObjects.size()) + ",  " + to_string(transparentObjects.size()));
+		Entity::transparentObjectsToDisplay = transparentObjects;
+		Entity::solidObjectsToDisplay = solidObjects;
 		Sleep(100);
 	}
 }
