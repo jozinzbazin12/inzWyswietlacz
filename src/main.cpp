@@ -3,8 +3,6 @@
 #define _HAS_ITERATOR_DEBUGGING 0
 #define coileklatek 10
 #define ilekrokowwanimacji 30
-#define ile 200
-#define ileobj 100
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <fstream>
@@ -31,19 +29,15 @@ long long unsigned sprawdz_rozmiar(string nazwa);
 class animacja;
 class Object;
 class Subobject;
-class obiekt_final;
+class Entity;
 class Material;
 class MaterialLib;
 class obcinanie;
 class Texture;
 ////////////////////////////////////////////
 obcinanie *ciach;
-obiekt_final * obiekty_f[1000];
-obiekt_final ** obiekty_posortowane;
-obiekt_final * obiekty_animowane[100];
-obiekt_final * wybrany;
-MaterialLib *materialy[ileobj];
-Object *obiekty[ileobj];
+Entity * obiekty_animowane[100];
+Entity * wybrany;
 tagPOINT *mysz_pozycja;
 float modelview[16];
 bool czywsp = true;
@@ -60,9 +54,6 @@ int licznik = 0;
 int ramki = 0;
 bool obracamy = false;
 GLfloat px = -5, py = 5, pz = 11;
-int ileobiektow = 0;
-int ileobiektow2 = 0;
-int ilematerialow = 0;
 int ileanimacji = 0;
 int wys = 700, szer = 1300;
 long long unsigned totalVerticesCount = 0;
@@ -94,136 +85,7 @@ informacja info;
 #include "material_lib.h"
 #include "subobject.h"
 #include "object.h"
-
-class obiekt_final {
-public:
-	Object *ob;
-	obiekt_final *ociec;
-	GLfloat px, py, pz;
-	GLfloat sx, sy, sz;
-	GLfloat rx, ry, rz;
-	GLfloat min[3][3], max[3][3];
-	GLfloat pomin[3][3], pomax[3][3];
-	animacja *anim;
-	bool zawsze;
-	static unsigned int granica1, granica2;
-
-	void zrup() {
-		for (int i = 0; i < 3; i++)
-			for (int j = 0; j < 3; j++) {
-				pomin[i][j] = min[i][j];
-				pomax[i][j] = max[i][j];
-			}
-		update_obrot();
-		update_skale();
-		update_przesuniecie();
-	}
-
-	void update_obrot() {
-		const float a = 0.01745329251;
-		if (ry)
-			for (int i = 0; i < 3; i++) {
-				pomin[i][2] = pomin[i][0] * cos(a * ry) - pomin[i][2] * sin(a * ry);
-				pomin[i][0] = pomin[i][0] * sin(a * ry) + pomin[i][2] * sin(a * ry);
-				pomax[i][2] = pomax[i][0] * cos(a * ry) - pomax[i][2] * sin(a * ry);
-				pomax[i][0] = pomax[i][0] * sin(a * ry) + pomin[i][2] * sin(a * ry);
-			}
-		if (rx)
-			for (int i = 0; i < 3; i++) {
-				pomin[i][1] = pomin[i][1] * cos(a * rx) - pomin[i][2] * sin(a * rx);
-				pomin[i][2] = pomin[i][1] * sin(a * rx) + pomin[i][2] * sin(a * rx);
-				pomax[i][1] = pomax[i][1] * cos(a * rx) - pomax[i][2] * sin(a * rx);
-				pomax[i][2] = pomax[i][1] * sin(a * rx) + pomin[i][2] * sin(a * rx);
-			}
-		if (rz)
-			for (int i = 0; i < 3; i++) {
-				pomin[i][0] = pomin[i][0] * cos(a * rz) - pomin[i][1] * sin(a * rz);
-				pomin[i][1] = pomin[i][0] * sin(a * rz) + pomin[i][1] * sin(a * rz);
-				pomax[i][0] = pomax[i][0] * cos(a * rz) - pomax[i][1] * sin(a * rz);
-				pomax[i][1] = pomax[i][0] * sin(a * rz) + pomax[i][1] * sin(a * rz);
-			}
-
-	}
-
-	void update_przesuniecie() {
-		for (int i = 0; i < 3; i++) {
-			pomin[i][0] += px;
-			pomax[i][0] += px;
-			pomin[i][1] += py;
-			pomax[i][1] += py;
-			pomin[i][2] += pz;
-			pomax[i][2] += pz;
-		}
-	}
-
-	void update_skale() {
-		for (int i = 0; i < 3; i++) {
-			pomin[i][0] *= sx;
-			pomax[i][0] *= sx;
-			pomin[i][1] *= sy;
-			pomax[i][1] *= sy;
-			pomin[i][2] *= sz;
-			pomax[i][2] *= sz;
-		}
-	}
-	void dodaj_przesuniecie(GLfloat px, GLfloat py, GLfloat pz) {
-		this->px = px;
-		this->py = py;
-		this->pz = pz;
-	}
-
-	void dodaj_skale(GLfloat sx, GLfloat sy, GLfloat sz) {
-		this->sx = sx;
-		this->sy = sy;
-		this->sz = sz;
-
-	}
-
-	void dodaj_obrot(GLfloat rx, GLfloat ry, GLfloat rz) {
-		this->rx = rx;
-		this->ry = ry;
-		this->rz = rz;
-	}
-
-	obiekt_final(Object *ktoryobiekt) {
-		zawsze = false;
-		anim = NULL;
-		ociec = NULL;
-		ob = ktoryobiekt;
-		for (int i = 0; i < 3; i++)
-			for (int j = 0; j < 3; j++)
-				this->min[i][j] = ob->min[i][j];
-		for (int i = 0; i < 3; i++)
-			for (int j = 0; j < 3; j++)
-				this->max[i][j] = ob->max[i][j];
-		this->px = 0;
-		this->py = 0;
-		this->pz = 0;
-		this->sx = 1;
-		this->sy = 1;
-		this->sz = 1;
-		this->rx = 0;
-		this->ry = 0;
-		this->rz = 0;
-		ob->counter++;
-		Logger::log("Tworze obiekt " + this->ob->name, true);
-	}
-
-	~obiekt_final() {
-		Logger::log("Usuwam obiekt " + this->ob->name, true);
-		for (int i = 0; i < ileobiektow; i++)
-			if (obiekty_f[i]->ociec == this)
-				obiekty_f[i]->ociec = ociec;
-		for (unsigned i = 0; i < obiekt_final::granica2; i++)
-			if (obiekty_posortowane[i] == this)
-				obiekty_posortowane[i] = NULL;
-		ob->counter--;
-		ileobiektow--;
-	}
-};
-GLuint Object::numerkowybuforXD;
-unsigned int obiekt_final::granica1 = 0;
-unsigned int obiekt_final::granica2 = 0;
+#include "entity.h"
 
 class animacja {
 public:
@@ -257,7 +119,7 @@ public:
 		r[ilekrokow][2] = c;
 	}
 
-	void animuj(obiekt_final *ob) {
+	void animuj(Entity *ob) {
 		if (ktorykrok != -1) {
 			ob->px += p[ktorykrok][0] * speed[ktorykrok];
 			ob->py += p[ktorykrok][1] * speed[ktorykrok];
@@ -290,7 +152,7 @@ public:
 
 	}
 
-	animacja(string sciezka, string nazwa, obiekt_final *ob) {
+	animacja(string sciezka, string nazwa, Entity *ob) {
 		for (int i = 0; i < ilekrokowwanimacji; i++)
 			for (int j = 0; j < 3; j++) {
 				p[i][j] = 0;
@@ -538,7 +400,7 @@ public:
 					stosunekx = (float) wymx / (float) map_x;
 					stosunekz = (float) wymz / (float) map_z;
 					stosuneky = 2;
-					obiekty[ileobiektow2++] = new Object("0", true);
+					Object::objects.push_back(new Object("0", true));
 				}
 
 			}
@@ -716,7 +578,7 @@ public:
 		for (int i = 0; i < v; i++)
 			delete[] vec[i];
 		delete[] vec;
-		obiekty[ileobiektow2++] = new Object("0", true);
+		Object::objects.push_back(new Object("0", true));
 		zapisywacz.close();
 	}
 
@@ -782,7 +644,7 @@ public:
 	}
 
 	bool nalezy(int i) {
-		if (obiekty_f[i]->zawsze)
+		if (Entity::allObjects[i]->alwaysDisplay)
 			return true;
 		if (ktorykutas == -1) {
 			px2 = px;
@@ -801,10 +663,10 @@ public:
 			pz2 += wybrany->pz;
 
 		}
-		obiekty_f[i]->zrup();
-		if (sprawdzZ(obiekty_f[i]->pomin[2], obiekty_f[i]->pomax[2])
-				&& sprawdzY(obiekty_f[i]->pomin[1], obiekty_f[i]->pomax[1])
-				&& sprawdzX(obiekty_f[i]->pomin[0], obiekty_f[i]->pomax[0]))
+		Entity::allObjects[i]->recalculate();
+		if (sprawdzZ(Entity::allObjects[i]->pomin[2], Entity::allObjects[i]->pomax[2])
+				&& sprawdzY(Entity::allObjects[i]->pomin[1], Entity::allObjects[i]->pomax[1])
+				&& sprawdzX(Entity::allObjects[i]->pomin[0], Entity::allObjects[i]->pomax[0]))
 			return true;
 		return false;
 	}
@@ -831,17 +693,17 @@ void resize(int width, int height) {
 	szer = width;
 }
 
-void rysuj(obiekt_final *ob) {
+void rysuj(Entity *ob) {
 	GLfloat p1 = ob->px;
 	GLfloat p2 = ob->py;
 	GLfloat p3 = ob->pz;
-	obiekt_final *kutas = ob->ociec;
+	Entity *kutas = ob->parent;
 	while (kutas) {
 		//xd<<kutas<<endl;
 		p1 += kutas->px;
 		p2 += kutas->py;
 		p3 += kutas->pz;
-		kutas = kutas->ociec;
+		kutas = kutas->parent;
 	}
 	glPushMatrix();
 	glTranslatef(p1, p2, p3);
@@ -852,8 +714,8 @@ void rysuj(obiekt_final *ob) {
 
 	Material* mtl;
 	Subobject* object;
-	for (unsigned j = 0; j <ob->ob->subobjects.size() ; j++) {
-		object=ob->ob->subobjects[j];
+	for (unsigned j = 0; j < ob->object->subobjects.size(); j++) {
+		object = ob->object->subobjects[j];
 		mtl = object->mtl;
 
 		glShadeModel(mtl->s);
@@ -878,15 +740,15 @@ void rysuj(obiekt_final *ob) {
 			//	glActiveTexture(GL_TEXTURE0);
 			//	glClientActiveTexture( GL_TEXTURE0 );
 			glEnable(GL_TEXTURE_2D);
-			glBindBuffer(GL_ARRAY_BUFFER, Object::buff[object->ktorybuff[2]]);
+			glBindBuffer(GL_ARRAY_BUFFER, Object::buff[object->buffer[2]]);
 			glTexCoordPointer(2, GL_FLOAT, 0, 0);
 			glBindTexture(GL_TEXTURE_2D, Texture::txtid[mtl->tkdt]);
 			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		}
 
-		glBindBuffer(GL_ARRAY_BUFFER, Object::buff[object->ktorybuff[0]]);
+		glBindBuffer(GL_ARRAY_BUFFER, Object::buff[object->buffer[0]]);
 		glVertexPointer(3, GL_FLOAT, 0, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, Object::buff[object->ktorybuff[1]]);
+		glBindBuffer(GL_ARRAY_BUFFER, Object::buff[object->buffer[1]]);
 		glNormalPointer(GL_FLOAT, 0, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glDrawArrays(GL_TRIANGLES, 0, object->vertexCount);
@@ -920,11 +782,11 @@ void display(void) {
 		DrawString(-2.32, 0.75, -2.5, "Pos: " + info.poss);
 		DrawString(-2.32, 0.7, -2.5, "Wszystkie obiekty: " + info.ileob + "   Wyswietlone obiekty: " + info.ileob2);
 		DrawString(-2.32, 0.65, -2.5,
-				"Obiekt: " + info.ob2 + "  " + obiekty[ktorykutas2]->name + "   sztuk: " + info.licznikob);
+				"Obiekt: " + info.ob2 + "  " + Object::objects[ktorykutas2]->name + "   sztuk: " + info.licznikob);
 		if (ktorykutas != -1) {
-			DrawString(-2.32, 0.6, -2.5, "Zaznaczony obiekt: " + info.ob + "  " + wybrany->ob->name);
-			if (obiekty_f[ktorykutas]->ociec)
-				DrawString(-2.32, 0.55, -2.5, "Dziecko obiektu: " + wybrany->ociec->ob->name);
+			DrawString(-2.32, 0.6, -2.5, "Zaznaczony obiekt: " + info.ob + "  " + wybrany->object->name);
+			if (Entity::allObjects[ktorykutas]->parent)
+				DrawString(-2.32, 0.55, -2.5, "Dziecko obiektu: " + wybrany->parent->object->name);
 		}
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
@@ -949,28 +811,35 @@ void display(void) {
 		GLfloat p1 = px;
 		GLfloat p2 = py;
 		GLfloat p3 = pz;
-		obiekt_final *kutas = wybrany->ociec;
+		Entity *kutas = wybrany->parent;
 		while (kutas) {
 			p1 += kutas->px;
 			p2 += kutas->py;
 			p3 += kutas->pz;
-			kutas = kutas->ociec;
+			kutas = kutas->parent;
 		}
 		glTranslatef(-p1, -p2 - 5, -p3);
 	}
 	glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
 
-	glDisable(GL_BLEND);
-	for (unsigned i = 0; i < obiekt_final::granica1; i++)
-		if (obiekty_posortowane[i])
-			rysuj(obiekty_posortowane[i]);
-	glEnable(GL_BLEND);
-	for (unsigned i = obiekt_final::granica1; i < obiekt_final::granica2; i++) {
-		if (obiekty_posortowane[i])
-			rysuj(obiekty_posortowane[i]);
+//	glDisable(GL_BLEND);
+//	for (unsigned i = 0; i < Entity::sortedObjects.size(); i++)
+//		if (Entity::sortedObjects[i]) {
+//			rysuj(Entity::sortedObjects[i]);
+//		}
+//	glEnable(GL_BLEND);
+//	for (unsigned i = 0; i < Entity::sortedTransparentObjects.size(); i++) {
+//		if (Entity::sortedTransparentObjects[i]) {
+//			rysuj(Entity::sortedTransparentObjects[i]);
+//		}
+//
+		for (unsigned i = 0; i < Entity::allObjects.size(); i++) {
+			if (Entity::allObjects[i]) {
+				rysuj(Entity::allObjects[i]);
+			}
 	}
 
-	//for(int i=0; i<ileobiektow; i++) rysuj(obiekty_f[i]);
+	//for(int i=0; i<ileobiektow; i++) rysuj(Entity::allObjects[i]);
 	glutSwapBuffers();
 }
 
@@ -1094,65 +963,65 @@ void klawiaturka(unsigned char key, int x, int y) {
 		break;
 
 	case '8':
-		obiekty_f[ktorykutas]->sx += predkosc;
-		obiekty_f[ktorykutas]->sy += predkosc;
-		obiekty_f[ktorykutas]->sz += predkosc;
-		if (obiekty_f[ktorykutas]->anim) {
-			obiekty_f[ktorykutas]->anim->startsx += predkosc;
-			obiekty_f[ktorykutas]->anim->startsy += predkosc;
-			obiekty_f[ktorykutas]->anim->startsz += predkosc;
+		Entity::allObjects[ktorykutas]->sx += predkosc;
+		Entity::allObjects[ktorykutas]->sy += predkosc;
+		Entity::allObjects[ktorykutas]->sz += predkosc;
+		if (Entity::allObjects[ktorykutas]->anim) {
+			Entity::allObjects[ktorykutas]->anim->startsx += predkosc;
+			Entity::allObjects[ktorykutas]->anim->startsy += predkosc;
+			Entity::allObjects[ktorykutas]->anim->startsz += predkosc;
 		}
 		break;
 
 	case '5':
-		obiekty_f[ktorykutas]->sx -= predkosc;
-		obiekty_f[ktorykutas]->sy -= predkosc;
-		obiekty_f[ktorykutas]->sz -= predkosc;
-		if (obiekty_f[ktorykutas]->anim) {
-			obiekty_f[ktorykutas]->anim->startsx -= predkosc;
-			obiekty_f[ktorykutas]->anim->startsy -= predkosc;
-			obiekty_f[ktorykutas]->anim->startsz -= predkosc;
+		Entity::allObjects[ktorykutas]->sx -= predkosc;
+		Entity::allObjects[ktorykutas]->sy -= predkosc;
+		Entity::allObjects[ktorykutas]->sz -= predkosc;
+		if (Entity::allObjects[ktorykutas]->anim) {
+			Entity::allObjects[ktorykutas]->anim->startsx -= predkosc;
+			Entity::allObjects[ktorykutas]->anim->startsy -= predkosc;
+			Entity::allObjects[ktorykutas]->anim->startsz -= predkosc;
 		}
 		break;
 
 	case '4':
 		if (ktorykutas > -1) {
-			wybrany = obiekty_f[--ktorykutas];
-			px = obiekty_f[ktorykutas]->px;
-			py = obiekty_f[ktorykutas]->py;
-			pz = obiekty_f[ktorykutas]->pz;
-			cx2 = -obiekty_f[ktorykutas]->rx;
-			cy2 = -obiekty_f[ktorykutas]->ry;
+			wybrany = Entity::allObjects[--ktorykutas];
+			px = Entity::allObjects[ktorykutas]->px;
+			py = Entity::allObjects[ktorykutas]->py;
+			pz = Entity::allObjects[ktorykutas]->pz;
+			cx2 = -Entity::allObjects[ktorykutas]->rx;
+			cy2 = -Entity::allObjects[ktorykutas]->ry;
 		}
 		break;
 
 	case '6':
-		if (ktorykutas < ileobiektow - 1) {
-			wybrany = obiekty_f[++ktorykutas];
-			px = obiekty_f[ktorykutas]->px;
-			py = obiekty_f[ktorykutas]->py;
-			pz = obiekty_f[ktorykutas]->pz;
-			cx2 = -obiekty_f[ktorykutas]->rx;
-			cy2 = -obiekty_f[ktorykutas]->ry;
+		if (ktorykutas < Object::objects.size() - 1) {
+			wybrany = Entity::allObjects[++ktorykutas];
+			px = Entity::allObjects[ktorykutas]->px;
+			py = Entity::allObjects[ktorykutas]->py;
+			pz = Entity::allObjects[ktorykutas]->pz;
+			cx2 = -Entity::allObjects[ktorykutas]->rx;
+			cy2 = -Entity::allObjects[ktorykutas]->ry;
 		}
 		break;
 
 	case '7':
 		if (ktorykutas != -1) {
-			delete obiekty_f[ktorykutas];
-			obiekty_f[ktorykutas] = obiekty_f[ileobiektow];
-			obiekty_f[ileobiektow] = NULL;
+			delete Entity::allObjects[ktorykutas];
+			Entity::allObjects[ktorykutas] = Entity::allObjects[Entity::allObjects.size()];
+			Entity::allObjects[Entity::allObjects.size()] = NULL;
 			ktorykutas = -1;
 			wybrany = NULL;
 		}
 		break;
 
 	case '9':
-		obiekty_f[ileobiektow++] = new obiekt_final(obiekty[ktorykutas2]);
+		Entity::allObjects.push_back(new Entity(Object::objects[ktorykutas2]));
 		if (ktorykutas != -1)
-			obiekty_f[ileobiektow - 1]->ociec = obiekty_f[ktorykutas];
-		ktorykutas = ileobiektow - 1;
-		wybrany = obiekty_f[ktorykutas];
+			Entity::allObjects[Entity::allObjects.size() - 1]->parent = Entity::allObjects[ktorykutas];
+		ktorykutas = Entity::allObjects.size() - 1;
+		wybrany = Entity::allObjects[ktorykutas];
 		break;
 
 	case '1':
@@ -1161,7 +1030,7 @@ void klawiaturka(unsigned char key, int x, int y) {
 		break;
 
 	case '3':
-		if (ktorykutas2 < ileobiektow2 - 1)
+		if (ktorykutas2 < Object::objects.size() - 1)
 			ktorykutas2++;
 		break;
 
@@ -1248,7 +1117,7 @@ void wczytaj() {
 	while (!wczytywacz2.eof()) {
 		wczytywacz2 >> nazwaobiektu;
 		Logger::log(nazwaobiektu);
-		obiekty[ileobiektow2++] = new Object(nazwaobiektu);
+		Object::objects.push_back(new Object(nazwaobiektu));
 	}
 	wczytywacz2.close();
 	mapa *map = new mapa();
@@ -1259,62 +1128,63 @@ void wczytaj() {
 	}
 
 	while (!wczytywacz.eof()) {
+		Entity* object;
 		wczytywacz >> nazwaobiektu;
 		if (nazwaobiektu == "o") {
 			wczytywacz >> x;
-			if (x >= ileobiektow2) {
+			if (x >= Object::objects.size()) {
 				Logger::log(Logger::ERR + "nie ma tyle obiektow");
 				exit(0);
 			}
-			obiekty_f[ileobiektow++] = new obiekt_final(obiekty[x]);
-
+			object = new Entity(Object::objects[x]);
+			Entity::allObjects.push_back(object);
 		}
 
 		if (nazwaobiektu == "p") {
 			wczytywacz >> a >> b >> c;
 			d = mapa::oblicz_wysokosc(a, b, c);
 			//xd << "p " << a << " " << d << " " << c << endl;
-			obiekty_f[ileobiektow - 1]->dodaj_przesuniecie(a, d, c);
+			object->setPosition(a, d, c);
 		}
 
 		if (nazwaobiektu == "pc") {
 			wczytywacz >> a >> b >> c;
 			//xd << "pc " << a << " " << b << " " << c << endl;
-			obiekty_f[ileobiektow - 1]->dodaj_przesuniecie(a, b, c);
+			object->setPosition(a, b, c);
 		}
 
 		if (nazwaobiektu == "s") {
 			wczytywacz >> a >> b >> c;
 			//xd << "s " << a << " " << b << " " << c << endl;
-			obiekty_f[ileobiektow - 1]->dodaj_skale(a, b, c);
+			object->setScale(a, b, c);
 		}
 
 		if (nazwaobiektu == "r") {
 			wczytywacz >> a >> b >> c;
 			//xd << "r " << a << " " << b << " " << c << endl;
-			obiekty_f[ileobiektow - 1]->dodaj_obrot(a, b, c);
+			object->SetRotation(a, b, c);
 		}
 
 		if (nazwaobiektu == "d") {
 			wczytywacz >> x;
 			//xd << "d " << x << endl;
-			obiekty_f[ileobiektow - 1]->ociec = obiekty_f[ileobiektow - 1 + x];
+			object->parent = Entity::allObjects[Entity::allObjects.size() - 1 + x];
 		}
 
 		if (nazwaobiektu == "a") {
 			wczytywacz >> nazwaobiektu;
 			//xd << "animacja " + nazwaobiektu << endl;
-			obiekty_f[ileobiektow - 1]->anim = new animacja("modele/" + obiekty_f[ileobiektow - 1]->ob->name,
-					nazwaobiektu, obiekty_f[ileobiektow - 1]);
-			obiekty_animowane[ileanimacji++] = obiekty_f[ileobiektow - 1];
+			object->anim = new animacja("modele/" + object->object->name, nazwaobiektu, object);
+			obiekty_animowane[ileanimacji++] = object;
 		}
 		if (nazwaobiektu == "v") {
-			obiekty_f[ileobiektow - 1]->zawsze = true;
+			object->alwaysDisplay = true;
 		}
 	}
-	obiekty_f[ileobiektow++] = new obiekt_final(obiekty[ileobiektow2 - 1]);
-	obiekty_f[ileobiektow - 1]->zawsze = true;
-	obiekty_f[ileobiektow - 1]->dodaj_skale(mapa::stosunekx, mapa::stosuneky, mapa::stosunekz);
+	Entity* mapObject = new Entity(Object::objects.back());
+	Entity::allObjects.push_back(mapObject);
+	mapObject->alwaysDisplay = true;
+	mapObject->setScale(mapa::stosunekx, mapa::stosuneky, mapa::stosunekz);
 	SDL_Quit();
 
 	ostringstream stream;
@@ -1322,7 +1192,8 @@ void wczytaj() {
 	stream << "Utworzono " << totalVerticesCount << " trojkatow";
 	Logger::log(stream.str());
 	stream.str("");
-	stream << "Wczytanych obiektow: " << ileobiektow2 << ", wyswietlonych obiektow:" << ileobiektow;
+	stream << "Wczytanych obiektow: " << Object::objects.size() << ", wyswietlonych obiektow:"
+			<< Entity::allObjects.size();
 	Logger::log(stream.str());
 
 	int ilerez = 0;
@@ -1344,35 +1215,41 @@ void wczytaj() {
 }
 
 void zapisz() {
-	fstream zapisywacz;
-	zapisywacz.open("ustawienia/dupa.txt", ios::out);
-	int j;
-	for (int i = 0; i < ileobiektow; i++) {
-		for (j = 0; j < ileobiektow2; j++)
-			if (obiekty_f[i]->ob == obiekty[j])
-				break;
-		zapisywacz << endl << "o " << j << endl;
-		if (obiekty_f[i]->anim) {
-			if (obiekty_f[i]->anim->startpx || obiekty_f[i]->anim->startpy || obiekty_f[i]->anim->startpz)
-				zapisywacz << "p " << obiekty_f[i]->anim->startpx << " " << obiekty_f[i]->anim->startpy << " "
-						<< obiekty_f[i]->anim->startpz << endl;
-			if (obiekty_f[i]->anim->startsx || obiekty_f[i]->anim->startsy || obiekty_f[i]->anim->startsz)
-				zapisywacz << "s " << obiekty_f[i]->anim->startsx << " " << obiekty_f[i]->anim->startsy << " "
-						<< obiekty_f[i]->anim->startsz << endl;
-			if (obiekty_f[i]->anim->startrx || obiekty_f[i]->anim->startry || obiekty_f[i]->anim->startrz)
-				zapisywacz << "r " << obiekty_f[i]->anim->startrx << " " << obiekty_f[i]->anim->startry << " "
-						<< obiekty_f[i]->anim->startrz << endl;
-			zapisywacz << "a" << obiekty_f[i]->anim->nazwa << endl;
-		} else {
-			if (obiekty_f[i]->px || obiekty_f[i]->py || obiekty_f[i]->pz)
-				zapisywacz << "p " << obiekty_f[i]->px << " " << obiekty_f[i]->py << " " << obiekty_f[i]->pz << endl;
-			if (obiekty_f[i]->sx || obiekty_f[i]->sy || obiekty_f[i]->sz)
-				zapisywacz << "s " << obiekty_f[i]->sx << " " << obiekty_f[i]->sy << " " << obiekty_f[i]->sz << endl;
-			if (obiekty_f[i]->rx || obiekty_f[i]->ry || obiekty_f[i]->rz)
-				zapisywacz << "r " << obiekty_f[i]->rx << " " << obiekty_f[i]->ry << " " << obiekty_f[i]->rz << endl;
-		}
-
-	}
+//	fstream zapisywacz;
+//	zapisywacz.open("ustawienia/dupa.txt", ios::out);
+//	int j;
+//	for (int i = 0; i < ileobiektow; i++) {
+//		for (j = 0; j < ileobiektow2; j++)
+//			if (Entity::allObjects[i]->object == obiekty[j])
+//				break;
+//		zapisywacz << endl << "o " << j << endl;
+//		if (Entity::allObjects[i]->anim) {
+//			if (Entity::allObjects[i]->anim->startpx || Entity::allObjects[i]->anim->startpy
+//					|| Entity::allObjects[i]->anim->startpz)
+//				zapisywacz << "p " << Entity::allObjects[i]->anim->startpx << " "
+//						<< Entity::allObjects[i]->anim->startpy << " " << Entity::allObjects[i]->anim->startpz << endl;
+//			if (Entity::allObjects[i]->anim->startsx || Entity::allObjects[i]->anim->startsy
+//					|| Entity::allObjects[i]->anim->startsz)
+//				zapisywacz << "s " << Entity::allObjects[i]->anim->startsx << " "
+//						<< Entity::allObjects[i]->anim->startsy << " " << Entity::allObjects[i]->anim->startsz << endl;
+//			if (Entity::allObjects[i]->anim->startrx || Entity::allObjects[i]->anim->startry
+//					|| Entity::allObjects[i]->anim->startrz)
+//				zapisywacz << "r " << Entity::allObjects[i]->anim->startrx << " "
+//						<< Entity::allObjects[i]->anim->startry << " " << Entity::allObjects[i]->anim->startrz << endl;
+//			zapisywacz << "a" << Entity::allObjects[i]->anim->nazwa << endl;
+//		} else {
+//			if (Entity::allObjects[i]->px || Entity::allObjects[i]->py || Entity::allObjects[i]->pz)
+//				zapisywacz << "p " << Entity::allObjects[i]->px << " " << Entity::allObjects[i]->py << " "
+//						<< Entity::allObjects[i]->pz << endl;
+//			if (Entity::allObjects[i]->sx || Entity::allObjects[i]->sy || Entity::allObjects[i]->sz)
+//				zapisywacz << "s " << Entity::allObjects[i]->sx << " " << Entity::allObjects[i]->sy << " "
+//						<< Entity::allObjects[i]->sz << endl;
+//			if (Entity::allObjects[i]->rx || Entity::allObjects[i]->ry || Entity::allObjects[i]->rz)
+//				zapisywacz << "r " << Entity::allObjects[i]->rx << " " << Entity::allObjects[i]->ry << " "
+//						<< Entity::allObjects[i]->rz << endl;
+//		}
+//
+//	}
 }
 
 long long unsigned sprawdz_rozmiar(string nazwa) {
@@ -1410,9 +1287,9 @@ void __cdecl informuj(void *kutas) {
 		poss << "Swiatlo: " << ktoreswiatlo << " Pozycja: " << ktorapos;
 		ob << ktorykutas;
 		ob2 << ktorykutas2;
-		ileob << ileobiektow;
-		ileob2 << obiekt_final::granica2;
-		licznikob << obiekty[ktorykutas2]->counter;
+		ileob << Object::objects.size();
+		ileob2 << Entity::allObjects.size();
+		licznikob << Object::objects[ktorykutas2]->counter;
 		speed << predkosc;
 		if (clock() - licznik >= CLOCKS_PER_SEC) {
 			fps << ramki;
@@ -1440,62 +1317,60 @@ void __cdecl informuj(void *kutas) {
 
 void __cdecl sortuj(void *dupa) {
 	while (1) {
-		obiekt_final **obiekty_posortowane2 = new obiekt_final*[ileobiektow];
-		int granica1 = 0;
-		int granica2 = 0;
-		obiekt_final **obiekty_pom;
-		obiekty_pom = new obiekt_final*[ileobiektow];
-		int licznik = 0;
+		unsigned objectsCount = Entity::allObjects.size();
+		vector<Entity*> sortedTransparentObjects;
+		sortedTransparentObjects.reserve(objectsCount);
+		int transparentCounter = 0;
+		vector<Entity*> sortedObjects;
+		sortedObjects.reserve(objectsCount);
+		int objectCounter = 0;
 		bool cycki;
-		for (int i = 0; i < ileobiektow; i++) {
+		for (unsigned i = 0; i < objectsCount; i++) {
 			cycki = false;
-			for (unsigned j = 0; j < obiekty_f[i]->ob->subobjects.size(); j++)
-				if (obiekty_f[i]->ob->subobjects[j]->mtl->kat[3] < 1
-						|| (obiekty_f[i]->ob->subobjects[j]->mtl->tkdt != -1
-								&& Texture::textures[obiekty_f[i]->ob->subobjects[j]->mtl->tkdt]->transparent)) {
+			for (unsigned j = 0; j < Entity::allObjects[i]->object->subobjects.size(); j++)
+				if (Entity::allObjects[i]->object->subobjects[j]->mtl->kat[3] < 1
+						|| (Entity::allObjects[i]->object->subobjects[j]->mtl->tkdt != -1
+								&& Texture::textures[Entity::allObjects[i]->object->subobjects[j]->mtl->tkdt]->transparent)) {
 					cycki = true;
 					break;
 				}
 			if (ciach->nalezy(i)) {
-				if (cycki)
-					obiekty_pom[licznik++] = obiekty_f[i];
-				else
-					obiekty_posortowane2[granica1++] = obiekty_f[i];
+				if (cycki) {
+					sortedObjects[objectCounter++] = Entity::allObjects[i];
+				} else {
+					sortedTransparentObjects[transparentCounter++] = Entity::allObjects[i];
+				}
 			}
 		}
-		granica2 = granica1;
 
-		if (licznik) {
-			float *tab = new float[licznik];
-			for (int i = 0; i < licznik; i++) {
-				tab[i] = pow(px - obiekty_pom[i]->px, 2) + pow(py - obiekty_pom[i]->py, 2)
-						+ pow(pz - obiekty_pom[i]->pz, 2);
+		if (objectCounter) {
+			float *tab = new float[objectCounter];
+			for (int i = 0; i < objectCounter; i++) {
+				tab[i] = pow(px - sortedObjects[i]->px, 2) + pow(py - sortedObjects[i]->py, 2)
+						+ pow(pz - sortedObjects[i]->pz, 2);
 				if (tab[i] < 0)
 					tab[i] *= -1;
 			}
 			int a;
 
-			while (licznik > 0) {
-				a = 0;
-				for (int i = 0; i < licznik; i++)
-					if (tab[a] < tab[i])
-						a = i;
-				obiekty_posortowane2[granica2++] = obiekty_pom[a];
-				if (a != licznik - 1) {
-					obiekty_pom[a] = obiekty_pom[licznik - 1];
-					tab[a] = tab[licznik - 1];
-				}
-				licznik--;
-
-			}
-			delete[] tab;
-			delete[] obiekty_pom;
+//			while (objectCounter > 0) {
+//				a = 0;
+//				for (int i = 0; i < objectCounter; i++)
+//					if (tab[a] < tab[i])
+//						a = i;
+//				sortedTransparentObjects[granica2++] = sortedObjects[a];
+//				if (a != objectCounter - 1) {
+//					sortedObjects[a] = sortedObjects[objectCounter - 1];
+//					tab[a] = tab[objectCounter - 1];
+//				}
+//				objectCounter--;
+//
+//			}
+//			delete[] tab;
 		}
-		obiekt_final::granica1 = granica1;
-		obiekt_final::granica2 = granica2;
-		obiekt_final **lol = obiekty_posortowane;
-		obiekty_posortowane = obiekty_posortowane2;
-		delete[] lol;
+		Entity::sortedTransparentObjects = sortedTransparentObjects;
+		Entity::sortedObjects = sortedObjects;
+		Logger::log("zwykle "+to_string(sortedObjects.size())+",  "+ to_string(sortedTransparentObjects.size()));
 		Sleep(100);
 	}
 }
@@ -1622,7 +1497,6 @@ int main(int argc, char* args[]) {
 	glEnableClientState( GL_VERTEX_ARRAY);
 	glEnableClientState( GL_NORMAL_ARRAY);
 	ciach = new obcinanie();
-	obiekty_posortowane = new obiekt_final*[1000];
 	hThread = (HANDLE) _beginthread(animuj, 0, NULL);
 	hThread2 = (HANDLE) _beginthread(informuj, 0, NULL);
 	hThread3 = (HANDLE) _beginthread(sortuj, 0, NULL);

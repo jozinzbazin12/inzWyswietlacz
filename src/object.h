@@ -20,6 +20,7 @@ public:
 	MaterialLib *mtl;
 	static vector<GLuint> buff;
 	static GLuint numerkowybuforXD; //todo
+	static vector<Object*> objects;
 	string name;
 	GLfloat min[3][3];
 	GLfloat max[3][3];
@@ -72,8 +73,9 @@ public:
 		}
 		file >> text;
 		//xd << this->nazwa << endl;
-		materialy[ilematerialow] = new MaterialLib(utnij(this->name) + "/" + text);
-		mtl = materialy[ilematerialow++];
+		MaterialLib* newLib=new MaterialLib(utnij(this->name) + "/" + text);
+		MaterialLib::materials.push_back(newLib);
+		mtl = MaterialLib::materials.back();
 
 		bool first = true;
 		while (!file.eof()) {
@@ -249,5 +251,6 @@ public:
 		delete mtl;
 	}
 };
-
+GLuint Object::numerkowybuforXD;
 vector<GLuint> Object::buff;
+vector<Object*> Object::objects;

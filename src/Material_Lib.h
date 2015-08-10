@@ -10,6 +10,7 @@
 
 class MaterialLib {
 public:
+	static vector<MaterialLib*> materials;
 	vector<Material*> mtl;
 	string path;
 
@@ -112,4 +113,5 @@ public:
 			delete mtl[i];
 	}
 };
+vector<MaterialLib*> MaterialLib::materials;
 #endif /* SRC_MATERIAL_LIB_H_ */
