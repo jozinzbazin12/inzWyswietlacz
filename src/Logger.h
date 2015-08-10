@@ -50,6 +50,8 @@ private:
 		ss << "] - ";
 		return ss.str();
 	}
+	Logger() {
+	}
 
 public:
 	static string LINE;
@@ -63,21 +65,18 @@ public:
 			output = logger->constructTime((long long unsigned) time(0)) + output;
 		}
 		if (newline) {
-			output+="\n";
+			output += "\n";
 		}
 		outfile << output;
 		outfile.flush();
 	}
-
-	Logger(){
-	}
-	~Logger(){
+	~Logger() {
 		outfile.close();
 	}
 };
-Logger* Logger::logger=NULL;
+Logger* Logger::logger = NULL;
 ofstream Logger::outfile("log.txt", ios::out);
 string Logger::LINE = "=========================";
-string Logger::ERR="Stwierdzam b³¹d, bo ";
+string Logger::ERR = "Stwierdzam b³¹d, bo ";
 
 #endif /* SRC_TEKSTURA_H_ */

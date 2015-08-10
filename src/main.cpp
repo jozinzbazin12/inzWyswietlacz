@@ -32,10 +32,9 @@ class Subobject;
 class Entity;
 class Material;
 class MaterialLib;
-class obcinanie;
+class FrustumCuller;
 class Texture;
 ////////////////////////////////////////////
-obcinanie *ciach;
 Entity * obiekty_animowane[100];
 Entity * wybrany;
 tagPOINT *mysz_pozycja;
@@ -87,469 +86,9 @@ informacja info;
 #include "object.h"
 #include "entity.h"
 #include "animation.h"
-class mapa {
-public:
-	static int **wysokosc;
-	static int map_x, map_z;
-	static long double stosunekx;
-	static long double stosuneky;
-	static long double stosunekz;
-	int wymx, wymz;
-	long long unsigned rozmiarmapy;
-
-	int DeleteDirectory(const string &refcstrRootDirectory, bool bDeleteSubdirectories = true) {
-		bool bSubdirectory = false;       // Flag, indicating whether
-										  // subdirectories have been found
-		HANDLE hFile;                       // Handle to directory
-		string strFilePath;                 // Filepath
-		string strPattern;                  // Pattern
-		WIN32_FIND_DATA FileInformation;             // File information
-
-		strPattern = refcstrRootDirectory + "\\*.*";
-		hFile = ::FindFirstFile(strPattern.c_str(), &FileInformation);
-		if (hFile != INVALID_HANDLE_VALUE) {
-			do {
-				if (FileInformation.cFileName[0] != '.') {
-					strFilePath.erase();
-					strFilePath = refcstrRootDirectory + "\\" + FileInformation.cFileName;
-
-					if (FileInformation.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-						if (bDeleteSubdirectories) {
-							// Delete subdirectory
-							int iRC = DeleteDirectory(strFilePath, bDeleteSubdirectories);
-							if (iRC)
-								return iRC;
-						} else
-							bSubdirectory = true;
-					} else {
-						// Set file attributes
-						if (::SetFileAttributes(strFilePath.c_str(),
-						FILE_ATTRIBUTE_NORMAL) == FALSE)
-							return ::GetLastError();
-
-						// Delete file
-						if (::DeleteFile(strFilePath.c_str()) == FALSE)
-							return ::GetLastError();
-					}
-				}
-			} while (::FindNextFile(hFile, &FileInformation) == TRUE);
-
-			// Close handle
-			::FindClose(hFile);
-
-			DWORD dwError = ::GetLastError();
-			if (dwError != ERROR_NO_MORE_FILES)
-				return dwError;
-			else {
-				if (!bSubdirectory) {
-					// Set directory attributes
-					if (::SetFileAttributes(refcstrRootDirectory.c_str(),
-					FILE_ATTRIBUTE_NORMAL) == FALSE)
-						return ::GetLastError();
-				}
-			}
-		}
-
-		return 0;
-	}
-
-	static float oblicz_wysokosc(float a2, float b2, float c2) {
-		int aa, cc;
-		long double a, c;
-		float suma = 0, suma2 = 0;
-		a = (long double) ((a2) / stosunekx) + (long double) (map_x / 2);	//-1
-		c = (long double) ((c2) / stosunekz) + (long double) (map_z / 2);		//0
-		aa = (int) a;
-		cc = (int) c;
-		if (aa < 0 || a >= map_x || cc < 0 || cc >= map_z)
-			return 0;
-		if (a == aa && c == cc)
-			return wysokosc[map_x - aa][cc] * stosuneky + b2;
-
-		if (a == aa) {
-			suma = (wysokosc[map_x - aa][cc] - wysokosc[map_x - aa][cc + 1]) * (c - cc);
-			return (wysokosc[map_x - aa][cc] - suma) * stosuneky + b2;
-		}
-
-		if (c == cc) {
-			suma = (wysokosc[map_x - aa][cc] - wysokosc[map_x - aa + 1][cc]) * (a - aa);
-			return (wysokosc[map_x - aa][cc] - suma) * stosuneky + b2;
-		}
-
-		if (c - cc < 0.5 && a - aa < 0.5) {
-			suma = (wysokosc[map_x - aa][cc] - wysokosc[map_x - aa][cc + 1]) * (c - cc);
-			suma2 = (wysokosc[map_x - aa][cc] - wysokosc[map_x - aa + 1][cc]) * (a - aa);
-			return (wysokosc[map_x - aa][cc] - suma - suma2) * stosuneky + b2;
-		}
-
-		else {
-			suma = (wysokosc[map_x - aa + 1][cc + 1] - wysokosc[map_x - aa + 1][cc]) * (1 - a + aa);
-			suma2 = (wysokosc[map_x - aa + 1][cc + 1] - wysokosc[map_x - aa][cc + 1]) * (1 - c + cc);
-			return (wysokosc[map_x - aa + 1][cc + 1] - suma - suma2) * stosuneky + b2;
-		}
-
-		//return 1000;
-		return 0;
-	}
-
-	void sprawdz_co() {
-		fstream wczytywacz;
-		wczytywacz.open("ustawienia/mapa.txt");
-
-		string nazwa;
-		string tex;
-		string mtl;
-		wczytywacz >> nazwa;
-		wczytywacz >> tex;
-		wczytywacz >> mtl;
-		wczytywacz >> wymx;
-		wczytywacz >> wymz;
-		wczytywacz.close();
-		wczytajmape(nazwa, tex, mtl);
-	}
-
-	void normalizuj(float *t1) {
-		float d = sqrt(t1[0] * t1[0] + t1[1] * t1[1] + t1[2] * t1[2]);
-		if (d != 0) {
-			t1[0] /= d;
-			t1[1] /= d;
-			t1[2] /= d;
-		}
-	}
-
-	void kopiuj(string mtl, string tekstura, string dupaa) {
-		ifstream src(mtl.c_str(), ios::binary);
-		ofstream dst("modele/0/0.mtl", ios::binary);
-		ifstream src2(tekstura.c_str(), ios::binary);
-		ofstream dst2(dupaa.c_str(), ios::binary);
-		dst << src.rdbuf();
-		dst2 << src2.rdbuf();
-		src.close();
-		dst.close();
-		src2.close();
-		dst2.close();
-	}
-
-	void wczytaj_wysokosci() {
-		wysokosc = new int*[map_x];
-		for (int i = 0; i < map_x; i++)
-			wysokosc[i] = new int[map_z];
-		fstream wczytywacz;
-		wczytywacz.open("mapy/wysokosc.txt");
-		if (!wczytywacz.is_open()) {
-			Logger::log(Logger::ERR + "nie ma wysokosci");
-			exit(0);
-		}
-
-		for (int i = 0; i < map_x; i++)
-			for (int j = 0; j < map_z; j++)
-				wczytywacz >> wysokosc[i][j];
-		wczytywacz.close();
-	}
-
-	bool sprawdz(string nazwa) {
-		fstream sprawdzacz, sprawdzacz2;
-		bool tag = false;
-		sprawdzacz.open("modele/0/0.obj");
-		if (!sprawdzacz.is_open())
-			Logger::log("Nie ma mapy, probuje utworzyc");
-		else {
-			sprawdzacz2.open("mapy/ostatnia.txt");
-			if (sprawdzacz2.is_open()) {
-				ifstream sprawdzacz3;
-				long long unsigned a;
-				string b;
-				sprawdzacz2 >> b;
-				sprawdzacz2 >> a;
-				sprawdzacz2 >> map_x;
-				sprawdzacz2 >> map_z;
-				rozmiarmapy = sprawdz_rozmiar(nazwa);
-				if (a == rozmiarmapy && nazwa == b) {
-					Logger::log("Jest zrobiona mapa, wczytuje...");
-					tag = true;
-					wczytaj_wysokosci();
-					stosunekx = (float) wymx / (float) map_x;
-					stosunekz = (float) wymz / (float) map_z;
-					stosuneky = 2;
-					Object::objects.push_back(new Object("0", true));
-				}
-
-			}
-		}
-		sprawdzacz.close();
-		sprawdzacz2.close();
-		return tag;
-	}
-
-	float* zrup_normalny(float t1[3], float t2[3], float t3[3]) {
-		float temp1[3], temp2[3];
-		float *vec = new float[3];
-		for (int k = 0; k < 3; k++) {
-			temp1[k] = t2[k] - t1[k];
-			temp2[k] = t3[k] - t1[k];
-		}
-
-		vec[0] = temp1[1] * temp2[2] - temp1[2] * temp2[1];
-		vec[1] = temp1[2] * temp2[0] - temp1[0] * temp2[2];
-		vec[2] = temp1[0] * temp2[1] - temp1[1] * temp2[0];
-		return vec;
-	}
-
-	void wczytajmape(string nazwa2, string tekstura2, string mtl2) {
-		string nazwa = "mapy/mapy/" + nazwa2;
-		string tekstura = "mapy/tekstury/" + tekstura2;
-		string mtl = "mapy/mtl/" + mtl2;
-		string dupaa = "modele/0/tex.";
-		dupaa += tekstura2[tekstura2.size() - 3];
-		dupaa += tekstura2[tekstura2.size() - 2];
-		dupaa += tekstura2[tekstura2.size() - 1];
-		bool tag = sprawdz(nazwa);
-		if (tag)
-			return;
-		DeleteDirectory("modele/0/");
-		kopiuj(mtl, tekstura, dupaa);
-		Logger::log("Nie ma mapy, probuje utworzyc\n");
-		SDL_Surface *txt = IMG_Load(nazwa.c_str());
-		if (txt == NULL) {
-			Logger::log(Logger::ERR + "chujowy obrazek");
-			exit(0);
-		}
-		stosunekx = (float) wymx / (float) txt->w;
-		stosunekz = (float) wymz / (float) txt->h;
-		stosuneky = 2;
-		map_x = txt->w;
-		map_z = txt->h;
-		unsigned pixel, r, g, b;
-		long double wys2;
-		fstream zapisywacz, zapisywacz2;
-		zapisywacz.open("modele/0/0.obj", ios::out);
-		zapisywacz2.open("mapy/wysokosc.txt", ios::out);
-		zapisywacz << "mtllib 0.mtl\no kutas" << endl;
-		int bpp = txt->format->BytesPerPixel;
-
-		wysokosc = new int*[txt->h];
-		for (int i = 0; i < txt->h; i++)
-			wysokosc[i] = new int[txt->w];
-		float **vec = new float*[(txt->w - 1) * (txt->h - 1) * 2];
-		int v = 0;
-
-		for (int i = 0; i < txt->h; i++)
-			for (int j = 0; j < txt->w; j++) {
-				pixel = ((Uint32*) txt->pixels)[i * (txt->pitch / sizeof(Uint32)) + j * bpp / 4];
-				r = pixel & 0x000000FF;
-				g = pixel & 0x0000FF00;
-				b = pixel & 0x00FF0000;
-				g >>= 8;
-				b >>= 16;
-				wys2 = (r + b + g) / 3;
-				zapisywacz << "v " << txt->h / 2 - i << " " << wys2 - 128 << " " << j - txt->w / 2 << endl; //moze sie zjebac!
-				zapisywacz2 << wys2 - 128 << " ";
-				wysokosc[i][j] = wys2 - 128;
-			}
-		zapisywacz2.close();
-		float t1[3], t2[3], t3[3];
-		for (int i = 0; i < txt->h - 1; i++)
-			for (int j = 0; j < txt->w - 1; j++) {
-				t1[0] = txt->h / 2 - i;
-				t1[1] = wysokosc[i][j];  //i,j
-				t1[2] = j - txt->w / 2;
-
-				t2[0] = txt->h / 2 - i;
-				t2[1] = wysokosc[i][j + 1]; //i,j+1
-				t2[2] = j + 1 - txt->w / 2;
-
-				t3[0] = txt->h / 2 - i - 1;
-				t3[1] = wysokosc[i + 1][j]; //i+1,j
-				t3[2] = j - txt->w / 2;
-
-				vec[v++] = zrup_normalny(t1, t3, t2);
-
-				t1[0] = txt->h / 2 - i - 1;
-				t1[1] = wysokosc[i + 1][j];  //i+1,j
-				t1[2] = j - txt->w / 2;
-
-				t2[0] = txt->h / 2 - i;
-				t2[1] = wysokosc[i][j + 1]; //i,j+1
-				t2[2] = j + 1 - txt->w / 2;
-
-				t3[0] = txt->h / 2 - i - 1;
-				t3[1] = wysokosc[i + 1][j + 1]; //i+1,j+1
-				t3[2] = j + 1 - txt->w / 2;
-
-				vec[v++] = zrup_normalny(t3, t2, t1);
-			}
-		zapisywacz << "vt 0 0" << endl;
-		zapisywacz << "vt 0 2" << endl;
-		zapisywacz << "vt 2 0" << endl;
-		zapisywacz << "vt 2 2" << endl;
-		zapisywacz << "usemtl cipa" << endl;
-		zapisywacz << "s 1" << endl;
-		int przes, przes2;
-		float lol[3];
-		for (int i = 0; i < txt->h; i++)
-			for (int j = 0; j < txt->w; j++) {
-				przes = i * (txt->w - 1) * 2 + j * 2;
-				przes2 = (i - 1) * (txt->w - 1) * 2 + j * 2;
-				lol[0] = 0;
-				lol[1] = 0;
-				lol[2] = 0;
-				if (j != txt->w - 1 && i != txt->h - 1) {
-					lol[0] += vec[przes][0];
-					lol[1] += vec[przes][1];
-					lol[2] += vec[przes][2];
-				}
-
-				if (j != 0 && i != txt->h - 1) {
-					lol[0] += vec[przes - 2][0];
-					lol[1] += vec[przes - 2][1];
-					lol[2] += vec[przes - 2][2];
-
-					lol[0] += vec[przes - 1][0];
-					lol[1] += vec[przes - 1][1];
-					lol[2] += vec[przes - 1][2];
-				}
-
-				if (j != 0 && i != 0) {
-					lol[0] += vec[przes2 - 1][0];
-					lol[1] += vec[przes2 - 1][1];
-					lol[2] += vec[przes2 - 1][2];
-				}
-
-				if (j != txt->w - 1 && i != 0) {
-					lol[0] += vec[przes2][0];
-					lol[1] += vec[przes2][1];
-					lol[2] += vec[przes2][2];
-
-					lol[0] += vec[przes2 + 1][0];
-					lol[1] += vec[przes2 + 1][1];
-					lol[2] += vec[przes2 + 1][2];
-				}
-				normalizuj(lol);
-				zapisywacz << "vn " << lol[0] << " " << lol[1] << " " << lol[2] << endl;
-			}
-
-		for (int i = 0; i < txt->h - 1; i++)
-			for (int j = 1; j < txt->w - 1; j++) {
-				przes = i * txt->w + j;
-				przes2 = (i + 1) * txt->w + j;
-				zapisywacz << "f " << przes << "/1/" << przes << " " << przes + 1 << "/2/" << przes + 1 << " " << przes2
-						<< "/3/" << przes2 << endl;
-				zapisywacz << "f " << przes + 1 << "/2/" << przes + 1 << " " << przes2 << "/3/" << przes2 << " "
-						<< przes2 + 1 << "/4/" << przes2 + 1 << endl;
-			}
-		Logger::log("Utworzono mape");
-		fstream sprawdzacz2;
-		sprawdzacz2.open("mapy/ostatnia.txt", ios::out);
-		sprawdzacz2 << nazwa << endl;
-		sprawdzacz2 << rozmiarmapy << endl;
-		sprawdzacz2 << txt->w << endl;
-		sprawdzacz2 << txt->h;
-		sprawdzacz2.close();
-		SDL_FreeSurface(txt);
-		for (int i = 0; i < v; i++)
-			delete[] vec[i];
-		delete[] vec;
-		Object::objects.push_back(new Object("0", true));
-		zapisywacz.close();
-	}
-
-	mapa() {
-		sprawdz_co();
-	}
-};
-int** mapa::wysokosc;
-int mapa::map_x = 0;
-int mapa::map_z = 0;
-long double mapa::stosunekx;
-long double mapa::stosuneky;
-long double mapa::stosunekz;
-
-class obcinanie {
-public:
-	float fardist;
-	float neardist;
-	float bottom, top;
-	float ar;
-	float tan;
-	float pcx, pcx2, pcy, pcy2, pcz, pcz2;
-	float h, h2;
-	GLfloat px2, py2, pz2;
-
-	void licz(float tab[3], float tab2[3], float &p1, float &p2, float md1, float md2, float md3) {
-		float v[3], v2[3];
-		v[0] = tab[0] - px2;
-		v[1] = tab[1] - py2;
-		v[2] = tab[2] - pz2;
-		p1 = -md1 * v[0] - md2 * v[1] - md3 * v[2];
-		v2[0] = tab2[0] - px2;
-		v2[1] = tab2[1] - py2;
-		v2[2] = tab2[2] - pz2;
-		p2 = -md1 * v2[0] - md2 * v2[1] - md3 * v2[2];
-	}
-
-	bool sprawdzX(float tab[3], float tab2[3]) {
-		h = pcz * tan;
-		h2 = pcz2 * tan;
-		float w = h * 2.0 * ar / (top - bottom);
-		float w2 = h2 * 2.0 * ar / (top - bottom);
-		licz(tab, tab2, pcx, pcx2, modelview[0], modelview[4], modelview[8]);
-		if ((pcx > -w && pcx < w) || (pcx2 > -w2 && pcx2 < w2))
-			return true;
-		return false;
-	}
-
-	bool sprawdzY(float tab[3], float tab2[3]) {
-		h = pcz * tan;
-		h2 = pcz2 * tan;
-		licz(tab, tab2, pcy, pcy2, modelview[1], modelview[5], modelview[9]);
-		if ((pcy > -h && pcy < h) || (pcy2 > -h2 && pcy2 < h2))
-			return true;
-		return false;
-	}
-
-	bool sprawdzZ(float tab[3], float tab2[3]) {
-		licz(tab, tab2, pcz, pcz2, modelview[2], modelview[6], modelview[10]);
-		if ((pcz < fardist && pcz > neardist) || (pcz2 < fardist && pcz2 > neardist))
-			return true;
-		return false;
-	}
-
-	bool nalezy(int i) {
-		if (Entity::allObjects[i]->alwaysDisplay)
-			return true;
-		if (ktorykutas == -1) {
-			px2 = posX;
-			py2 = posY;
-			pz2 = posZ;
-		} else {
-			pz2 = kamera;
-			const double a = 0.01745329251;
-			py2 = -pz2 * sin(-a * cx);
-			pz2 = pz2 * cos(-a * cx);
-			px2 = -pz2 * sin(a * cy);
-			pz2 = pz2 * cos(a * cy);
-
-			px2 += wybrany->px;
-			py2 += wybrany->py + 5;
-			pz2 += wybrany->pz;
-
-		}
-		Entity::allObjects[i]->recalculate();
-		if (sprawdzZ(Entity::allObjects[i]->pomin[2], Entity::allObjects[i]->pomax[2])
-				&& sprawdzY(Entity::allObjects[i]->pomin[1], Entity::allObjects[i]->pomax[1])
-				&& sprawdzX(Entity::allObjects[i]->pomin[0], Entity::allObjects[i]->pomax[0]))
-			return true;
-		return false;
-	}
-
-	obcinanie() {
-		neardist = 1.0;
-		fardist = 100000.0;
-		bottom = -0.5;
-		top = 0.5;
-		tan = (top - bottom) / neardist;
-	}
-};
+#include "map.h"
+#include "frustum_culler.h"
+FrustumCuller* culler;
 
 void resize(int width, int height) {
 	const float ar = (float) width / (float) height / 2;
@@ -557,8 +96,8 @@ void resize(int width, int height) {
 	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glFrustum(-ar, ar, ciach->bottom, ciach->top, ciach->neardist, ciach->fardist);
-	ciach->ar = ar;
+	glFrustum(-ar, ar, culler->bottom, culler->top, culler->neardist, culler->fardist);
+	culler->ar = ar;
 	glMatrixMode(GL_MODELVIEW);
 	wys = height;
 	szer = width;
@@ -897,7 +436,7 @@ void klawiaturka(unsigned char key, int x, int y) {
 		break;
 
 	case '3':
-		if (ktorykutas2 < Object::objects.size() - 1)
+		if (ktorykutas2 < (int)Object::objects.size() - 1)
 			ktorykutas2++;
 		break;
 
@@ -999,7 +538,7 @@ void wczytaj() {
 		wczytywacz >> nazwaobiektu;
 		if (nazwaobiektu == "o") {
 			wczytywacz >> x;
-			if (x >= Object::objects.size()) {
+			if (x >= (int) Object::objects.size()) {
 				Logger::log(Logger::ERR + "nie ma tyle obiektow");
 				exit(0);
 			}
@@ -1009,7 +548,7 @@ void wczytaj() {
 
 		if (nazwaobiektu == "p") {
 			wczytywacz >> a >> b >> c;
-			d = mapa::oblicz_wysokosc(a, b, c);
+			d = mapa::calculateHeight(a, b, c);
 			//xd << "p " << a << " " << d << " " << c << endl;
 			object->setPosition(a, d, c);
 		}
@@ -1187,7 +726,7 @@ void __cdecl sortuj(void *dupa) {
 		vector<Entity*> transparentObjects;
 		vector<Entity*> solidObjects;
 		for (unsigned i = 0; i < objectsCount; i++) {
-			if (ciach->nalezy(i)) {
+			if (culler->isInViewField(i)) {
 				if (Entity::allObjects[i]->object->transparent) {
 					transparentObjects.push_back(Entity::allObjects[i]);
 				} else {
@@ -1300,8 +839,7 @@ int main(int argc, char* args[]) {
 	glutMouseFunc(mysza3);
 	glutMouseWheelFunc(kulko);
 	glutIdleFunc(idle);
-	if (SDL_Init(SDL_INIT_EVERYTHING) == -1
-			| IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF | IMG_INIT_WEBP) == -1) {
+	if (SDL_Init(SDL_INIT_EVERYTHING) == -1){
 		Logger::log(Logger::ERR + "inicjalizacja SDL");
 		exit(0);
 	}
@@ -1324,7 +862,7 @@ int main(int argc, char* args[]) {
 	wczytaj();
 	glEnableClientState( GL_VERTEX_ARRAY);
 	glEnableClientState( GL_NORMAL_ARRAY);
-	ciach = new obcinanie();
+	culler = FrustumCuller::getInstance();
 	hThread = (HANDLE) _beginthread(animuj, 0, NULL);
 	hThread2 = (HANDLE) _beginthread(informuj, 0, NULL);
 	hThread3 = (HANDLE) _beginthread(sortuj, 0, NULL);
