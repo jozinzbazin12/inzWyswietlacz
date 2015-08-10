@@ -834,9 +834,9 @@ void klawiaturka(unsigned char key, int x, int y) {
 		Entity::allObjects[ktorykutas]->sy += predkosc;
 		Entity::allObjects[ktorykutas]->sz += predkosc;
 		if (Entity::allObjects[ktorykutas]->anim) {
-			Entity::allObjects[ktorykutas]->anim->startsx += predkosc;
-			Entity::allObjects[ktorykutas]->anim->startsy += predkosc;
-			Entity::allObjects[ktorykutas]->anim->startsz += predkosc;
+			Entity::allObjects[ktorykutas]->anim->startSx += predkosc;
+			Entity::allObjects[ktorykutas]->anim->startSy += predkosc;
+			Entity::allObjects[ktorykutas]->anim->startSz += predkosc;
 		}
 		break;
 
@@ -845,9 +845,9 @@ void klawiaturka(unsigned char key, int x, int y) {
 		Entity::allObjects[ktorykutas]->sy -= predkosc;
 		Entity::allObjects[ktorykutas]->sz -= predkosc;
 		if (Entity::allObjects[ktorykutas]->anim) {
-			Entity::allObjects[ktorykutas]->anim->startsx -= predkosc;
-			Entity::allObjects[ktorykutas]->anim->startsy -= predkosc;
-			Entity::allObjects[ktorykutas]->anim->startsz -= predkosc;
+			Entity::allObjects[ktorykutas]->anim->startSx -= predkosc;
+			Entity::allObjects[ktorykutas]->anim->startSy -= predkosc;
+			Entity::allObjects[ktorykutas]->anim->startSz -= predkosc;
 		}
 		break;
 
@@ -1029,7 +1029,7 @@ void wczytaj() {
 		if (nazwaobiektu == "r") {
 			wczytywacz >> a >> b >> c;
 			//xd << "r " << a << " " << b << " " << c << endl;
-			object->SetRotation(a, b, c);
+			object->setRotation(a, b, c);
 		}
 
 		if (nazwaobiektu == "d") {

@@ -62,7 +62,6 @@ public:
 				pomax[i][0] = pomax[i][0] * cos(a * rz) - pomax[i][1] * sin(a * rz);
 				pomax[i][1] = pomax[i][0] * sin(a * rz) + pomax[i][1] * sin(a * rz);
 			}
-
 	}
 
 	void updatePosition() {
@@ -99,7 +98,7 @@ public:
 
 	}
 
-	void SetRotation(GLfloat rx, GLfloat ry, GLfloat rz) {
+	void setRotation(GLfloat rx, GLfloat ry, GLfloat rz) {
 		this->rx = rx;
 		this->ry = ry;
 		this->rz = rz;

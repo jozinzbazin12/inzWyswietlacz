@@ -3,23 +3,23 @@ private:
 	unsigned steps = 0;
 	float emptyArray[3] = { 0, 0, 0 };
 public:
-	GLfloat startpx, startpy, startpz;
-	GLfloat startsx, startsy, startsz;
-	GLfloat startrx, startry, startrz;
-	vector<float*> p;
-	vector<float*> s;
-	vector<float*> r;
+	GLfloat startX, startY, startZ;
+	GLfloat startSx, startSy, startSz;
+	GLfloat startRx, startRy, startRz;
+	vector<float*> position;
+	vector<float*> scale;
+	vector<float*> rotation;
 	bool loop = false;
 	unsigned actualStep = 0;
 	vector<float> speed;
 	int counter;
-	string nazwa;
+	string name;
 	void setTransition(float a, float b, float c) {
 		float* tab = new float[3];
 		tab[0] = a;
 		tab[1] = b;
 		tab[2] = c;
-		p.push_back(tab);
+		position.push_back(tab);
 	}
 
 	void setScaleChange(float a, float b, float c) {
@@ -27,7 +27,7 @@ public:
 		tab[0] = a;
 		tab[1] = b;
 		tab[2] = c;
-		s.push_back(tab);
+		scale.push_back(tab);
 	}
 
 	void setRotationChange(float a, float b, float c) {
@@ -35,19 +35,19 @@ public:
 		tab[0] = a;
 		tab[1] = b;
 		tab[2] = c;
-		r.push_back(tab);
+		rotation.push_back(tab);
 	}
 
 	void animuj(Entity *ob) {
-		ob->px += p[actualStep][0] * speed[actualStep];
-		ob->py += p[actualStep][1] * speed[actualStep];
-		ob->pz += p[actualStep][2] * speed[actualStep];
-		ob->sx += s[actualStep][0] * speed[actualStep];
-		ob->sy += s[actualStep][1] * speed[actualStep];
-		ob->sz += s[actualStep][2] * speed[actualStep];
-		ob->rx += r[actualStep][0] * speed[actualStep];
-		ob->ry += r[actualStep][1] * speed[actualStep];
-		ob->rz += r[actualStep][2] * speed[actualStep];
+		ob->px += position[actualStep][0] * speed[actualStep];
+		ob->py += position[actualStep][1] * speed[actualStep];
+		ob->pz += position[actualStep][2] * speed[actualStep];
+		ob->sx += scale[actualStep][0] * speed[actualStep];
+		ob->sy += scale[actualStep][1] * speed[actualStep];
+		ob->sz += scale[actualStep][2] * speed[actualStep];
+		ob->rx += rotation[actualStep][0] * speed[actualStep];
+		ob->ry += rotation[actualStep][1] * speed[actualStep];
+		ob->rz += rotation[actualStep][2] * speed[actualStep];
 		if (ob->rx > 360)
 			ob->rx -= 360;
 		if (ob->ry > 360)
@@ -69,27 +69,27 @@ public:
 
 	}
 
-	Animation(string sciezka, string nazwa, Entity *ob) {
+	Animation(string path, string name, Entity *ob) {
 		for (unsigned i = 0; i < steps; i++)
 			for (int j = 0; j < 3; j++) {
-				p[i][j] = 0;
-				s[i][j] = 0;
-				r[i][j] = 0;
+				position[i][j] = 0;
+				scale[i][j] = 0;
+				rotation[i][j] = 0;
 			}
-		startpx = ob->px;
-		startpy = ob->py;
-		startpz = ob->pz;
-		startsx = ob->sx;
-		startsy = ob->sy;
-		startsz = ob->sz;
-		startrx = ob->rx;
-		startry = ob->ry;
-		startrz = ob->rz;
+		startX = ob->px;
+		startY = ob->py;
+		startZ = ob->pz;
+		startSx = ob->sx;
+		startSy = ob->sy;
+		startSz = ob->sz;
+		startRx = ob->rx;
+		startRy = ob->ry;
+		startRz = ob->rz;
 		fstream file;
 		float a, b, c;
-		this->nazwa = nazwa;
-		sciezka = "animacje/" + nazwa + ".txt";
-		file.open(sciezka.c_str());
+		this->name = name;
+		path = "animacje/" + name + ".txt";
+		file.open(path.c_str());
 		if (!file.is_open()) {
 			Logger::log(Logger::ERR + "brak pliku z animacja");
 			exit(0);
@@ -124,19 +124,18 @@ public:
 
 			if (data == "#") {
 				steps++;
-				if (p.size() != steps) {
-					p.push_back(emptyArray);
+				if (position.size() != steps) {
+					position.push_back(emptyArray);
 				}
-				if (r.size() != steps) {
-					r.push_back(emptyArray);
+				if (rotation.size() != steps) {
+					rotation.push_back(emptyArray);
 				}
-				if (s.size() != steps) {
-					s.push_back(emptyArray);
+				if (scale.size() != steps) {
+					scale.push_back(emptyArray);
 				}
 			}
 		}
 		steps++;
 		counter = 1 / speed[0];
 	}
-
 };
