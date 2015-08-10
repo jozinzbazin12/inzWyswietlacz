@@ -26,7 +26,7 @@ public:
 	static bool compare(Entity* e1, Entity* e2) {
 		int val = pow(posX - e1->px, 2) + pow(posY - e1->py, 2) + pow(posZ - e1->pz, 2);
 		int val2 = pow(posX - e2->px, 2) + pow(posY - e2->py, 2) + pow(posZ - e2->pz, 2);
-		return val > val2;
+		return val < val2;
 	}
 	void recalculate() {
 		for (int i = 0; i < 3; i++)
@@ -131,7 +131,7 @@ public:
 
 	~Entity() {
 		Logger::log("Usuwam obiekt " + this->object->name, true);
-		for (int i = 0; i < allObjects.size(); i++) {
+		for (unsigned i = 0; i < allObjects.size(); i++) {
 			if (allObjects[i]->parent == this) {
 				allObjects[i]->parent = parent;
 			}

@@ -992,7 +992,7 @@ void klawiaturka(unsigned char key, int x, int y) {
 		break;
 
 	case '6':
-		if (ktorykutas < Object::objects.size() - 1) {
+		if (ktorykutas < Entity::allObjects.size() - 1) {
 			wybrany = Entity::allObjects[++ktorykutas];
 			posX = Entity::allObjects[ktorykutas]->px;
 			posY = Entity::allObjects[ktorykutas]->py;
@@ -1321,11 +1321,11 @@ void __cdecl sortuj(void *dupa) {
 		//int transparentCounter = 0;
 		for (unsigned i = 0; i < objectsCount; i++) {
 			if (ciach->nalezy(i)) {
-
+				Subobject* subobject;
 				for (unsigned j = 0; j < Entity::allObjects[i]->object->subobjects.size(); j++) {
-					if (Entity::allObjects[i]->object->subobjects[j]->mtl->kat[3] < 1
-							|| (Entity::allObjects[i]->object->subobjects[j]->mtl->tkdt != -1
-									&& Texture::textures[Entity::allObjects[i]->object->subobjects[j]->mtl->tkdt]->transparent)) {
+					subobject = Entity::allObjects[i]->object->subobjects[j];
+					if (subobject->mtl->kat[3] < 1
+							|| (subobject->mtl->tkdt != -1 && Texture::textures[subobject->mtl->tkdt]->transparent)) {
 
 						transparentObjects.push_back(Entity::allObjects[i]);
 						break;
