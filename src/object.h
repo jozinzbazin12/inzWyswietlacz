@@ -1,19 +1,3 @@
-class Row {
-public:
-	GLfloat* data;
-
-	Row(GLfloat *data) {
-		this->data = data;
-	}
-	~Row() {
-		delete[] data;
-	}
-
-	GLfloat operator [](const unsigned pos) {
-		return data[pos];
-	}
-};
-
 class Object {
 public:
 	vector<Subobject*> subobjects;
@@ -24,8 +8,9 @@ public:
 	string name;
 	GLfloat min[3][3];
 	GLfloat max[3][3];
-	int counter;
-	int tmpmtl;
+	int counter = 0;
+	int tmpmtl = 0;
+	bool transparent = false;
 
 	int getNextFaceNumber(string& a) {
 		int x;
@@ -66,14 +51,14 @@ public:
 		vector<GLfloat> vertices;
 		vector<GLfloat> normals;
 		vector<GLfloat> textureCords;
-		vector<Row*> faces;
+		vector<GLfloat*> faces;
 
 		while (!file.eof() && text != "mtllib") {
 			file >> text;
 		}
 		file >> text;
 		//xd << this->nazwa << endl;
-		MaterialLib* newLib=new MaterialLib(utnij(this->name) + "/" + text);
+		MaterialLib* newLib = new MaterialLib(utnij(this->name) + "/" + text);
 		MaterialLib::materials.push_back(newLib);
 		mtl = MaterialLib::materials.back();
 
@@ -146,7 +131,7 @@ public:
 					tab[0] = getNextFaceNumber(text) - 1;
 					tab[1] = getNextFaceNumber(text) - 1;
 					tab[2] = getNextFaceNumber(text) - 1;
-					faces.push_back(new Row(tab));
+					faces.push_back(tab);
 				}
 			}
 		}
@@ -170,7 +155,7 @@ public:
 	}
 
 	void bindObject(vector<GLfloat> vertices, vector<GLfloat> normals, vector<GLfloat> textureCords,
-			vector<Row*> faces) {
+			vector<GLfloat*> faces) {
 		vector<GLfloat> newNormals;
 		vector<GLfloat> newVertices;
 		vector<GLfloat> newTextureCords;
@@ -178,16 +163,16 @@ public:
 			//faces[i]-> Row*
 			//faces[i][0]->Row
 			//faces[i][0][n]->GlFloat[3]
-			newVertices.push_back(vertices[faces[i][0][0] * 3]);
-			newVertices.push_back(vertices[faces[i][0][0] * 3 + 1]);
-			newVertices.push_back(vertices[faces[i][0][0] * 3 + 2]);
+			newVertices.push_back(vertices[faces[i][0] * 3]);
+			newVertices.push_back(vertices[faces[i][0] * 3 + 1]);
+			newVertices.push_back(vertices[faces[i][0] * 3 + 2]);
 
-			newNormals.push_back(normals[faces[i][0][2] * 3]);
-			newNormals.push_back(normals[faces[i][0][2] * 3 + 1]);
-			newNormals.push_back(normals[faces[i][0][2] * 3 + 2]);
+			newNormals.push_back(normals[faces[i][2] * 3]);
+			newNormals.push_back(normals[faces[i][2] * 3 + 1]);
+			newNormals.push_back(normals[faces[i][2] * 3 + 2]);
 
-			newTextureCords.push_back(textureCords[faces[i][0][1] * 2]);
-			newTextureCords.push_back(textureCords[faces[i][0][1] * 2 + 1]);
+			newTextureCords.push_back(textureCords[faces[i][1] * 2]);
+			newTextureCords.push_back(textureCords[faces[i][1] * 2 + 1]);
 		}
 
 		sendToBuffer(newNormals, newVertices, newTextureCords, faces.size());
@@ -239,11 +224,9 @@ public:
 		}
 	}
 
-	Object(string nazwa, bool tag = false) {
-		this->name = otworz(nazwa, ".obj");
-		tmpmtl = 0;
-		loadObject(this->name, tag);
-		this->counter = 0;
+	Object(string name, bool alwaysDisplay = false) {
+		this->name = otworz(name, ".obj");
+		loadObject(this->name, alwaysDisplay);
 	}
 	~Object() {
 		for (unsigned i = 0; i < subobjects.size(); i++)

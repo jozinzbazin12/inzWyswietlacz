@@ -15,9 +15,11 @@ public:
 	string path;
 
 	int searchMaterial(string name) {
-		for (unsigned i = 0; i < mtl.size(); i++)
-			if (mtl[i]->name == name)
+		for (unsigned i = 0; i < mtl.size(); i++) {
+			if (mtl[i]->name == name) {
 				return i;
+			}
+		}
 		exit(0);
 	}
 

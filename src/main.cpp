@@ -1,9 +1,7 @@
-
 #define GLEW_STATIC
 #define _SECURE_SCL 0
 #define _HAS_ITERATOR_DEBUGGING 0
 #define coileklatek 10
-#define ilekrokowwanimacji 30
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <fstream>
@@ -28,7 +26,7 @@ string otworz(string nazwa, string koniec);
 string utnij(string dupa);
 void zapisz();
 long long unsigned sprawdz_rozmiar(string nazwa);
-class animacja;
+class Animation;
 class Object;
 class Subobject;
 class Entity;
@@ -88,136 +86,7 @@ informacja info;
 #include "subobject.h"
 #include "object.h"
 #include "entity.h"
-
-class animacja {
-public:
-	GLfloat startpx, startpy, startpz;
-	GLfloat startsx, startsy, startsz;
-	GLfloat startrx, startry, startrz;
-	float p[ilekrokowwanimacji][3];
-	float s[ilekrokowwanimacji][3];
-	float r[ilekrokowwanimacji][3];
-	bool petla;
-	int ktorykrok;
-	int ilekrokow;
-	float speed[ilekrokowwanimacji];
-	int licznik;
-	string nazwa;
-	void dodaj_p(float a, float b, float c) {
-		p[ilekrokow][0] = a;
-		p[ilekrokow][1] = b;
-		p[ilekrokow][2] = c;
-	}
-
-	void dodaj_s(float a, float b, float c) {
-		s[ilekrokow][0] = a;
-		s[ilekrokow][1] = b;
-		s[ilekrokow][2] = c;
-	}
-
-	void dodaj_r(float a, float b, float c) {
-		r[ilekrokow][0] = a;
-		r[ilekrokow][1] = b;
-		r[ilekrokow][2] = c;
-	}
-
-	void animuj(Entity *ob) {
-		if (ktorykrok != -1) {
-			ob->px += p[ktorykrok][0] * speed[ktorykrok];
-			ob->py += p[ktorykrok][1] * speed[ktorykrok];
-			ob->pz += p[ktorykrok][2] * speed[ktorykrok];
-			ob->sx += s[ktorykrok][0] * speed[ktorykrok];
-			ob->sy += s[ktorykrok][1] * speed[ktorykrok];
-			ob->sz += s[ktorykrok][2] * speed[ktorykrok];
-			ob->rx += r[ktorykrok][0] * speed[ktorykrok];
-			ob->ry += r[ktorykrok][1] * speed[ktorykrok];
-			ob->rz += r[ktorykrok][2] * speed[ktorykrok];
-			if (ob->rx > 360)
-				ob->rx -= 360;
-			if (ob->ry > 360)
-				ob->ry -= 360;
-			if (ob->rz > 360)
-				ob->rz -= 360;
-			licznik--;
-			if (licznik == 0) {
-				ktorykrok++;
-				if (ktorykrok >= ilekrokow) {
-					if (petla) {
-						ktorykrok = 0;
-						licznik = 1 / speed[ktorykrok];
-					} else
-						ktorykrok = -1;
-				} else
-					licznik = 1 / speed[ktorykrok];
-			}
-		}
-
-	}
-
-	animacja(string sciezka, string nazwa, Entity *ob) {
-		for (int i = 0; i < ilekrokowwanimacji; i++)
-			for (int j = 0; j < 3; j++) {
-				p[i][j] = 0;
-				s[i][j] = 0;
-				r[i][j] = 0;
-			}
-		startpx = ob->px;
-		startpy = ob->py;
-		startpz = ob->pz;
-		startsx = ob->sx;
-		startsy = ob->sy;
-		startsz = ob->sz;
-		startrx = ob->rx;
-		startry = ob->ry;
-		startrz = ob->rz;
-		ktorykrok = 0;
-		ilekrokow = 0;
-		petla = false;
-		fstream otwieracz;
-		float a, b, c;
-		this->nazwa = nazwa;
-		sciezka = "animacje/" + nazwa + ".txt";
-		otwieracz.open(sciezka.c_str());
-		if (!otwieracz.is_open()) {
-			Logger::log(Logger::ERR + "brak pliku z animacja");
-			exit(0);
-		}
-
-		string kutacz;
-		while (!otwieracz.eof()) {
-			otwieracz >> kutacz;
-			if (kutacz == "speed") {
-				otwieracz >> a;
-				speed[ilekrokow] = a;
-			}
-
-			if (kutacz == "p") {
-				otwieracz >> a >> b >> c;
-				dodaj_p(a, b, c);
-			}
-
-			if (kutacz == "s") {
-				otwieracz >> a >> b >> c;
-				dodaj_s(a, b, c);
-			}
-
-			if (kutacz == "r") {
-				otwieracz >> a >> b >> c;
-				dodaj_r(a, b, c);
-			}
-
-			if (kutacz == "petla")
-				petla = true;
-			if (kutacz == "#")
-				ilekrokow++;
-
-		}
-		ilekrokow++;
-		licznik = 1 / speed[0];
-	}
-
-};
-
+#include "animation.h"
 class mapa {
 public:
 	static int **wysokosc;
@@ -1106,7 +975,7 @@ void wczytaj() {
 	GLfloat a, b, c, d;
 	fstream wczytywacz, wczytywacz2;
 	string nazwaobiektu;
-	wczytywacz2.open("ustawienia/pliki.txt");
+	wczytywacz2.open("ustawienia/pliki4.txt");
 	if (!wczytywacz2.is_open()) {
 		Logger::log(Logger::ERR + "brak pliku z plikami");
 		exit(0);
@@ -1119,7 +988,7 @@ void wczytaj() {
 	}
 	wczytywacz2.close();
 	mapa *map = new mapa();
-	wczytywacz.open("ustawienia/ustawienia.txt");
+	wczytywacz.open("ustawienia/ustawienia4.txt");
 	if (!wczytywacz.is_open()) {
 		Logger::log(Logger::ERR + "brak pliku z ustawieniami");
 		exit(0);
@@ -1172,7 +1041,7 @@ void wczytaj() {
 		if (nazwaobiektu == "a") {
 			wczytywacz >> nazwaobiektu;
 			//xd << "animacja " + nazwaobiektu << endl;
-			object->anim = new animacja("modele/" + object->object->name, nazwaobiektu, object);
+			object->anim = new Animation("modele/" + object->object->name, nazwaobiektu, object);
 			obiekty_animowane[ileanimacji++] = object;
 		}
 		if (nazwaobiektu == "v") {
@@ -1475,7 +1344,7 @@ int main(int argc, char* args[]) {
 	return 0;
 }
 //TODO zapis
-//todo przezroczystosc  gore do obiektu
+//todo przezroczystosc  gore do obiektu || rysowanie samych podobiektow
 /*
  x86/zlib1.dll
  x86/freeglut.dll

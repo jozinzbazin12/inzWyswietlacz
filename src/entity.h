@@ -17,7 +17,7 @@ public:
 	GLfloat rx, ry, rz;
 	GLfloat min[3][3], max[3][3];
 	GLfloat pomin[3][3], pomax[3][3];
-	animacja *anim;
+	Animation *anim;
 	bool alwaysDisplay;
 	static vector<Entity*> allObjects;
 	static vector<Entity*> solidObjectsToDisplay;
