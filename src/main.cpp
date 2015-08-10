@@ -863,7 +863,7 @@ void klawiaturka(unsigned char key, int x, int y) {
 		break;
 
 	case '6':
-		if (ktorykutas < (int)Entity::allObjects.size() - 1) {
+		if (ktorykutas < (int) Entity::allObjects.size() - 1) {
 			wybrany = Entity::allObjects[++ktorykutas];
 			posX = Entity::allObjects[ktorykutas]->px;
 			posY = Entity::allObjects[ktorykutas]->py;
@@ -975,7 +975,7 @@ void wczytaj() {
 	GLfloat a, b, c, d;
 	fstream wczytywacz, wczytywacz2;
 	string nazwaobiektu;
-	wczytywacz2.open("ustawienia/pliki4.txt");
+	wczytywacz2.open("ustawienia/pliki.txt");
 	if (!wczytywacz2.is_open()) {
 		Logger::log(Logger::ERR + "brak pliku z plikami");
 		exit(0);
@@ -988,7 +988,7 @@ void wczytaj() {
 	}
 	wczytywacz2.close();
 	mapa *map = new mapa();
-	wczytywacz.open("ustawienia/ustawienia4.txt");
+	wczytywacz.open("ustawienia/ustawienia.txt");
 	if (!wczytywacz.is_open()) {
 		Logger::log(Logger::ERR + "brak pliku z ustawieniami");
 		exit(0);
@@ -1186,22 +1186,11 @@ void __cdecl sortuj(void *dupa) {
 		unsigned objectsCount = Entity::allObjects.size();
 		vector<Entity*> transparentObjects;
 		vector<Entity*> solidObjects;
-		bool transparent;
 		for (unsigned i = 0; i < objectsCount; i++) {
 			if (ciach->nalezy(i)) {
-				transparent = false;
-				Subobject* subobject;
-				for (unsigned j = 0; j < Entity::allObjects[i]->object->subobjects.size(); j++) {
-					subobject = Entity::allObjects[i]->object->subobjects[j];
-
-					if (subobject->mtl->kat[3] < 1
-							|| (subobject->mtl->tkdt != -1 && Texture::textures[subobject->mtl->tkdt]->transparent)) {
-						transparentObjects.push_back(Entity::allObjects[i]);
-						transparent = true;
-						break;
-					}
-				}
-				if (!transparent) {
+				if (Entity::allObjects[i]->object->transparent) {
+					transparentObjects.push_back(Entity::allObjects[i]);
+				} else {
 					solidObjects.push_back(Entity::allObjects[i]);
 				}
 			}

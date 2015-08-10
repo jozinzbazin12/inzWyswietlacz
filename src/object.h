@@ -84,7 +84,7 @@ public:
 				}
 				useMtl = false;
 				tmpmtl = mtl->searchMaterial(text);
-
+				transparent |= mtl->mtl[tmpmtl]->isTransparent();
 			}
 
 			if (text == "s") {
@@ -160,9 +160,6 @@ public:
 		vector<GLfloat> newVertices;
 		vector<GLfloat> newTextureCords;
 		for (long long unsigned i = 0; i < faces.size(); i++) {
-			//faces[i]-> Row*
-			//faces[i][0]->Row
-			//faces[i][0][n]->GlFloat[3]
 			newVertices.push_back(vertices[faces[i][0] * 3]);
 			newVertices.push_back(vertices[faces[i][0] * 3 + 1]);
 			newVertices.push_back(vertices[faces[i][0] * 3 + 2]);
