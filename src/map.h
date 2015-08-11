@@ -7,7 +7,7 @@
 
 #ifndef SRC_MAP_H_
 #define SRC_MAP_H_
-//todo
+
 class Map {
 public:
 	static int **heights;
@@ -16,7 +16,7 @@ public:
 	static long double stosuneky;
 	static long double stosunekz;
 	int wymx, wymz;
-	long long unsigned rozmiarmapy;
+	long long unsigned mapSize;
 	Object* mapObject;
 
 	int deleteDirectory(const string &refcstrRootDirectory, bool bDeleteSubdirectories = true) {
@@ -70,44 +70,60 @@ public:
 		}
 		return 0;
 	}
-//todo
-	static float calculateHeight(float a2, float b2, float c2) {
-		int aa, cc;
-		long double a, c;
+
+	static float calculateHeight(float x, float y, float z) {
+		int indexX, indexZ;
+		long double valueX, valueZ;
 		float suma = 0, suma2 = 0;
-		a = (long double) ((a2) / stosunekx) + (long double) (mapX / 2);	//-1
-		c = (long double) ((c2) / stosunekz) + (long double) (mapZ / 2);		//0
-		aa = (int) a;
-		cc = (int) c;
-		if (aa < 2 || aa >= mapX || cc < 0 || cc >= mapZ)
+		valueX = (long double) ((x) / stosunekx) + (long double) (mapX / 2);	//-1
+		valueZ = (long double) ((z) / stosunekz) + (long double) (mapZ / 2);		//0
+		indexX = (int) valueX;
+		indexZ = (int) valueZ;
+		if (indexX <= 0 || indexX >= mapX || indexZ <= 0 || indexZ >= mapZ) {
 			return 0;
-		if (a == aa && c == cc)
-			return heights[mapX - aa][cc] * stosuneky + b2;
-
-		if (a == aa) {
-			suma = (heights[mapX - aa][cc] - heights[mapX - aa][cc + 1]) * (c - cc);
-			return (heights[mapX - aa][cc] - suma) * stosuneky + b2;
+		}
+		if (valueX == indexX && valueZ == indexZ) {
+			return heights[mapX - indexX][indexZ] * stosuneky + y;
 		}
 
-		if (c == cc) {
-			suma = (heights[mapX - aa][cc] - heights[mapX - aa + 1][cc]) * (a - aa);
-			return (heights[mapX - aa][cc] - suma) * stosuneky + b2;
+		if (valueX == indexX) {
+			suma = (heights[mapX - indexX][indexZ] - heights[mapX - indexX][indexZ + 1]) * (valueZ - indexZ);
+			return (heights[mapX - indexX][indexZ] - suma) * stosuneky + y;
 		}
 
-		if (c - cc < 0.5 && a - aa < 0.5) {
-			suma = (heights[mapX - aa][cc] - heights[mapX - aa][cc + 1]) * (c - cc);
-			suma2 = (heights[mapX - aa][cc] - heights[mapX - aa + 1][cc]) * (a - aa);
-			return (heights[mapX - aa][cc] - suma - suma2) * stosuneky + b2;
+		if (valueZ == indexZ) {
+			suma = (heights[mapX - indexX][indexZ] - heights[mapX - indexX - 1][indexZ]) * (valueX - indexX);
+			return (heights[mapX - indexX][indexZ] - suma) * stosuneky + y;
 		}
 
+		if (valueZ - indexZ < 0.5 && valueX - indexX < 0.5) {
+			if (indexX > 0) {
+				suma = (heights[mapX - indexX][indexZ] - heights[mapX - indexX][indexZ + 1]) * (valueZ - indexZ);
+			}
+			if (indexX + 1 > 0) {
+				suma2 = (heights[mapX - indexX][indexZ] - heights[mapX - indexX - 1][indexZ]) * (valueX - indexX);
+			}
+			return (heights[mapX - indexX][indexZ] - suma - suma2) * stosuneky + y;
+		}
+
+		// todo?
 		else {
-			suma = (heights[mapX - aa + 1][cc + 1] - heights[mapX - aa + 1][cc]) * (1 - a + aa);
-			suma2 = (heights[mapX - aa + 1][cc + 1] - heights[mapX - aa][cc + 1]) * (1 - c + cc);
-			return (heights[mapX - aa + 1][cc + 1] - suma - suma2) * stosuneky + b2;
+			if (indexX + 1 > 0) {
+				if (indexZ + 1 < mapZ) {
+					suma = (heights[mapX - indexX - 1][indexZ + 1] - heights[mapX - indexX - 1][indexZ])
+							* (1 - valueX + indexX);
+				}
+				if (indexZ + 1 < mapZ) {
+					suma2 = (heights[mapX - indexX - 1][indexZ + 1] - heights[mapX - indexX][indexZ + 1])
+							* (1 - valueZ + indexZ);
+				}
+				return (heights[mapX - indexX - 1][indexZ + 1] - suma - suma2) * stosuneky + y;
+			}
+			return -100;
 		}
 
-		//return 1000;
-		return 0;
+		return 1000;
+		//return 0;
 	}
 
 	void normalize(float *t1) {
@@ -131,7 +147,7 @@ public:
 		src2.close();
 		dst2.close();
 	}
-
+//todo
 	void loadHeights() {
 		heights = new int*[mapX];
 		for (int i = 0; i < mapX; i++)
@@ -148,8 +164,9 @@ public:
 				file >> heights[i][j];
 		file.close();
 	}
-
+//todo
 	bool tryLoadLastMap(string nazwa) {
+		return false;
 		fstream sprawdzacz, sprawdzacz2;
 		sprawdzacz.open("modele/0/0.obj");
 		if (!sprawdzacz.is_open()) {
@@ -158,31 +175,33 @@ public:
 		} else {
 			sprawdzacz2.open("mapy/ostatnia.txt");
 			if (sprawdzacz2.is_open()) {
-				ifstream sprawdzacz3;
 				long long unsigned a;
 				string b;
 				sprawdzacz2 >> b;
 				sprawdzacz2 >> a;
 				sprawdzacz2 >> mapX;
 				sprawdzacz2 >> mapZ;
-				rozmiarmapy = sprawdz_rozmiar(nazwa);
-				if (a == rozmiarmapy && nazwa == b) {
+				mapSize = sprawdz_rozmiar(nazwa);
+				if (a == mapSize && nazwa == b) {
 					Logger::log("Jest zrobiona mapa, wczytuje...");
 					loadHeights();
 					stosunekx = (float) wymx / (float) mapX;
 					stosunekz = (float) wymz / (float) mapZ;
-					stosuneky = 2;
+					stosuneky = 1;
 					mapObject = new Object("0", true);
+					sprawdzacz.close();
+					sprawdzacz2.close();
+					return true;
 				}
 
 			}
 		}
 		sprawdzacz.close();
 		sprawdzacz2.close();
-		return true;
+		return false;
 	}
 
-	float* zrup_normalny(float t1[3], float t2[3], float t3[3]) {
+	float* makeNormal(float t1[3], float t2[3], float t3[3]) {
 		float temp1[3], temp2[3];
 		float *vec = new float[3];
 		for (int k = 0; k < 3; k++) {
@@ -196,21 +215,21 @@ public:
 		return vec;
 	}
 
-	void loadMap(string nazwa2, string tekstura2, string mtl2) {
-		string nazwa = "mapy/mapy/" + nazwa2;
-		string tekstura = "mapy/tekstury/" + tekstura2;
-		string mtl = "mapy/mtl/" + mtl2;
-		string dupaa = "modele/0/tex.";
-		dupaa += tekstura2[tekstura2.size() - 3];
-		dupaa += tekstura2[tekstura2.size() - 2];
-		dupaa += tekstura2[tekstura2.size() - 1];
-		if (tryLoadLastMap(nazwa)) {
+	void createMap(string nazwa2, string tekstura2, string mtl2) {
+		string mapName = "mapy/mapy/" + nazwa2;
+		string textureName = "mapy/tekstury/" + tekstura2;
+		string mtlName = "mapy/mtl/" + mtl2;
+		string destTextureName = "modele/0/tex.";
+		destTextureName += tekstura2[tekstura2.size() - 3];
+		destTextureName += tekstura2[tekstura2.size() - 2];
+		destTextureName += tekstura2[tekstura2.size() - 1];
+		if (tryLoadLastMap(mapName)) {
 			return;
 		}
 		deleteDirectory("modele/0/");
-		copyToModels(mtl, tekstura, dupaa);
+		copyToModels(mtlName, textureName, destTextureName);
 		Logger::log("Nie ma mapy, probuje utworzyc\n");
-		SDL_Surface *txt = IMG_Load(nazwa.c_str());
+		SDL_Surface *txt = IMG_Load(mapName.c_str());
 		if (txt == NULL) {
 			Logger::log(Logger::ERR + "chujowy obrazek");
 			exit(0);
@@ -221,7 +240,7 @@ public:
 		mapX = txt->w;
 		mapZ = txt->h;
 		unsigned pixel, r, g, b;
-		long double wys2;
+		long double height;
 		fstream zapisywacz, zapisywacz2;
 		zapisywacz.open("modele/0/0.obj", ios::out);
 		zapisywacz2.open("mapy/wysokosci.txt", ios::out);
@@ -231,9 +250,8 @@ public:
 		heights = new int*[txt->h];
 		for (int i = 0; i < txt->h; i++)
 			heights[i] = new int[txt->w];
-		float **vec = new float*[(txt->w - 1) * (txt->h - 1) * 2];
-		int v = 0;
 
+		//heights
 		for (int i = 0; i < txt->h; i++)
 			for (int j = 0; j < txt->w; j++) {
 				pixel = ((Uint32*) txt->pixels)[i * (txt->pitch / sizeof(Uint32)) + j * bpp / 4];
@@ -242,12 +260,16 @@ public:
 				b = pixel & 0x00FF0000;
 				g >>= 8;
 				b >>= 16;
-				wys2 = (r + b + g) / 3;
-				zapisywacz << "v " << txt->h / 2 - i << " " << wys2 - 128 << " " << j - txt->w / 2 << endl; //moze sie zjebac!
-				zapisywacz2 << wys2 - 128 << " ";
-				heights[i][j] = wys2 - 128;
+				height = ((r + b + g) / 3) - (double) 128;
+				zapisywacz << "v " << txt->h / 2 - i << " " << height << " " << j - txt->w / 2 << endl; //moze sie zjebac!
+				zapisywacz2 << height << " ";
+				heights[i][j] = height;
 			}
 		zapisywacz2.close();
+
+		//normals
+		float **vectors = new float*[(txt->w - 1) * (txt->h - 1) * 2];
+		int v = 0;
 		float t1[3], t2[3], t3[3];
 		for (int i = 0; i < txt->h - 1; i++)
 			for (int j = 0; j < txt->w - 1; j++) {
@@ -263,7 +285,7 @@ public:
 				t3[1] = heights[i + 1][j]; //i+1,j
 				t3[2] = j - txt->w / 2;
 
-				vec[v++] = zrup_normalny(t1, t3, t2);
+				vectors[v++] = makeNormal(t1, t3, t2);
 
 				t1[0] = txt->h / 2 - i - 1;
 				t1[1] = heights[i + 1][j];  //i+1,j
@@ -277,7 +299,7 @@ public:
 				t3[1] = heights[i + 1][j + 1]; //i+1,j+1
 				t3[2] = j + 1 - txt->w / 2;
 
-				vec[v++] = zrup_normalny(t3, t2, t1);
+				vectors[v++] = makeNormal(t3, t2, t1);
 			}
 		zapisywacz << "vt 0 0" << endl;
 		zapisywacz << "vt 0 2" << endl;
@@ -286,47 +308,47 @@ public:
 		zapisywacz << "usemtl cipa" << endl;
 		zapisywacz << "s 1" << endl;
 		int przes, przes2;
-		float lol[3];
+		float normals[3];
 		for (int i = 0; i < txt->h; i++)
 			for (int j = 0; j < txt->w; j++) {
 				przes = i * (txt->w - 1) * 2 + j * 2;
 				przes2 = (i - 1) * (txt->w - 1) * 2 + j * 2;
-				lol[0] = 0;
-				lol[1] = 0;
-				lol[2] = 0;
+				normals[0] = 0;
+				normals[1] = 0;
+				normals[2] = 0;
 				if (j != txt->w - 1 && i != txt->h - 1) {
-					lol[0] += vec[przes][0];
-					lol[1] += vec[przes][1];
-					lol[2] += vec[przes][2];
+					normals[0] += vectors[przes][0];
+					normals[1] += vectors[przes][1];
+					normals[2] += vectors[przes][2];
 				}
 
 				if (j != 0 && i != txt->h - 1) {
-					lol[0] += vec[przes - 2][0];
-					lol[1] += vec[przes - 2][1];
-					lol[2] += vec[przes - 2][2];
+					normals[0] += vectors[przes - 2][0];
+					normals[1] += vectors[przes - 2][1];
+					normals[2] += vectors[przes - 2][2];
 
-					lol[0] += vec[przes - 1][0];
-					lol[1] += vec[przes - 1][1];
-					lol[2] += vec[przes - 1][2];
+					normals[0] += vectors[przes - 1][0];
+					normals[1] += vectors[przes - 1][1];
+					normals[2] += vectors[przes - 1][2];
 				}
 
 				if (j != 0 && i != 0) {
-					lol[0] += vec[przes2 - 1][0];
-					lol[1] += vec[przes2 - 1][1];
-					lol[2] += vec[przes2 - 1][2];
+					normals[0] += vectors[przes2 - 1][0];
+					normals[1] += vectors[przes2 - 1][1];
+					normals[2] += vectors[przes2 - 1][2];
 				}
 
 				if (j != txt->w - 1 && i != 0) {
-					lol[0] += vec[przes2][0];
-					lol[1] += vec[przes2][1];
-					lol[2] += vec[przes2][2];
+					normals[0] += vectors[przes2][0];
+					normals[1] += vectors[przes2][1];
+					normals[2] += vectors[przes2][2];
 
-					lol[0] += vec[przes2 + 1][0];
-					lol[1] += vec[przes2 + 1][1];
-					lol[2] += vec[przes2 + 1][2];
+					normals[0] += vectors[przes2 + 1][0];
+					normals[1] += vectors[przes2 + 1][1];
+					normals[2] += vectors[przes2 + 1][2];
 				}
-				normalize(lol);
-				zapisywacz << "vn " << lol[0] << " " << lol[1] << " " << lol[2] << endl;
+				normalize(normals);
+				zapisywacz << "vn " << normals[0] << " " << normals[1] << " " << normals[2] << endl;
 			}
 
 		for (int i = 0; i < txt->h - 1; i++)
@@ -341,15 +363,15 @@ public:
 		Logger::log("Utworzono mape");
 		fstream sprawdzacz2;
 		sprawdzacz2.open("mapy/ostatnia.txt", ios::out);
-		sprawdzacz2 << nazwa << endl;
-		sprawdzacz2 << rozmiarmapy << endl;
+		sprawdzacz2 << mapName << endl;
+		sprawdzacz2 << mapSize << endl;
 		sprawdzacz2 << txt->w << endl;
 		sprawdzacz2 << txt->h;
 		sprawdzacz2.close();
 		SDL_FreeSurface(txt);
 		for (int i = 0; i < v; i++)
-			delete[] vec[i];
-		delete[] vec;
+			delete[] vectors[i];
+		delete[] vectors;
 		mapObject = new Object("0", true);
 		zapisywacz.close();
 	}
@@ -367,7 +389,7 @@ public:
 		file >> wymx;
 		file >> wymz;
 		file.close();
-		loadMap(name, tex, mtl);
+		createMap(name, tex, mtl);
 	}
 };
 int** Map::heights;

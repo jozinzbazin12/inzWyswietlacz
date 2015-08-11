@@ -515,7 +515,7 @@ void wczytaj() {
 	GLfloat a, b, c, d;
 	fstream wczytywacz, wczytywacz2;
 	string nazwaobiektu;
-	wczytywacz2.open("ustawienia/pliki.txt");
+	wczytywacz2.open("ustawienia/pliki2.txt");
 	if (!wczytywacz2.is_open()) {
 		Logger::log(Logger::ERR + "brak pliku z plikami");
 		exit(0);
@@ -533,7 +533,7 @@ void wczytaj() {
 		Object::objects.push_back(new Object(nazwaobiektu));
 	}
 	wczytywacz2.close();
-	wczytywacz.open("ustawienia/dupa.txt");
+	wczytywacz.open("ustawienia/ustawienia2.txt");
 	if (!wczytywacz.is_open()) {
 		Logger::log(Logger::ERR + "brak pliku z ustawieniami");
 		exit(0);
