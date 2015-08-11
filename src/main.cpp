@@ -1,4 +1,3 @@
-
 #define GLEW_STATIC
 #define _SECURE_SCL 0
 #define _HAS_ITERATOR_DEBUGGING 0
@@ -90,6 +89,7 @@ informacja info;
 #include "map.h"
 #include "frustum_culler.h"
 FrustumCuller* culler;
+Map*map;
 
 void resize(int width, int height) {
 	const float ar = (float) width / (float) height / 2;
@@ -437,7 +437,7 @@ void klawiaturka(unsigned char key, int x, int y) {
 		break;
 
 	case '3':
-		if (ktorykutas2 < (int)Object::objects.size() - 1)
+		if (ktorykutas2 < (int) Object::objects.size() - 1)
 			ktorykutas2++;
 		break;
 
@@ -521,13 +521,18 @@ void wczytaj() {
 		exit(0);
 	}
 
+	map = new Map();
+	Entity* mapObject = new Entity(map->mapObject);
+	Entity::allObjects.push_back(mapObject);
+	mapObject->alwaysDisplay = true;
+	mapObject->setScale(Map::stosunekx, Map::stosuneky, Map::stosunekz);
+
 	while (!wczytywacz2.eof()) {
 		wczytywacz2 >> nazwaobiektu;
 		Logger::log(nazwaobiektu);
 		Object::objects.push_back(new Object(nazwaobiektu));
 	}
 	wczytywacz2.close();
-	mapa *map = new mapa();
 	wczytywacz.open("ustawienia/dupa.txt");
 	if (!wczytywacz.is_open()) {
 		Logger::log(Logger::ERR + "brak pliku z ustawieniami");
@@ -549,7 +554,7 @@ void wczytaj() {
 
 		if (nazwaobiektu == "p") {
 			wczytywacz >> a >> b >> c;
-			d = mapa::calculateHeight(a, b, c);
+			d = Map::calculateHeight(a, b, c);
 			//xd << "p " << a << " " << d << " " << c << endl;
 			object->setPosition(a, d, c);
 		}
@@ -588,10 +593,6 @@ void wczytaj() {
 			object->alwaysDisplay = true;
 		}
 	}
-	Entity* mapObject = new Entity(Object::objects.back());
-	Entity::allObjects.push_back(mapObject);
-	mapObject->alwaysDisplay = true;
-	mapObject->setScale(mapa::stosunekx, mapa::stosuneky, mapa::stosunekz);
 	SDL_Quit();
 
 	ostringstream stream;
@@ -823,7 +824,7 @@ int main(int argc, char* args[]) {
 	if (!GLEW_VERSION_3_0)
 		Logger::log(Logger::ERR + "masz wersje " + (char *) glGetString( GL_VERSION) + " OpenGL zamiast 4.2.0 XD");
 	else {
-		stream << "Wersja OpenGL: " << (char*) glGetString( GL_VERSION) << ", OK\n";
+		stream << "Wersja OpenGL: " << (char*) glGetString( GL_VERSION) << ", OK";
 		Logger::log(stream.str());
 		stream.str("");
 	}
@@ -840,12 +841,12 @@ int main(int argc, char* args[]) {
 	glutMouseFunc(mysza3);
 	glutMouseWheelFunc(kulko);
 	glutIdleFunc(idle);
-	if (SDL_Init(SDL_INIT_EVERYTHING) == -1){
+	if (SDL_Init(SDL_INIT_EVERYTHING) == -1) {
 		Logger::log(Logger::ERR + "inicjalizacja SDL");
 		exit(0);
 	}
-	Logger::log(Logger::LINE);
 	Logger::log("SDL OK");
+	Logger::log(Logger::LINE + "\n");
 
 	glClearColor(1, 1, 1, 1);
 	glEnable(GL_DEPTH_TEST);

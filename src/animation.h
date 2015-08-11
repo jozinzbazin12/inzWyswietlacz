@@ -52,7 +52,6 @@ public:
 	}
 
 	void animuj(Entity *ob) {
-		Logger::log(name);
 		ob->px += position[actualStep][0] * speed[actualStep];
 		ob->py += position[actualStep][1] * speed[actualStep];
 		ob->pz += position[actualStep][2] * speed[actualStep];

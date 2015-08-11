@@ -8,7 +8,7 @@
 #ifndef SRC_MAP_H_
 #define SRC_MAP_H_
 //todo
-class mapa {
+class Map {
 public:
 	static int **heights;
 	static int mapX, mapZ;
@@ -17,6 +17,7 @@ public:
 	static long double stosunekz;
 	int wymx, wymz;
 	long long unsigned rozmiarmapy;
+	Object* mapObject;
 
 	int deleteDirectory(const string &refcstrRootDirectory, bool bDeleteSubdirectories = true) {
 		bool bSubdirectory = false;
@@ -69,7 +70,7 @@ public:
 		}
 		return 0;
 	}
-
+//todo
 	static float calculateHeight(float a2, float b2, float c2) {
 		int aa, cc;
 		long double a, c;
@@ -78,7 +79,7 @@ public:
 		c = (long double) ((c2) / stosunekz) + (long double) (mapZ / 2);		//0
 		aa = (int) a;
 		cc = (int) c;
-		if (aa < 1 || aa >= mapX || cc < 0 || cc >= mapZ)
+		if (aa < 2 || aa >= mapX || cc < 0 || cc >= mapZ)
 			return 0;
 		if (a == aa && c == cc)
 			return heights[mapX - aa][cc] * stosuneky + b2;
@@ -107,22 +108,6 @@ public:
 
 		//return 1000;
 		return 0;
-	}
-//todo
-	void sprawdz_co() {
-		fstream wczytywacz;
-		wczytywacz.open("ustawienia/mapa.txt");
-
-		string nazwa;
-		string tex;
-		string mtl;
-		wczytywacz >> nazwa;
-		wczytywacz >> tex;
-		wczytywacz >> mtl;
-		wczytywacz >> wymx;
-		wczytywacz >> wymz;
-		wczytywacz.close();
-		wczytajmape(nazwa, tex, mtl);
 	}
 
 	void normalize(float *t1) {
@@ -164,13 +149,13 @@ public:
 		file.close();
 	}
 
-	bool sprawdz(string nazwa) {
+	bool tryLoadLastMap(string nazwa) {
 		fstream sprawdzacz, sprawdzacz2;
-		bool tag = false;
 		sprawdzacz.open("modele/0/0.obj");
-		if (!sprawdzacz.is_open())
+		if (!sprawdzacz.is_open()) {
 			Logger::log("Nie ma mapy, probuje utworzyc");
-		else {
+			return false;
+		} else {
 			sprawdzacz2.open("mapy/ostatnia.txt");
 			if (sprawdzacz2.is_open()) {
 				ifstream sprawdzacz3;
@@ -183,19 +168,18 @@ public:
 				rozmiarmapy = sprawdz_rozmiar(nazwa);
 				if (a == rozmiarmapy && nazwa == b) {
 					Logger::log("Jest zrobiona mapa, wczytuje...");
-					tag = true;
 					loadHeights();
 					stosunekx = (float) wymx / (float) mapX;
 					stosunekz = (float) wymz / (float) mapZ;
 					stosuneky = 2;
-					Object::objects.push_back(new Object("0", true));
+					mapObject = new Object("0", true);
 				}
 
 			}
 		}
 		sprawdzacz.close();
 		sprawdzacz2.close();
-		return tag;
+		return true;
 	}
 
 	float* zrup_normalny(float t1[3], float t2[3], float t3[3]) {
@@ -212,7 +196,7 @@ public:
 		return vec;
 	}
 
-	void wczytajmape(string nazwa2, string tekstura2, string mtl2) {
+	void loadMap(string nazwa2, string tekstura2, string mtl2) {
 		string nazwa = "mapy/mapy/" + nazwa2;
 		string tekstura = "mapy/tekstury/" + tekstura2;
 		string mtl = "mapy/mtl/" + mtl2;
@@ -220,9 +204,9 @@ public:
 		dupaa += tekstura2[tekstura2.size() - 3];
 		dupaa += tekstura2[tekstura2.size() - 2];
 		dupaa += tekstura2[tekstura2.size() - 1];
-		bool tag = sprawdz(nazwa);
-		if (tag)
+		if (tryLoadLastMap(nazwa)) {
 			return;
+		}
 		deleteDirectory("modele/0/");
 		copyToModels(mtl, tekstura, dupaa);
 		Logger::log("Nie ma mapy, probuje utworzyc\n");
@@ -366,19 +350,31 @@ public:
 		for (int i = 0; i < v; i++)
 			delete[] vec[i];
 		delete[] vec;
-		Object::objects.push_back(new Object("0", true));
+		mapObject = new Object("0", true);
 		zapisywacz.close();
 	}
 
-	mapa() {
-		sprawdz_co();
+	Map() {
+		fstream file;
+		file.open("ustawienia/mapa.txt");
+
+		string name;
+		string tex;
+		string mtl;
+		file >> name;
+		file >> tex;
+		file >> mtl;
+		file >> wymx;
+		file >> wymz;
+		file.close();
+		loadMap(name, tex, mtl);
 	}
 };
-int** mapa::heights;
-int mapa::mapX = 0;
-int mapa::mapZ = 0;
-long double mapa::stosunekx;
-long double mapa::stosuneky;
-long double mapa::stosunekz;
+int** Map::heights;
+int Map::mapX = 0;
+int Map::mapZ = 0;
+long double Map::stosunekx;
+long double Map::stosuneky;
+long double Map::stosunekz;
 
 #endif /* SRC_MAP_H_ */
