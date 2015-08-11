@@ -9,14 +9,22 @@
 #define SRC_MAP_H_
 
 class Map {
-public:
+private:
 	static int **heights;
+	long long unsigned mapSize;
+
+	void addVector(float* dest, float* v, int size = 3) {
+		for (int i = 0; i < size; i++) {
+			dest[i] += v[i];
+		}
+	}
+public:
+
 	static int mapX, mapZ;
 	static long double stosunekx;
 	static long double stosuneky;
 	static long double stosunekz;
 	int wymx, wymz;
-	long long unsigned mapSize;
 	Object* mapObject;
 
 	int deleteDirectory(const string &refcstrRootDirectory, bool bDeleteSubdirectories = true) {
@@ -212,6 +220,7 @@ public:
 		vec[0] = temp1[1] * temp2[2] - temp1[2] * temp2[1];
 		vec[1] = temp1[2] * temp2[0] - temp1[0] * temp2[2];
 		vec[2] = temp1[0] * temp2[1] - temp1[1] * temp2[0];
+		normalize(vec);
 		return vec;
 	}
 
@@ -267,10 +276,10 @@ public:
 			}
 		zapisywacz2.close();
 
-		//normals
+		//face normals
 		float **vectors = new float*[(txt->w - 1) * (txt->h - 1) * 2];
 		int v = 0;
-		float t1[3], t2[3], t3[3];
+		float t1[3], t2[3], t3[3], t4[3];
 		for (int i = 0; i < txt->h - 1; i++)
 			for (int j = 0; j < txt->w - 1; j++) {
 				t1[0] = txt->h / 2 - i;
@@ -285,21 +294,12 @@ public:
 				t3[1] = heights[i + 1][j]; //i+1,j
 				t3[2] = j - txt->w / 2;
 
+				t4[0] = txt->h / 2 - i - 1;
+				t4[1] = heights[i + 1][j + 1]; //i+1,j+1
+				t4[2] = j + 1 - txt->w / 2;
+
 				vectors[v++] = makeNormal(t1, t3, t2);
-
-				t1[0] = txt->h / 2 - i - 1;
-				t1[1] = heights[i + 1][j];  //i+1,j
-				t1[2] = j - txt->w / 2;
-
-				t2[0] = txt->h / 2 - i;
-				t2[1] = heights[i][j + 1]; //i,j+1
-				t2[2] = j + 1 - txt->w / 2;
-
-				t3[0] = txt->h / 2 - i - 1;
-				t3[1] = heights[i + 1][j + 1]; //i+1,j+1
-				t3[2] = j + 1 - txt->w / 2;
-
-				vectors[v++] = makeNormal(t3, t2, t1);
+				vectors[v++] = makeNormal(t4, t2, t1);
 			}
 		zapisywacz << "vt 0 0" << endl;
 		zapisywacz << "vt 0 2" << endl;
@@ -307,6 +307,8 @@ public:
 		zapisywacz << "vt 2 2" << endl;
 		zapisywacz << "usemtl cipa" << endl;
 		zapisywacz << "s 1" << endl;
+
+		//vertex normals
 		int przes, przes2;
 		float normals[3];
 		for (int i = 0; i < txt->h; i++)
@@ -317,35 +319,21 @@ public:
 				normals[1] = 0;
 				normals[2] = 0;
 				if (j != txt->w - 1 && i != txt->h - 1) {
-					normals[0] += vectors[przes][0];
-					normals[1] += vectors[przes][1];
-					normals[2] += vectors[przes][2];
+					addVector(normals, vectors[przes]);
 				}
 
 				if (j != 0 && i != txt->h - 1) {
-					normals[0] += vectors[przes - 2][0];
-					normals[1] += vectors[przes - 2][1];
-					normals[2] += vectors[przes - 2][2];
-
-					normals[0] += vectors[przes - 1][0];
-					normals[1] += vectors[przes - 1][1];
-					normals[2] += vectors[przes - 1][2];
+					addVector(normals, vectors[przes - 2]);
+					addVector(normals, vectors[przes - 1]);
 				}
 
 				if (j != 0 && i != 0) {
-					normals[0] += vectors[przes2 - 1][0];
-					normals[1] += vectors[przes2 - 1][1];
-					normals[2] += vectors[przes2 - 1][2];
+					addVector(normals, vectors[przes2 - 1]);
 				}
 
 				if (j != txt->w - 1 && i != 0) {
-					normals[0] += vectors[przes2][0];
-					normals[1] += vectors[przes2][1];
-					normals[2] += vectors[przes2][2];
-
-					normals[0] += vectors[przes2 + 1][0];
-					normals[1] += vectors[przes2 + 1][1];
-					normals[2] += vectors[przes2 + 1][2];
+					addVector(normals, vectors[przes2]);
+					addVector(normals, vectors[przes2 + 1]);
 				}
 				normalize(normals);
 				zapisywacz << "vn " << normals[0] << " " << normals[1] << " " << normals[2] << endl;
