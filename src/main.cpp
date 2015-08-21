@@ -18,6 +18,7 @@
 #include <list>
 #include <array>
 #include <algorithm>
+#include <map>
 using namespace std;
 #include "logger.h"
 ////////////////////////////////////////////
@@ -89,7 +90,7 @@ informacja info;
 #include "map.h"
 #include "frustum_culler.h"
 FrustumCuller* culler;
-Map*map;
+Map* mapBuilder;
 
 void resize(int width, int height) {
 	const float ar = (float) width / (float) height / 2;
@@ -194,7 +195,7 @@ void display(void) {
 		DrawString(-2.32, 0.75, -2.5, "Pos: " + info.poss);
 		DrawString(-2.32, 0.7, -2.5, "Wszystkie obiekty: " + info.ileob + "   Wyswietlone obiekty: " + info.ileob2);
 		DrawString(-2.32, 0.65, -2.5,
-				"Obiekt: " + info.ob2 + "  " + Object::objects[ktorykutas2]->name + "   sztuk: " + info.licznikob);
+				"Obiekt: " + info.ob2 + "  " + Object::getObject(ktorykutas2)->name + "   sztuk: " + info.licznikob);
 		if (ktorykutas != -1) {
 			DrawString(-2.32, 0.6, -2.5, "Zaznaczony obiekt: " + info.ob + "  " + wybrany->object->name);
 			if (Entity::allObjects[ktorykutas]->parent)
@@ -424,7 +425,7 @@ void klawiaturka(unsigned char key, int x, int y) {
 		break;
 
 	case '9':
-		Entity::allObjects.push_back(new Entity(Object::objects[ktorykutas2]));
+		Entity::allObjects.push_back(new Entity(Object::getObject(ktorykutas2)));
 		if (ktorykutas != -1)
 			Entity::allObjects[Entity::allObjects.size() - 1]->parent = Entity::allObjects[ktorykutas];
 		ktorykutas = Entity::allObjects.size() - 1;
@@ -437,7 +438,7 @@ void klawiaturka(unsigned char key, int x, int y) {
 		break;
 
 	case '3':
-		if (ktorykutas2 < (int) Object::objects.size() - 1)
+		if (ktorykutas2 < (int) Object::objectsCount() - 1)
 			ktorykutas2++;
 		break;
 
@@ -515,14 +516,14 @@ void wczytaj() {
 	GLfloat a, b, c, d;
 	fstream wczytywacz, wczytywacz2;
 	string nazwaobiektu;
-	wczytywacz2.open("ustawienia/pliki2.txt");
+	wczytywacz2.open("ustawienia/pliki.txt");
 	if (!wczytywacz2.is_open()) {
 		Logger::log(Logger::ERR + "brak pliku z plikami");
 		exit(0);
 	}
 
-	map = new Map();
-	Entity* mapObject = new Entity(map->mapObject);
+	mapBuilder = new Map();
+	Entity* mapObject = new Entity(mapBuilder->mapObject);
 	Entity::allObjects.push_back(mapObject);
 	mapObject->alwaysDisplay = true;
 	mapObject->setScale(Map::stosunekx, Map::stosuneky, Map::stosunekz);
@@ -530,10 +531,10 @@ void wczytaj() {
 	while (!wczytywacz2.eof()) {
 		wczytywacz2 >> nazwaobiektu;
 		Logger::log(nazwaobiektu);
-		Object::objects.push_back(new Object(nazwaobiektu));
+		Object::addObject(new Object(nazwaobiektu));
 	}
 	wczytywacz2.close();
-	wczytywacz.open("ustawienia/ustawienia2.txt");
+	wczytywacz.open("ustawienia/staradupa.txt");
 	if (!wczytywacz.is_open()) {
 		Logger::log(Logger::ERR + "brak pliku z ustawieniami");
 		exit(0);
@@ -544,11 +545,11 @@ void wczytaj() {
 		wczytywacz >> nazwaobiektu;
 		if (nazwaobiektu == "o") {
 			wczytywacz >> x;
-			if (x >= (int) Object::objects.size()) {
+			if (x >= (int) Object::objectsCount()) {
 				Logger::log(Logger::ERR + "nie ma tyle obiektow");
 				exit(0);
 			}
-			object = new Entity(Object::objects[x]);
+			object = new Entity(Object::getObject(x));
 			Entity::allObjects.push_back(object);
 		}
 
@@ -600,7 +601,7 @@ void wczytaj() {
 	stream << "Utworzono " << totalVerticesCount << " trojkatow";
 	Logger::log(stream.str());
 	stream.str("");
-	stream << "Wczytanych obiektow: " << Object::objects.size() << ", wyswietlonych obiektow:"
+	stream << "Wczytanych obiektow: " << Object::objectsCount() << ", wyswietlonych obiektow:"
 			<< Entity::allObjects.size();
 	Logger::log(stream.str());
 
@@ -618,7 +619,7 @@ void wczytaj() {
 	stream.str("");
 	stream << "Tekstur: " << texturesCount << ", rezydentne: " << ilerez << endl;
 	Logger::log(stream.str());
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Object::numerkowybuforXD);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Object::numerkowybuforXD);
 }
 
 void zapisz() {
@@ -696,7 +697,7 @@ void __cdecl informuj(void *kutas) {
 		ob2 << ktorykutas2;
 		ileob << Entity::allObjects.size();
 		ileob2 << Entity::solidObjectsToDisplay.size() + Entity::transparentObjectsToDisplay.size();
-		licznikob << Object::objects[ktorykutas2]->counter;
+		licznikob << Object::getObject(ktorykutas2)->counter;
 		speed << predkosc;
 		if (clock() - licznik >= CLOCKS_PER_SEC) {
 			fps << ramki;

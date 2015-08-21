@@ -141,6 +141,9 @@ public:
 			t1[1] /= d;
 			t1[2] /= d;
 		}
+//		t1[0] = t1[0] < 0 ? t1[0] * -1 : t1[0];
+//		t1[1] = t1[1] < 0 ? t1[1] * -1 : t1[1];
+//		t1[2] = t1[2] < 0 ? t1[2] * -1 : t1[2];
 	}
 
 	void copyToModels(string mtl, string texture, string dupaa) {
@@ -305,48 +308,55 @@ public:
 		zapisywacz << "vt 0 2" << endl;
 		zapisywacz << "vt 2 0" << endl;
 		zapisywacz << "vt 2 2" << endl;
-		zapisywacz << "usemtl cipa" << endl;
+		zapisywacz << "usemtl cipa" << endl; //TODO
 		zapisywacz << "s 1" << endl;
 
 		//vertex normals
-		int przes, przes2;
+		int vertex, vetex2;
 		float normals[3];
 		for (int i = 0; i < txt->h; i++)
 			for (int j = 0; j < txt->w; j++) {
-				przes = i * (txt->w - 1) * 2 + j * 2;
-				przes2 = (i - 1) * (txt->w - 1) * 2 + j * 2;
+				vertex = i * (txt->w - 1) * 2 + j * 2;
+				vetex2 = (i - 1) * (txt->w - 1) * 2 + j * 2;
 				normals[0] = 0;
 				normals[1] = 0;
 				normals[2] = 0;
 				if (j != txt->w - 1 && i != txt->h - 1) {
-					addVector(normals, vectors[przes]);
+					addVector(normals, vectors[vertex]);
 				}
 
 				if (j != 0 && i != txt->h - 1) {
-					addVector(normals, vectors[przes - 2]);
-					addVector(normals, vectors[przes - 1]);
+					addVector(normals, vectors[vertex - 2]);
+					addVector(normals, vectors[vertex - 1]);
 				}
 
 				if (j != 0 && i != 0) {
-					addVector(normals, vectors[przes2 - 1]);
+					addVector(normals, vectors[vetex2 - 1]);
 				}
 
 				if (j != txt->w - 1 && i != 0) {
-					addVector(normals, vectors[przes2]);
-					addVector(normals, vectors[przes2 + 1]);
+					addVector(normals, vectors[vetex2]);
+					addVector(normals, vectors[vetex2 + 1]);
 				}
 				normalize(normals);
+				normals[0] = vectors[vertex > 1 && vertex < v ? vertex - 1 : 0][0];
+				normals[1] = vectors[vertex > 1 && vertex < v ? vertex - 1 : 0][1];
+				normals[2] = vectors[vertex > 1 && vertex < v ? vertex - 1 : 0][2];
+
 				zapisywacz << "vn " << normals[0] << " " << normals[1] << " " << normals[2] << endl;
 			}
-
+		//faces
+		int normal, normal2;
 		for (int i = 0; i < txt->h - 1; i++)
-			for (int j = 1; j < txt->w - 1; j++) {
-				przes = i * txt->w + j;
-				przes2 = (i + 1) * txt->w + j;
-				zapisywacz << "f " << przes << "/1/" << przes << " " << przes + 1 << "/2/" << przes + 1 << " " << przes2
-						<< "/3/" << przes2 << endl;
-				zapisywacz << "f " << przes + 1 << "/2/" << przes + 1 << " " << przes2 << "/3/" << przes2 << " "
-						<< przes2 + 1 << "/4/" << przes2 + 1 << endl;
+			for (int j = 1; j < txt->w; j++) {
+				vertex = i * txt->w + j;
+				vetex2 = (i + 1) * txt->w + j;
+				normal = vertex;
+				normal2 = vetex2;
+				zapisywacz << "f " << vertex << "/1/" << normal << " " << vertex + 1 << "/2/" << normal + 1 << " "
+						<< vetex2 << "/3/" << normal2 << endl;
+				zapisywacz << "f " << vertex + 1 << "/2/" << normal + 1 << " " << vetex2 << "/3/" << normal2 << " "
+						<< vetex2 + 1 << "/4/" << normal2 + 1 << endl;
 			}
 		Logger::log("Utworzono mape");
 		fstream sprawdzacz2;
