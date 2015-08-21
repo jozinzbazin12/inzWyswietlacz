@@ -11,13 +11,13 @@
 class Material {
 public:
 	GLenum s = GL_SMOOTH;
-	float kat[4];
-	float kdt[4];
-	float kst[4];
+	float kat[4]={};
+	float kdt[4]={};
+	float kst[4]={};
 	int tkat = -1;
 	int tkdt = -1;
 	int tkst = -1;
-	float nst;
+	float nst=0;
 	string name;
 
 	bool isTransparent() {

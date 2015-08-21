@@ -75,21 +75,21 @@ public:
 	bool isInViewField(int i) {
 		if (Entity::allObjects[i]->alwaysDisplay)
 			return true;
-		if (ktorykutas == -1) {
+		if (selectedEntityPos == -1) {
 			px2 = posX;
 			py2 = posY;
 			pz2 = posZ;
 		} else {
-			pz2 = kamera;
+			pz2 = cameraDistance;
 			const double a = 0.01745329251;
 			py2 = -pz2 * sin(-a * cx);
 			pz2 = pz2 * cos(-a * cx);
 			px2 = -pz2 * sin(a * cy);
 			pz2 = pz2 * cos(a * cy);
 
-			px2 += wybrany->px;
-			py2 += wybrany->py + 5;
-			pz2 += wybrany->pz;
+			px2 += selectedEntity->px;
+			py2 += selectedEntity->py + 5;
+			pz2 += selectedEntity->pz;
 
 		}
 		Entity::allObjects[i]->recalculate();

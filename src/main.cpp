@@ -1,7 +1,6 @@
 #define GLEW_STATIC
 #define _SECURE_SCL 0
 #define _HAS_ITERATOR_DEBUGGING 0
-#define coileklatek 10
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <fstream>
@@ -26,7 +25,7 @@ void DrawString(double x, double y, double z, string string);
 string otworz(string nazwa, string koniec);
 string utnij(string dupa);
 void zapisz();
-long long unsigned sprawdz_rozmiar(string nazwa);
+long long unsigned checkSize(string fileName);
 class Animation;
 class Object;
 class Subobject;
@@ -36,32 +35,31 @@ class MaterialLib;
 class FrustumCuller;
 class Texture;
 ////////////////////////////////////////////
-Entity * obiekty_animowane[100];
-Entity * wybrany;
+vector<Entity*> animatedObjects;
+Entity * selectedEntity;
 tagPOINT *mysz_pozycja;
 float modelview[16];
-bool czywsp = true;
-bool wcisnietyprawy = false;
-bool wcisnietylewy = false;
+bool debug = true;
+bool pressedRightButton = false;
+bool pressedLeftButton = false;
 GLfloat cx = 0;
 GLfloat cy = 0;
 GLfloat cx2 = 0, cy2 = 0, cz2 = 0;
 int myk = 0;
 int myk2 = 0;
-int kamera = 5;
+int cameraDistance = 5;
 double predkosc = 10;
-int licznik = 0;
-int ramki = 0;
-bool obracamy = false;
+int frameCounter = 0;
+int frames = 0;
+bool rotationEnabled = false;
 GLfloat posX = -5, posY = 5, posZ = 11;
-int ileanimacji = 0;
-int wys = 700, szer = 1300;
+int windowHeight = 700, windowWidth = 1300;
 long long unsigned totalVerticesCount = 0;
 int ktoreswiatlo = 0;
 int ktorapos = 0;
 GLfloat kutas[] = { 0.4f, 0.4f, 0.4f, 0.4f };
-int ktorykutas = -1;
-int ktorykutas2 = 0;
+int selectedEntityPos = -1;
+int selectedObjectPos = 0;
 GLfloat light_ambient[] = { 0.1f, 0.1f, 0.1f, 0.1f };
 GLfloat light_diffuse[] = { 0.5f, 0.5f, 0.5f, 0.5f };
 GLfloat light_specular[] = { 0.8f, 0.8f, 0.8f, 0.8f };
@@ -75,10 +73,10 @@ GLfloat high_shininess[] = { 100.0f };
 HANDLE hThread;
 HANDLE hThread2;
 HANDLE hThread3;
-struct informacja {
+struct Information {
 	string x1, y1, z1, fps, speed, amb, diff, spec, pos, poss, ob, ob2, ileob, ileob2, licznikob;
 };
-informacja info;
+Information info;
 
 #include "texture.h"
 #include "material.h"
@@ -101,11 +99,11 @@ void resize(int width, int height) {
 	glFrustum(-ar, ar, culler->bottom, culler->top, culler->neardist, culler->fardist);
 	culler->ar = ar;
 	glMatrixMode(GL_MODELVIEW);
-	wys = height;
-	szer = width;
+	windowHeight = height;
+	windowWidth = width;
 }
 
-void rysuj(Entity *ob) {
+void drawObject(Entity *ob) {
 	GLfloat p1 = ob->px;
 	GLfloat p2 = ob->py;
 	GLfloat p3 = ob->pz;
@@ -164,7 +162,6 @@ void rysuj(Entity *ob) {
 		glNormalPointer(GL_FLOAT, 0, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glDrawArrays(GL_TRIANGLES, 0, object->vertexCount);
-		//glDrawElements(GL_TRIANGLES,ob->ob->subobjects[j]->ilewierzcholkow, GL_UNSIGNED_INT, 0);
 
 		if (mtl->tkdt != -1) {
 			glDisable(GL_TEXTURE_2D);
@@ -176,9 +173,9 @@ void rysuj(Entity *ob) {
 
 void display(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	if (!ramki++)
-		licznik = clock();
-	if (czywsp) {
+	if (!frames++)
+		frameCounter = clock();
+	if (debug) {
 		glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
 		glLoadIdentity();
 
@@ -195,36 +192,36 @@ void display(void) {
 		DrawString(-2.32, 0.75, -2.5, "Pos: " + info.poss);
 		DrawString(-2.32, 0.7, -2.5, "Wszystkie obiekty: " + info.ileob + "   Wyswietlone obiekty: " + info.ileob2);
 		DrawString(-2.32, 0.65, -2.5,
-				"Obiekt: " + info.ob2 + "  " + Object::getObject(ktorykutas2)->name + "   sztuk: " + info.licznikob);
-		if (ktorykutas != -1) {
-			DrawString(-2.32, 0.6, -2.5, "Zaznaczony obiekt: " + info.ob + "  " + wybrany->object->name);
-			if (Entity::allObjects[ktorykutas]->parent)
-				DrawString(-2.32, 0.55, -2.5, "Dziecko obiektu: " + wybrany->parent->object->name);
+				"Obiekt: " + info.ob2 + "  " + Object::getObject(selectedObjectPos)->name + "   sztuk: " + info.licznikob);
+		if (selectedEntityPos != -1) {
+			DrawString(-2.32, 0.6, -2.5, "Zaznaczony obiekt: " + info.ob + "  " + selectedEntity->object->name);
+			if (Entity::allObjects[selectedEntityPos]->parent)
+				DrawString(-2.32, 0.55, -2.5, "Dziecko obiektu: " + selectedEntity->parent->object->name);
 		}
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 
 	glLoadIdentity();
-	if (ktorykutas > -1)
-		glTranslatef(0, 0, -kamera); //obrot kamery
+	if (selectedEntityPos > -1)
+		glTranslatef(0, 0, -cameraDistance); //obrot kamery
 	glRotatef(cx, 1, 0, 0);
 	glRotatef(cy, 0, 1, 0);
 
-	if (ktorykutas == -1)
+	if (selectedEntityPos == -1)
 		glTranslatef(-posX, -posY, -posZ);
 	else {
-		if (obracamy) {
-			wybrany->rx = cx2;
-			wybrany->ry = -cy2;
-			wybrany->rz = cz2;
+		if (rotationEnabled) {
+			selectedEntity->rx = cx2;
+			selectedEntity->ry = -cy2;
+			selectedEntity->rz = cz2;
 		}
-		wybrany->px = posX;
-		wybrany->py = posY;
-		wybrany->pz = posZ;
+		selectedEntity->px = posX;
+		selectedEntity->py = posY;
+		selectedEntity->pz = posZ;
 		GLfloat p1 = posX;
 		GLfloat p2 = posY;
 		GLfloat p3 = posZ;
-		Entity *kutas = wybrany->parent;
+		Entity *kutas = selectedEntity->parent;
 		while (kutas) {
 			p1 += kutas->px;
 			p2 += kutas->py;
@@ -238,12 +235,12 @@ void display(void) {
 	glDisable(GL_BLEND);
 	for (unsigned i = 0; i < Entity::solidObjectsToDisplay.size(); i++)
 		if (Entity::solidObjectsToDisplay[i]) {
-			rysuj(Entity::solidObjectsToDisplay[i]);
+			drawObject(Entity::solidObjectsToDisplay[i]);
 		}
 	glEnable(GL_BLEND);
 	for (unsigned i = 0; i < Entity::transparentObjectsToDisplay.size(); i++) {
 		if (Entity::transparentObjectsToDisplay[i]) {
-			rysuj(Entity::transparentObjectsToDisplay[i]);
+			drawObject(Entity::transparentObjectsToDisplay[i]);
 		}
 	}
 
@@ -286,12 +283,8 @@ void klawiaturka(unsigned char key, int x, int y) {
 		break;
 
 	case 'o':
-		if (czywsp)
-			czywsp = false;
-		else
-			czywsp = true;
+		debug^=true;
 		break;
-
 	case '=':
 		if (predkosc < 10)
 			predkosc += 0.1;
@@ -371,75 +364,75 @@ void klawiaturka(unsigned char key, int x, int y) {
 		break;
 
 	case '8':
-		Entity::allObjects[ktorykutas]->sx += predkosc;
-		Entity::allObjects[ktorykutas]->sy += predkosc;
-		Entity::allObjects[ktorykutas]->sz += predkosc;
-		if (Entity::allObjects[ktorykutas]->anim) {
-			Entity::allObjects[ktorykutas]->anim->startSx += predkosc;
-			Entity::allObjects[ktorykutas]->anim->startSy += predkosc;
-			Entity::allObjects[ktorykutas]->anim->startSz += predkosc;
+		Entity::allObjects[selectedEntityPos]->sx += predkosc;
+		Entity::allObjects[selectedEntityPos]->sy += predkosc;
+		Entity::allObjects[selectedEntityPos]->sz += predkosc;
+		if (Entity::allObjects[selectedEntityPos]->anim) {
+			Entity::allObjects[selectedEntityPos]->anim->startSx += predkosc;
+			Entity::allObjects[selectedEntityPos]->anim->startSy += predkosc;
+			Entity::allObjects[selectedEntityPos]->anim->startSz += predkosc;
 		}
 		break;
 
 	case '5':
-		Entity::allObjects[ktorykutas]->sx -= predkosc;
-		Entity::allObjects[ktorykutas]->sy -= predkosc;
-		Entity::allObjects[ktorykutas]->sz -= predkosc;
-		if (Entity::allObjects[ktorykutas]->anim) {
-			Entity::allObjects[ktorykutas]->anim->startSx -= predkosc;
-			Entity::allObjects[ktorykutas]->anim->startSy -= predkosc;
-			Entity::allObjects[ktorykutas]->anim->startSz -= predkosc;
+		Entity::allObjects[selectedEntityPos]->sx -= predkosc;
+		Entity::allObjects[selectedEntityPos]->sy -= predkosc;
+		Entity::allObjects[selectedEntityPos]->sz -= predkosc;
+		if (Entity::allObjects[selectedEntityPos]->anim) {
+			Entity::allObjects[selectedEntityPos]->anim->startSx -= predkosc;
+			Entity::allObjects[selectedEntityPos]->anim->startSy -= predkosc;
+			Entity::allObjects[selectedEntityPos]->anim->startSz -= predkosc;
 		}
 		break;
 
 	case '4':
-		if (ktorykutas > -1) {
-			wybrany = Entity::allObjects[--ktorykutas];
-			posX = Entity::allObjects[ktorykutas]->px;
-			posY = Entity::allObjects[ktorykutas]->py;
-			posZ = Entity::allObjects[ktorykutas]->pz;
-			cx2 = -Entity::allObjects[ktorykutas]->rx;
-			cy2 = -Entity::allObjects[ktorykutas]->ry;
+		if (selectedEntityPos > -1) {
+			selectedEntity = Entity::allObjects[--selectedEntityPos];
+			posX = Entity::allObjects[selectedEntityPos]->px;
+			posY = Entity::allObjects[selectedEntityPos]->py;
+			posZ = Entity::allObjects[selectedEntityPos]->pz;
+			cx2 = -Entity::allObjects[selectedEntityPos]->rx;
+			cy2 = -Entity::allObjects[selectedEntityPos]->ry;
 		}
 		break;
 
 	case '6':
-		if (ktorykutas < (int) Entity::allObjects.size() - 1) {
-			wybrany = Entity::allObjects[++ktorykutas];
-			posX = Entity::allObjects[ktorykutas]->px;
-			posY = Entity::allObjects[ktorykutas]->py;
-			posZ = Entity::allObjects[ktorykutas]->pz;
-			cx2 = -Entity::allObjects[ktorykutas]->rx;
-			cy2 = -Entity::allObjects[ktorykutas]->ry;
+		if (selectedEntityPos < (int) Entity::allObjects.size() - 1) {
+			selectedEntity = Entity::allObjects[++selectedEntityPos];
+			posX = Entity::allObjects[selectedEntityPos]->px;
+			posY = Entity::allObjects[selectedEntityPos]->py;
+			posZ = Entity::allObjects[selectedEntityPos]->pz;
+			cx2 = -Entity::allObjects[selectedEntityPos]->rx;
+			cy2 = -Entity::allObjects[selectedEntityPos]->ry;
 		}
 		break;
 
 	case '7':
-		if (ktorykutas != -1) {
-			delete Entity::allObjects[ktorykutas];
-			Entity::allObjects[ktorykutas] = Entity::allObjects[Entity::allObjects.size()];
+		if (selectedEntityPos != -1) {
+			delete Entity::allObjects[selectedEntityPos];
+			Entity::allObjects[selectedEntityPos] = Entity::allObjects[Entity::allObjects.size()];
 			Entity::allObjects[Entity::allObjects.size()] = NULL;
-			ktorykutas = -1;
-			wybrany = NULL;
+			selectedEntityPos = -1;
+			selectedEntity = NULL;
 		}
 		break;
 
 	case '9':
-		Entity::allObjects.push_back(new Entity(Object::getObject(ktorykutas2)));
-		if (ktorykutas != -1)
-			Entity::allObjects[Entity::allObjects.size() - 1]->parent = Entity::allObjects[ktorykutas];
-		ktorykutas = Entity::allObjects.size() - 1;
-		wybrany = Entity::allObjects[ktorykutas];
+		Entity::allObjects.push_back(new Entity(Object::getObject(selectedObjectPos)));
+		if (selectedEntityPos != -1)
+			Entity::allObjects[Entity::allObjects.size() - 1]->parent = Entity::allObjects[selectedEntityPos];
+		selectedEntityPos = Entity::allObjects.size() - 1;
+		selectedEntity = Entity::allObjects[selectedEntityPos];
 		break;
 
 	case '1':
-		if (ktorykutas2 > 0)
-			ktorykutas2--;
+		if (selectedObjectPos > 0)
+			selectedObjectPos--;
 		break;
 
 	case '3':
-		if (ktorykutas2 < (int) Object::objectsCount() - 1)
-			ktorykutas2++;
+		if (selectedObjectPos <  Object::objectsCount() - 1)
+			selectedObjectPos++;
 		break;
 
 	case '*':
@@ -451,7 +444,7 @@ void klawiaturka(unsigned char key, int x, int y) {
 	glutPostRedisplay();
 }
 
-void mysza(int x, int y) {
+void mouseButton1(int x, int y) {
 	int w, h;
 	w = glutGet( GLUT_WINDOW_WIDTH);
 	h = glutGet( GLUT_WINDOW_HEIGHT);
@@ -461,62 +454,62 @@ void mysza(int x, int y) {
 		cx = 90;
 	if (cx < -90)
 		cx = -90;
-	obracamy = false;
-	myk++;
+	rotationEnabled = false;
+	myk++;//TODO
 	if (myk >= 3) {
 		glutWarpPointer(w / 2, h / 2);
 		myk = 0;
 	}
 }
 
-void mysza2(int x, int y) {
+void mouseMotion(int x, int y) {
 	int w, h;
 	w = glutGet( GLUT_WINDOW_WIDTH);
 	h = glutGet( GLUT_WINDOW_HEIGHT);
-	if (wcisnietylewy) {
+	if (pressedLeftButton) {
 		cx2 -= (h / 2 - y) / 15.0;
 		cz2 -= (w / 2 - x) / 15.0;
 	}
 
-	if (wcisnietyprawy)
+	if (pressedRightButton)
 		cy2 -= (w / 2 - x) / 15.0;
 	myk2++;
-	obracamy = true;
+	rotationEnabled = true;
 	if (myk2 >= 3) {
 		glutWarpPointer(w / 2, h / 2);
 		myk2 = 0;
 	}
 }
 
-void mysza3(int button, int state, int x, int y) {
+void mouseButton2(int button, int state, int x, int y) {
 	if (state == GLUT_UP && button == GLUT_LEFT_BUTTON)
-		wcisnietylewy = false;
+		pressedLeftButton = false;
 	if (state == GLUT_DOWN && button == GLUT_LEFT_BUTTON)
-		wcisnietylewy = true;
+		pressedLeftButton = true;
 	if (state == GLUT_UP && button == GLUT_RIGHT_BUTTON)
-		wcisnietyprawy = false;
+		pressedRightButton = false;
 	if (state == GLUT_DOWN && button == GLUT_RIGHT_BUTTON)
-		wcisnietyprawy = true;
+		pressedRightButton = true;
 }
 
-void kulko(int button, int dir, int x, int y) {
+void mouseWheel(int button, int dir, int x, int y) {
 	if (dir > 0)
-		kamera -= predkosc;
+		cameraDistance -= predkosc;
 	else
-		kamera += predkosc;
+		cameraDistance += predkosc;
 }
 
 void idle(void) {
 	glutPostRedisplay();
 }
 
-void wczytaj() {
+void loadObjects() {
 
 	int x;
 	GLfloat a, b, c, d;
 	fstream wczytywacz, wczytywacz2;
 	string nazwaobiektu;
-	wczytywacz2.open("ustawienia/pliki.txt");
+	wczytywacz2.open("ustawienia/pliki2.txt");
 	if (!wczytywacz2.is_open()) {
 		Logger::log(Logger::ERR + "brak pliku z plikami");
 		exit(0);
@@ -534,7 +527,7 @@ void wczytaj() {
 		Object::addObject(new Object(nazwaobiektu));
 	}
 	wczytywacz2.close();
-	wczytywacz.open("ustawienia/staradupa.txt");
+	wczytywacz.open("ustawienia/ustawienia2.txt");
 	if (!wczytywacz.is_open()) {
 		Logger::log(Logger::ERR + "brak pliku z ustawieniami");
 		exit(0);
@@ -588,7 +581,7 @@ void wczytaj() {
 			wczytywacz >> nazwaobiektu;
 			//xd << "animacja " + nazwaobiektu << endl;
 			object->anim = new Animation("modele/" + object->object->name, nazwaobiektu, object);
-			obiekty_animowane[ileanimacji++] = object;
+			animatedObjects.push_back(object);
 		}
 		if (nazwaobiektu == "v") {
 			object->alwaysDisplay = true;
@@ -605,21 +598,20 @@ void wczytaj() {
 			<< Entity::allObjects.size();
 	Logger::log(stream.str());
 
-	int ilerez = 0;
+	int residentTexturesCount = 0;
 	unsigned texturesCount = Texture::textures.size();
-	GLboolean *czyrezydentne = new GLboolean[texturesCount];
-	glAreTexturesResident(texturesCount, &Texture::txtid[0], czyrezydentne);
+	GLboolean *residentArray = new GLboolean[texturesCount];
+	glAreTexturesResident(texturesCount, &Texture::txtid[0], residentArray);
 
 	for (unsigned i = 0; i < texturesCount; i++)
-		if (czyrezydentne[i]) {
-			ilerez++;
+		if (residentArray[i]) {
+			residentTexturesCount++;
 		}
-	delete[] czyrezydentne;
+	delete[] residentArray;
 
 	stream.str("");
-	stream << "Tekstur: " << texturesCount << ", rezydentne: " << ilerez << endl;
+	stream << "Tekstur: " << texturesCount << ", rezydentne: " << residentTexturesCount << endl;
 	Logger::log(stream.str());
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Object::numerkowybuforXD);
 }
 
 void zapisz() {
@@ -660,31 +652,31 @@ void zapisz() {
 //	}
 }
 
-long long unsigned sprawdz_rozmiar(string nazwa) {
-	long long unsigned kutas;
-	ifstream sprawdzacz;
-	sprawdzacz.open(nazwa.c_str(), fstream::binary);
-	if (!sprawdzacz.is_open())
+long long unsigned checkSize(string fileName) {
+	long long unsigned size;
+	ifstream stream;
+	stream.open(fileName.c_str(), fstream::binary);
+	if (!stream.is_open())
 		exit(0);
-	sprawdzacz.seekg(0, ios::end);
-	kutas = sprawdzacz.tellg();
-	sprawdzacz.close();
-	return kutas;
+	stream.seekg(0, ios::end);
+	size = stream.tellg();
+	stream.close();
+	return size;
 
 }
 
-void __cdecl animuj(void *kutas) {
+void __cdecl animate(void *arg) {
 	while (1) {
-		if (ktorykutas == -1)
-			for (int i = 0; i < ileanimacji; i++)
-				obiekty_animowane[i]->anim->animuj(obiekty_animowane[i]);
+		if (selectedEntityPos == -1)
+			for (unsigned i = 0; i < animatedObjects.size(); i++)
+				animatedObjects[i]->anim->animuj(animatedObjects[i]);
 		Sleep(15);
 	}
 }
 
-void __cdecl informuj(void *kutas) {
+void __cdecl inform(void *kutas) {
 	while (1) {
-		stringstream x1, y1, z1, fps, speed, amb, diff, spec, pos, poss, ob, ob2, ileob, ileob2, licznikob;
+		stringstream x1, y1, z1, fps, cameraSpeed, amb, diff, spec, pos, poss, ob, ob2, ileob, ileob2, licznikob;
 		x1 << posX;
 		y1 << posY;
 		z1 << posZ;
@@ -693,22 +685,22 @@ void __cdecl informuj(void *kutas) {
 		spec << light_specular[0] << " " << light_specular[1] << " " << light_specular[2] << " " << light_specular[3];
 		pos << light_position[0] << " " << light_position[1] << " " << light_position[2] << " " << light_position[3];
 		poss << "Swiatlo: " << ktoreswiatlo << " Pozycja: " << ktorapos;
-		ob << ktorykutas;
-		ob2 << ktorykutas2;
+		ob << selectedEntityPos;
+		ob2 << selectedObjectPos;
 		ileob << Entity::allObjects.size();
 		ileob2 << Entity::solidObjectsToDisplay.size() + Entity::transparentObjectsToDisplay.size();
-		licznikob << Object::getObject(ktorykutas2)->counter;
-		speed << predkosc;
-		if (clock() - licznik >= CLOCKS_PER_SEC) {
-			fps << ramki;
+		licznikob << Object::getObject(selectedObjectPos)->counter;
+		cameraSpeed << predkosc;
+		if (clock() - frameCounter >= CLOCKS_PER_SEC) {
+			fps << frames;
 			info.fps = fps.str();
-			ramki = 0;
+			frames = 0;
 		}
 
 		info.x1 = x1.str();
 		info.y1 = y1.str();
 		info.z1 = z1.str();
-		info.speed = speed.str();
+		info.speed = cameraSpeed.str();
 		info.amb = amb.str();
 		info.diff = diff.str();
 		info.spec = spec.str();
@@ -723,7 +715,7 @@ void __cdecl informuj(void *kutas) {
 	}
 }
 
-void __cdecl sortuj(void *dupa) {
+void __cdecl sortObjects(void *dupa) {
 	while (1) {
 		unsigned objectsCount = Entity::allObjects.size();
 		vector<Entity*> transparentObjects;
@@ -745,7 +737,7 @@ void __cdecl sortuj(void *dupa) {
 	}
 }
 
-string utnij(string kutas) {
+string utnij(string kutas) {//TODO
 	string dupa = "";
 	int a = -1;
 	for (int i = kutas.length() - 1; i >= 0; i--)
@@ -760,7 +752,7 @@ string utnij(string kutas) {
 	return dupa;
 }
 
-string otworz(string nazwa, string koniec) {
+string otworz(string nazwa, string koniec) {//TODO
 	string nazwa2 = "";
 	string nazwa3 = "";
 	int tak = 0;
@@ -799,7 +791,7 @@ void DrawString(double x, double y, double z, string string) {
 		glutBitmapCharacter( GLUT_BITMAP_9_BY_15, (int) string[i]);
 }
 
-void sprawdz_rozszerzenie(string roz) {
+void checkOpenGLExtension(string roz) {
 	if (!glewIsSupported(roz.c_str()))
 		Logger::log(Logger::ERR + "nieobslugiwane roszerzenie " + roz);
 }
@@ -807,7 +799,7 @@ void sprawdz_rozszerzenie(string roz) {
 int main(int argc, char* args[]) {
 	Logger::log("Tworzenie okna...");
 	glutInit(&argc, args);
-	glutInitWindowSize(szer, wys);
+	glutInitWindowSize(windowWidth, windowHeight);
 	glutInitWindowPosition(0, 0);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
 	glutCreateWindow("Ka³nter Strajk");
@@ -829,18 +821,18 @@ int main(int argc, char* args[]) {
 		Logger::log(stream.str());
 		stream.str("");
 	}
-	sprawdz_rozszerzenie("GL_ARB_framebuffer_object");
-	sprawdz_rozszerzenie("GL_EXT_texture_compression_s3tc");
-	sprawdz_rozszerzenie("GL_ARB_vertex_buffer_object");
+	checkOpenGLExtension("GL_ARB_framebuffer_object");
+	checkOpenGLExtension("GL_EXT_texture_compression_s3tc");
+	checkOpenGLExtension("GL_ARB_vertex_buffer_object");
 
 	mysz_pozycja = new tagPOINT;
 	glutReshapeFunc(resize);
 	glutDisplayFunc(display);
 	glutKeyboardFunc(klawiaturka);
-	glutPassiveMotionFunc(mysza);
-	glutMotionFunc(mysza2);
-	glutMouseFunc(mysza3);
-	glutMouseWheelFunc(kulko);
+	glutPassiveMotionFunc(mouseButton1);
+	glutMotionFunc(mouseMotion);
+	glutMouseFunc(mouseButton2);
+	glutMouseWheelFunc(mouseWheel);
 	glutIdleFunc(idle);
 	if (SDL_Init(SDL_INIT_EVERYTHING) == -1) {
 		Logger::log(Logger::ERR + "inicjalizacja SDL");
@@ -862,19 +854,33 @@ int main(int argc, char* args[]) {
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-	wczytaj();
+	loadObjects();
 	glEnableClientState( GL_VERTEX_ARRAY);
 	glEnableClientState( GL_NORMAL_ARRAY);
 	culler = FrustumCuller::getInstance();
-	hThread = (HANDLE) _beginthread(animuj, 0, NULL);
-	hThread2 = (HANDLE) _beginthread(informuj, 0, NULL);
-	hThread3 = (HANDLE) _beginthread(sortuj, 0, NULL);
+	hThread = (HANDLE) _beginthread(animate, 0, NULL);
+	hThread2 = (HANDLE) _beginthread(inform, 0, NULL);
+	hThread3 = (HANDLE) _beginthread(sortObjects, 0, NULL);
 
 	glutMainLoop();
 	return 0;
 }
 //TODO zapis
 //todo przezroczystosc  gore do obiektu || rysowanie samych podobiektow
+/*
+ * wielowoatkowe wczytywanie dopiero po xml
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ */
+
+
+
 /*
  x86/zlib1.dll
  x86/freeglut.dll

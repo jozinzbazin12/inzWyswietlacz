@@ -7,11 +7,14 @@
 
 #ifndef SRC_MAP_H_
 #define SRC_MAP_H_
+#include "md5.h"
 
 class Map {
 private:
 	static int **heights;
 	long long unsigned mapSize;
+	const char* mapFile = "modele/0/0.obj";
+	MD5 md5;
 
 	void addVector(float* dest, float* v, int size = 3) {
 		for (int i = 0; i < size; i++) {
@@ -176,29 +179,27 @@ public:
 		file.close();
 	}
 //todo
-	bool tryLoadLastMap(string nazwa) {
-		return false;
+	bool tryLoadLastMap(string name) {
 		fstream sprawdzacz, sprawdzacz2;
-		sprawdzacz.open("modele/0/0.obj");
+		sprawdzacz.open(mapFile);
 		if (!sprawdzacz.is_open()) {
 			Logger::log("Nie ma mapy, probuje utworzyc");
 			return false;
 		} else {
 			sprawdzacz2.open("mapy/ostatnia.txt");
 			if (sprawdzacz2.is_open()) {
-				long long unsigned a;
-				string b;
-				sprawdzacz2 >> b;
-				sprawdzacz2 >> a;
+				string hash;
+				sprawdzacz2 >> hash;
 				sprawdzacz2 >> mapX;
 				sprawdzacz2 >> mapZ;
-				mapSize = sprawdz_rozmiar(nazwa);
-				if (a == mapSize && nazwa == b) {
+
+				string mapHash = md5.digestFile(mapFile);
+				if (hash == mapHash) {
 					Logger::log("Jest zrobiona mapa, wczytuje...");
 					loadHeights();
 					stosunekx = (float) wymx / (float) mapX;
 					stosunekz = (float) wymz / (float) mapZ;
-					stosuneky = 1;
+					stosuneky = 2;
 					mapObject = new Object("0", true);
 					sprawdzacz.close();
 					sprawdzacz2.close();
@@ -361,8 +362,7 @@ public:
 		Logger::log("Utworzono mape");
 		fstream sprawdzacz2;
 		sprawdzacz2.open("mapy/ostatnia.txt", ios::out);
-		sprawdzacz2 << mapName << endl;
-		sprawdzacz2 << mapSize << endl;
+		sprawdzacz2 << md5.digestFile(mapFile) << endl;
 		sprawdzacz2 << txt->w << endl;
 		sprawdzacz2 << txt->h;
 		sprawdzacz2.close();
