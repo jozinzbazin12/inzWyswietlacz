@@ -29,7 +29,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#pragma region MD5 defines
 // Constants for MD5Transform routine.
 #define S11 7
 #define S12 12
@@ -51,39 +50,6 @@
 static unsigned char PADDING[64] = { 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-// F, G, H and I are basic MD5 functions.
-#define F(x, y, z) (((x) & (y)) | ((~x) & (z)))
-#define G(x, y, z) (((x) & (z)) | ((y) & (~z)))
-#define H(x, y, z) ((x) ^ (y) ^ (z))
-#define I(x, y, z) ((y) ^ ((x) | (~z)))
-
-// ROTATE_LEFT rotates x left n bits.
-#define ROTATE_LEFT(x, n) (((x) << (n)) | ((x) >> (32-(n))))
-
-// FF, GG, HH, and II transformations for rounds 1, 2, 3, and 4.
-// Rotation is separate from addition to prevent recomputation.
-#define FF(a, b, c, d, x, s, ac) { \
-  (a) += F ((b), (c), (d)) + (x) + (UINT4)(ac); \
-  (a) = ROTATE_LEFT ((a), (s)); \
-  (a) += (b); \
-  }
-#define GG(a, b, c, d, x, s, ac) { \
-  (a) += G ((b), (c), (d)) + (x) + (UINT4)(ac); \
-  (a) = ROTATE_LEFT ((a), (s)); \
-  (a) += (b); \
-  }
-#define HH(a, b, c, d, x, s, ac) { \
-  (a) += H ((b), (c), (d)) + (x) + (UINT4)(ac); \
-  (a) = ROTATE_LEFT ((a), (s)); \
-  (a) += (b); \
-  }
-#define II(a, b, c, d, x, s, ac) { \
-  (a) += I ((b), (c), (d)) + (x) + (UINT4)(ac); \
-  (a) = ROTATE_LEFT ((a), (s)); \
-  (a) += (b); \
-  }
-#pragma endregion
-
 typedef unsigned char BYTE;
 
 // POINTER defines a generic pointer type
@@ -99,13 +65,61 @@ typedef unsigned long int UINT4;
 // the C-functions for use in C++ only
 class MD5 {
 private:
+
+	// ROTATE_LEFT rotates x left n bits.
+	static unsigned long ROTATE_LEFT(unsigned long &x, unsigned long &n) {
+		return (x << n) | (x) >> (32 - (n));
+	}
+
+	// FF, GG, HH, and II transformations for rounds 1, 2, 3, and 4.
+	// Rotation is separate from addition to prevent recomputation.
+	static void FF(unsigned long &a, unsigned long b, unsigned long c, unsigned long d, unsigned long x,
+			unsigned long s, unsigned long ac) {
+		a += F(b, c, d) + x + (UINT4) ac;
+		a = ROTATE_LEFT(a, s);
+		a += b;
+	}
+	static void GG(unsigned long &a, unsigned long b, unsigned long c, unsigned long d, unsigned long x,
+			unsigned long s, unsigned long ac) {
+		a += G(b, c, d) + x + (UINT4) ac;
+		a = ROTATE_LEFT(a, s);
+		a += b;
+	}
+	static void HH(unsigned long &a, unsigned long b, unsigned long c, unsigned long d, unsigned long x,
+			unsigned long s, unsigned long ac) {
+		a += H(b, c, d) + x + (UINT4) ac;
+		a = ROTATE_LEFT(a, s);
+		a += b;
+	}
+	static void II(unsigned long &a, unsigned long b, unsigned long c, unsigned long d, unsigned long x,
+			unsigned long s, unsigned long ac) {
+		a += I(b, c, d) + x + (UINT4) ac;
+		a = ROTATE_LEFT(a, s);
+		a += b;
+	}
+
+	static unsigned long F(unsigned long x, unsigned long y, unsigned long z) {
+		return (x & y) | (~x & z);
+	}
+
+	static unsigned long G(unsigned long x, unsigned long y, unsigned long z) {
+		return (x & z) | (y & (~z));
+	}
+
+	static unsigned long H(unsigned long x, unsigned long y, unsigned long z) {
+		return x ^ y ^ z;
+	}
+
+	static unsigned long I(unsigned long x, unsigned long y, unsigned long z) {
+		return (y ^ (x | ~z));
+	}
+
 	struct __context_t {
 		UINT4 state[4]; /* state (ABCD) */
 		UINT4 count[2]; /* number of bits, modulo 2^64 (lsb first) */
 		unsigned char buffer[64]; /* input buffer */
 	} context;
 
-#pragma region static helper functions
 	// The core of the MD5 algorithm is here.
 	// MD5 basic transformation. Transforms state based on block.
 	static void MD5Transform(UINT4 state[4], unsigned char block[64]) {
@@ -216,7 +230,6 @@ private:
 			output[i] = ((UINT4) input[j]) | (((UINT4) input[j + 1]) << 8) | (((UINT4) input[j + 2]) << 16)
 					| (((UINT4) input[j + 3]) << 24);
 	}
-#pragma endregion
 
 public:
 	// MAIN FUNCTIONS
@@ -322,11 +335,13 @@ public:
 		int len;
 		unsigned char buffer[1024];
 
-		if ((file = fopen(filename, "rb")) == NULL)
-			printf("%s can't be opened\n", filename);
-		else {
-			while (len = fread(buffer, 1, 1024, file))
+		if ((file = fopen(filename, "rb")) == NULL) {
+			Logger::log("Nie mo¿na otworzyc pliku ");
+			Logger::log(filename, false);
+		} else {
+			while ((len = fread(buffer, 1, 1024, file))) {
 				Update(buffer, len);
+			}
 			Final();
 
 			fclose(file);

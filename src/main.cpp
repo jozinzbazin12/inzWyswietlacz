@@ -797,6 +797,8 @@ void checkOpenGLExtension(string roz) {
 }
 
 int main(int argc, char* args[]) {
+	MD5 md5;
+	Logger::log(md5.digestFile("ustawienia/dupa.txt"));
 	Logger::log("Tworzenie okna...");
 	glutInit(&argc, args);
 	glutInitWindowSize(windowWidth, windowHeight);
