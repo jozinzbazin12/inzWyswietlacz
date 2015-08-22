@@ -2,6 +2,9 @@ class Object {
 private:
 	static vector<Object*> objects;
 	static map<string, Object*> objectsMap;
+	Subobject* lastSubobject = NULL;
+	Material* tmpmtl = NULL;
+	MaterialLib* mtl;
 
 	int getNextFaceNumber(string& a) {
 		int x;
@@ -25,7 +28,6 @@ private:
 		Logger::log("Obiekt: " + objectName);
 		long long unsigned fileSize;
 		string text;
-		bool useMtl = true;
 		ifstream file;
 		file.open(objectName.c_str(), ios::binary);
 		if (!file.is_open()) {
@@ -53,37 +55,33 @@ private:
 		MaterialLib::materials.push_back(newLib);
 		mtl = MaterialLib::materials.back();
 
-		bool first = true;
 		while (!file.eof()) {
 			file >> text;
 			if (text == "o") {
-				if (first) {
-					bindObject(vertices, normals, textureCords, faces);
-					faces.clear();
-				} else {
-					first = false;
-				}
+				lastSubobject = bindObject(vertices, normals, textureCords, faces);
+				faces.clear();
 				file >> text;
-				useMtl = true;
 			}
 
 			if (text == "usemtl") {
 				file >> text;
-				if (!useMtl) {
-					bindObject(vertices, normals, textureCords, faces);
-					faces.clear();
-				}
-				useMtl = false;
 				tmpmtl = mtl->searchMaterial(text);
-				transparent |= mtl->mtl[tmpmtl]->isTransparent();
+				if (lastSubobject) {
+					lastSubobject->mtl = tmpmtl;
+					lastSubobject = NULL;
+				}
+				bindObject(vertices, normals, textureCords, faces);
+				faces.clear();
+				transparent |= tmpmtl->isTransparent();
 			}
 
 			if (text == "s") {
 				file >> text;
-				if (text == "1")
-					mtl->mtl[tmpmtl]->s = GL_SMOOTH;
-				else
-					mtl->mtl[tmpmtl]->s = GL_FLAT;
+				if (text == "1") {
+					tmpmtl->s = GL_SMOOTH;
+				} else {
+					tmpmtl->s = GL_FLAT;
+				}
 			}
 
 			if (text == "v") {
@@ -145,7 +143,7 @@ private:
 		Logger::log(stream.str());
 	}
 
-	void bindObject(vector<GLfloat> vertices, vector<GLfloat> normals, vector<GLfloat> textureCords,
+	Subobject* bindObject(vector<GLfloat> vertices, vector<GLfloat> normals, vector<GLfloat> textureCords,
 			vector<GLfloat*> faces) {
 		vector<GLfloat> newNormals;
 		vector<GLfloat> newVertices;
@@ -164,7 +162,9 @@ private:
 		}
 
 		sendToBuffer(newNormals, newVertices, newTextureCords, faces.size());
-		subobjects.push_back(new Subobject(faces.size(), mtl->mtl[tmpmtl], buff.size() - 3));
+		Subobject* subObject = new Subobject(faces.size(), tmpmtl, buff.size() - 3);
+		subobjects.push_back(subObject);
+		return subObject;
 	}
 
 	void sendToBuffer(vector<GLfloat> normals, vector<GLfloat> vertices, vector<GLfloat> textureCords, int facesSize) {
@@ -214,13 +214,11 @@ private:
 
 public:
 	vector<Subobject*> subobjects;
-	MaterialLib *mtl;
 	static vector<GLuint> buff;
 	string name;
 	GLfloat min[3][3];
 	GLfloat max[3][3];
 	int counter = 0;
-	int tmpmtl = 0;
 	bool transparent = false;
 
 	static Object* getObject(string key) {

@@ -97,12 +97,13 @@ public:
 	vector<Material*> mtl;
 	string path;
 
-	int searchMaterial(string name) {
+	Material* searchMaterial(string name) {
 		for (unsigned i = 0; i < mtl.size(); i++) {
 			if (mtl[i]->name == name) {
-				return i;
+				return mtl[i];
 			}
 		}
+		Logger::log(Logger::ERR+"nie znaleziono materia³u: "+name);
 		exit(0);
 	}
 
