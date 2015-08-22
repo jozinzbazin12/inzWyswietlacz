@@ -9,20 +9,7 @@
 #define SRC_MATERIAL_LIB_H_
 
 class MaterialLib {
-public:
-	static vector<MaterialLib*> materials;
-	vector<Material*> mtl;
-	string path;
-
-	int searchMaterial(string name) {
-		for (unsigned i = 0; i < mtl.size(); i++) {
-			if (mtl[i]->name == name) {
-				return i;
-			}
-		}
-		exit(0);
-	}
-
+private:
 	void loadMtl(string name) {
 		float tab[3];
 		float floatValue;
@@ -103,6 +90,20 @@ public:
 		ostringstream stream;
 		stream << "Utworzono " << mtl.size() << " materialow";
 		Logger::log(stream.str());
+	}
+
+public:
+	static vector<MaterialLib*> materials;
+	vector<Material*> mtl;
+	string path;
+
+	int searchMaterial(string name) {
+		for (unsigned i = 0; i < mtl.size(); i++) {
+			if (mtl[i]->name == name) {
+				return i;
+			}
+		}
+		exit(0);
 	}
 
 	MaterialLib(string nazwa) {

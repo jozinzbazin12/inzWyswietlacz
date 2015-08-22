@@ -2,33 +2,7 @@ class Object {
 private:
 	static vector<Object*> objects;
 	static map<string, Object*> objectsMap;
-public:
-	vector<Subobject*> subobjects;
-	MaterialLib *mtl;
-	static vector<GLuint> buff;
-	string name;
-	GLfloat min[3][3];
-	GLfloat max[3][3];
-	int counter = 0;
-	int tmpmtl = 0;
-	bool transparent = false;
 
-	static Object* getObject(string key) {
-		return objectsMap[key];
-	}
-
-	static Object* getObject(int pos) {
-		return objects[pos];
-	}
-
-	static void addObject(Object* obj) {
-		objects.push_back(obj);
-		objectsMap[obj->name] = obj;
-	}
-
-	static int objectsCount(){
-		return objects.size();
-	}
 	int getNextFaceNumber(string& a) {
 		int x;
 		string tmp = "";
@@ -236,6 +210,34 @@ public:
 			if (vertices[i + 2] < min[2][2])
 				copyElements(min[2], vertices, i);
 		}
+	}
+
+public:
+	vector<Subobject*> subobjects;
+	MaterialLib *mtl;
+	static vector<GLuint> buff;
+	string name;
+	GLfloat min[3][3];
+	GLfloat max[3][3];
+	int counter = 0;
+	int tmpmtl = 0;
+	bool transparent = false;
+
+	static Object* getObject(string key) {
+		return objectsMap[key];
+	}
+
+	static Object* getObject(int pos) {
+		return objects[pos];
+	}
+
+	static void addObject(Object* obj) {
+		objects.push_back(obj);
+		objectsMap[obj->name] = obj;
+	}
+
+	static int objectsCount() {
+		return objects.size();
 	}
 
 	Object(string name, bool alwaysDisplay = false) {

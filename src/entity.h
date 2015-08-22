@@ -9,36 +9,7 @@
 #define SRC_ENTITY_H_
 
 class Entity {
-public:
-	Object *object;
-	Entity *parent;
-	GLfloat px, py, pz;
-	GLfloat sx, sy, sz;
-	GLfloat rx, ry, rz;
-	GLfloat min[3][3], max[3][3];
-	GLfloat realMin[3][3], realMax[3][3];
-	Animation *anim;
-	bool alwaysDisplay;
-	static vector<Entity*> allObjects;
-	static vector<Entity*> solidObjectsToDisplay;
-	static vector<Entity*> transparentObjectsToDisplay;
-
-	static bool compare(Entity* e1, Entity* e2) {
-		int val = pow(posX - e1->px, 2) + pow(posY - e1->py, 2) + pow(posZ - e1->pz, 2);
-		int val2 = pow(posX - e2->px, 2) + pow(posY - e2->py, 2) + pow(posZ - e2->pz, 2);
-		return val > val2;
-	}
-	void recalculate() {
-		for (int i = 0; i < 3; i++)
-			for (int j = 0; j < 3; j++) {
-				realMin[i][j] = min[i][j];
-				realMax[i][j] = max[i][j];
-			}
-		updateRotation();
-		updateScale();
-		updatePosition();
-	}
-
+private:
 	void updateRotation() {
 		const float a = 0.01745329251;
 		if (ry)
@@ -85,6 +56,36 @@ public:
 			realMax[i][2] *= sz;
 		}
 	}
+public:
+	Object *object;
+	Entity *parent;
+	GLfloat px, py, pz;
+	GLfloat sx, sy, sz;
+	GLfloat rx, ry, rz;
+	GLfloat min[3][3], max[3][3];
+	GLfloat realMin[3][3], realMax[3][3];
+	Animation *anim;
+	bool alwaysDisplay;
+	static vector<Entity*> allObjects;
+	static vector<Entity*> solidObjectsToDisplay;
+	static vector<Entity*> transparentObjectsToDisplay;
+
+	static bool compare(Entity* e1, Entity* e2) {
+		int val = pow(posX - e1->px, 2) + pow(posY - e1->py, 2) + pow(posZ - e1->pz, 2);
+		int val2 = pow(posX - e2->px, 2) + pow(posY - e2->py, 2) + pow(posZ - e2->pz, 2);
+		return val > val2;
+	}
+	void recalculate() {
+		for (int i = 0; i < 3; i++)
+			for (int j = 0; j < 3; j++) {
+				realMin[i][j] = min[i][j];
+				realMax[i][j] = max[i][j];
+			}
+		updateRotation();
+		updateScale();
+		updatePosition();
+	}
+
 	void setPosition(GLfloat px, GLfloat py, GLfloat pz) {
 		this->px = px;
 		this->py = py;

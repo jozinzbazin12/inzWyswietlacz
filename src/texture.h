@@ -9,39 +9,11 @@
 #define SRC_TEXTURE_H_
 
 class Texture {
-public:
-	static vector<Texture*> textures;
+private:
 	SDL_Surface *txt;
 	GLenum format;
 	GLenum internalformat;
 	string extension;
-	static vector<GLuint> txtid;
-	string textureName;
-	bool transparent;
-	void isTransparent() {
-		unsigned color;
-		transparent = false;
-		if (format == GL_RGBA || format == GL_BGRA) {
-			for (int i = 0; i < txt->h; i += 16)
-				for (int j = 0; j < txt->w; j += 16) {
-					color = ((unsigned int*) txt->pixels)[i * (txt->pitch / sizeof(unsigned int)) + j];
-					color &= 0xFF000000;
-					color >>= 24;
-					if (color < 255) {
-						Logger::log("Przezroczysta       " + textureName);
-						transparent = true;
-						return;
-					}
-				}
-		}
-	}
-
-	static int isTextureAlreadyDefined(string nazwa) {
-		for (unsigned i = 0; i < textures.size(); i++)
-			if (textures[i]->textureName == nazwa)
-				return i;
-		return -1;
-	}
 
 	GLenum whichFormat() {
 		if (extension == ".png")
@@ -87,6 +59,36 @@ public:
 			if (format[i] <= 'Z' && format[i] >= 'A')
 				format[i] += 32;
 		return format;
+	}
+
+public:
+	static vector<Texture*> textures;
+	static vector<GLuint> txtid;
+	string textureName;
+	bool transparent;
+	void isTransparent() {
+		unsigned color;
+		transparent = false;
+		if (format == GL_RGBA || format == GL_BGRA) {
+			for (int i = 0; i < txt->h; i += 16)
+				for (int j = 0; j < txt->w; j += 16) {
+					color = ((unsigned int*) txt->pixels)[i * (txt->pitch / sizeof(unsigned int)) + j];
+					color &= 0xFF000000;
+					color >>= 24;
+					if (color < 255) {
+						Logger::log("Przezroczysta       " + textureName);
+						transparent = true;
+						return;
+					}
+				}
+		}
+	}
+
+	static int isTextureAlreadyDefined(string nazwa) {
+		for (unsigned i = 0; i < textures.size(); i++)
+			if (textures[i]->textureName == nazwa)
+				return i;
+		return -1;
 	}
 
 	Texture(string nazwa, string tex) {
@@ -150,7 +152,7 @@ public:
 
 		glTexEnvf(GL_TEXTURE_FILTER_CONTROL, GL_TEXTURE_LOD_BIAS, -2);
 		GLclampf a = 1.0f;
-		glPrioritizeTextures(1, &txtid[txtid.size()-1], &a);
+		glPrioritizeTextures(1, &txtid[txtid.size() - 1], &a);
 		SDL_FreeSurface(txt);
 
 	}

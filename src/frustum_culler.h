@@ -12,27 +12,6 @@ class FrustumCuller {
 private:
 	static FrustumCuller* culler;
 
-	FrustumCuller(){
-	}
-
-public:
-	float fardist = 100000.0;
-	float neardist = 1.0;
-	float bottom = -0.5;
-	float top = 0.5;
-	float tan = (top - bottom) / neardist;
-	float ar;
-	float pcx, pcx2, pcy, pcy2, pcz, pcz2;
-	float h, h2;
-	GLfloat px2, py2, pz2;
-
-	static FrustumCuller* getInstance() {
-		if (!culler) {
-			culler = new FrustumCuller();
-		}
-		return culler;
-	}
-
 	void caclulate(float tab[3], float tab2[3], float &p1, float &p2, float md1, float md2, float md3) {
 		float v[3], v2[3];
 		v[0] = tab[0] - px2;
@@ -72,6 +51,27 @@ public:
 		return false;
 	}
 
+	FrustumCuller() {
+	}
+
+public:
+	float fardist = 100000.0;
+	float neardist = 1.0;
+	float bottom = -0.5;
+	float top = 0.5;
+	float tan = (top - bottom) / neardist;
+	float ar;
+	float pcx, pcx2, pcy, pcy2, pcz, pcz2;
+	float h, h2;
+	GLfloat px2, py2, pz2;
+
+	static FrustumCuller* getInstance() {
+		if (!culler) {
+			culler = new FrustumCuller();
+		}
+		return culler;
+	}
+
 	bool isInViewField(int i) {
 		if (Entity::allObjects[i]->alwaysDisplay)
 			return true;
@@ -102,6 +102,6 @@ public:
 	}
 
 };
-FrustumCuller* FrustumCuller::culler=NULL;
+FrustumCuller* FrustumCuller::culler = NULL;
 
 #endif /* SRC_FRUSTUM_CULLER_H_ */
