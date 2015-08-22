@@ -3,7 +3,6 @@ private:
 	static vector<Object*> objects;
 	static map<string, Object*> objectsMap;
 	Subobject* lastSubobject = NULL;
-	Material* tmpmtl = NULL;
 	MaterialLib* mtl;
 
 	int getNextFaceNumber(string& a) {
@@ -23,7 +22,13 @@ private:
 			x *= -1;
 		return x;
 	}
-//todo
+
+	void setLastMaterial(Subobject*& subObject, Material* mtl) {
+		if (subObject) {
+			subObject->mtl = mtl;
+			subObject = NULL;
+		}
+	}
 	void loadObject(string objectName, bool tag) {
 		Logger::log("Obiekt: " + objectName);
 		long long unsigned fileSize;
@@ -51,6 +56,7 @@ private:
 		}
 		file >> text;
 		//xd << this->nazwa << endl;
+		Material* tmpmtl = NULL;
 		MaterialLib* newLib = new MaterialLib(utnij(this->name) + "/" + text);
 		MaterialLib::materials.push_back(newLib);
 		mtl = MaterialLib::materials.back();
@@ -58,20 +64,20 @@ private:
 		while (!file.eof()) {
 			file >> text;
 			if (text == "o") {
-				lastSubobject = bindObject(vertices, normals, textureCords, faces);
-				faces.clear();
+				if (faces.size() != 0) {
+					setLastMaterial(lastSubobject, tmpmtl);
+					lastSubobject = bindObject(vertices, normals, textureCords, faces, tmpmtl);
+				}
 				file >> text;
 			}
 
 			if (text == "usemtl") {
 				file >> text;
-				tmpmtl = mtl->searchMaterial(text);
-				if (lastSubobject) {
-					lastSubobject->mtl = tmpmtl;
-					lastSubobject = NULL;
+				if (faces.size() != 0) {
+					lastSubobject = bindObject(vertices, normals, textureCords, faces, tmpmtl);
 				}
-				bindObject(vertices, normals, textureCords, faces);
-				faces.clear();
+				setLastMaterial(lastSubobject, tmpmtl);
+				tmpmtl = mtl->searchMaterial(text);
 				transparent |= tmpmtl->isTransparent();
 			}
 
@@ -124,8 +130,9 @@ private:
 				}
 			}
 		}
+
+		bindObject(vertices, normals, textureCords, faces, tmpmtl);
 		int vertexCount = 0;
-		bindObject(vertices, normals, textureCords, faces);
 		for (unsigned i = 0; i < subobjects.size(); i++) {
 			vertexCount += subobjects[i]->vertexCount;
 		}
@@ -144,7 +151,7 @@ private:
 	}
 
 	Subobject* bindObject(vector<GLfloat> vertices, vector<GLfloat> normals, vector<GLfloat> textureCords,
-			vector<GLfloat*> faces) {
+			vector<GLfloat*> &faces, Material* mtl) {
 		vector<GLfloat> newNormals;
 		vector<GLfloat> newVertices;
 		vector<GLfloat> newTextureCords;
@@ -162,8 +169,9 @@ private:
 		}
 
 		sendToBuffer(newNormals, newVertices, newTextureCords, faces.size());
-		Subobject* subObject = new Subobject(faces.size(), tmpmtl, buff.size() - 3);
+		Subobject* subObject = new Subobject(faces.size(), mtl, buff.size() - 3);
 		subobjects.push_back(subObject);
+		faces.clear();
 		return subObject;
 	}
 

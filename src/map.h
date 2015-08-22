@@ -66,6 +66,7 @@ private:
 //todo
 	bool tryLoadLastMap(string name) {
 		fstream sprawdzacz, sprawdzacz2;
+		string map;
 		sprawdzacz.open(mapFile);
 		if (!sprawdzacz.is_open()) {
 			Logger::log("Nie ma mapy, probuje utworzyc");
@@ -75,11 +76,12 @@ private:
 			if (sprawdzacz2.is_open()) {
 				string hash;
 				sprawdzacz2 >> hash;
+				sprawdzacz2 >> map;
 				sprawdzacz2 >> mapX;
 				sprawdzacz2 >> mapZ;
 
 				string mapHash = md5.digestFile(mapFile);
-				if (hash == mapHash) {
+				if (map ==  name && hash == mapHash) {
 					Logger::log("Jest zrobiona mapa, wczytuje...");
 					loadHeights();
 					stosunekx = (float) wymx / (float) mapX;
@@ -248,6 +250,7 @@ private:
 		fstream sprawdzacz2;
 		sprawdzacz2.open("mapy/ostatnia.txt", ios::out);
 		sprawdzacz2 << md5.digestFile(mapFile) << endl;
+		sprawdzacz2 << mapName << endl;
 		sprawdzacz2 << txt->w << endl;
 		sprawdzacz2 << txt->h;
 		sprawdzacz2.close();
