@@ -25,6 +25,7 @@ void DrawString(double x, double y, double z, string string);
 string otworz(string nazwa, string koniec);
 string utnij(string dupa);
 void zapisz();
+string getFileExtension(string path);
 long long unsigned checkSize(string fileName);
 class Animation;
 class Object;
@@ -87,8 +88,8 @@ Information info;
 #include "animation.h"
 #include "map.h"
 #include "frustum_culler.h"
+#include "objects_loader.h"
 FrustumCuller* culler;
-Map* mapBuilder;
 
 void resize(int width, int height) {
 	const float ar = (float) width / (float) height / 2;
@@ -192,7 +193,8 @@ void display(void) {
 		DrawString(-2.32, 0.75, -2.5, "Pos: " + info.poss);
 		DrawString(-2.32, 0.7, -2.5, "Wszystkie obiekty: " + info.ileob + "   Wyswietlone obiekty: " + info.ileob2);
 		DrawString(-2.32, 0.65, -2.5,
-				"Obiekt: " + info.ob2 + "  " + Object::getObject(selectedObjectPos)->name + "   sztuk: " + info.licznikob);
+				"Obiekt: " + info.ob2 + "  " + Object::getObject(selectedObjectPos)->name + "   sztuk: "
+						+ info.licznikob);
 		if (selectedEntityPos != -1) {
 			DrawString(-2.32, 0.6, -2.5, "Zaznaczony obiekt: " + info.ob + "  " + selectedEntity->object->name);
 			if (Entity::allObjects[selectedEntityPos]->parent)
@@ -283,7 +285,7 @@ void klawiaturka(unsigned char key, int x, int y) {
 		break;
 
 	case 'o':
-		debug^=true;
+		debug ^= true;
 		break;
 	case '=':
 		if (predkosc < 10)
@@ -431,7 +433,7 @@ void klawiaturka(unsigned char key, int x, int y) {
 		break;
 
 	case '3':
-		if (selectedObjectPos <  Object::objectsCount() - 1)
+		if (selectedObjectPos < Object::objectsCount() - 1)
 			selectedObjectPos++;
 		break;
 
@@ -455,7 +457,7 @@ void mouseButton1(int x, int y) {
 	if (cx < -90)
 		cx = -90;
 	rotationEnabled = false;
-	myk++;//TODO
+	myk++; //TODO
 	if (myk >= 3) {
 		glutWarpPointer(w / 2, h / 2);
 		myk = 0;
@@ -501,117 +503,6 @@ void mouseWheel(int button, int dir, int x, int y) {
 
 void idle(void) {
 	glutPostRedisplay();
-}
-
-void loadObjects() {
-
-	int x;
-	GLfloat a, b, c, d;
-	fstream wczytywacz, wczytywacz2;
-	string nazwaobiektu;
-	wczytywacz2.open("ustawienia/pliki.txt");
-	if (!wczytywacz2.is_open()) {
-		Logger::log(Logger::ERR + "brak pliku z plikami");
-		exit(0);
-	}
-
-	mapBuilder = new Map();
-	Entity* mapObject = new Entity(mapBuilder->mapObject);
-	Entity::allObjects.push_back(mapObject);
-	mapObject->alwaysDisplay = true;
-	mapObject->setScale(Map::stosunekx, Map::stosuneky, Map::stosunekz);
-
-	while (!wczytywacz2.eof()) {
-		wczytywacz2 >> nazwaobiektu;
-		Logger::log(nazwaobiektu);
-		Object::addObject(new Object(nazwaobiektu));
-	}
-	wczytywacz2.close();
-	wczytywacz.open("ustawienia/dupa.txt");
-	if (!wczytywacz.is_open()) {
-		Logger::log(Logger::ERR + "brak pliku z ustawieniami");
-		exit(0);
-	}
-
-	while (!wczytywacz.eof()) {
-		Entity* object;
-		wczytywacz >> nazwaobiektu;
-		if (nazwaobiektu == "o") {
-			wczytywacz >> x;
-			if (x >= (int) Object::objectsCount()) {
-				Logger::log(Logger::ERR + "nie ma tyle obiektow");
-				exit(0);
-			}
-			object = new Entity(Object::getObject(x));
-			Entity::allObjects.push_back(object);
-		}
-
-		if (nazwaobiektu == "p") {
-			wczytywacz >> a >> b >> c;
-			d = Map::calculateHeight(a, b, c);
-			//xd << "p " << a << " " << d << " " << c << endl;
-			object->setPosition(a, d, c);
-		}
-
-		if (nazwaobiektu == "pc") {
-			wczytywacz >> a >> b >> c;
-			//xd << "pc " << a << " " << b << " " << c << endl;
-			object->setPosition(a, b, c);
-		}
-
-		if (nazwaobiektu == "s") {
-			wczytywacz >> a >> b >> c;
-			//xd << "s " << a << " " << b << " " << c << endl;
-			object->setScale(a, b, c);
-		}
-
-		if (nazwaobiektu == "r") {
-			wczytywacz >> a >> b >> c;
-			//xd << "r " << a << " " << b << " " << c << endl;
-			object->setRotation(a, b, c);
-		}
-
-		if (nazwaobiektu == "d") {
-			wczytywacz >> x;
-			//xd << "d " << x << endl;
-			object->parent = Entity::allObjects[Entity::allObjects.size() - 1 + x];
-		}
-
-		if (nazwaobiektu == "a") {
-			wczytywacz >> nazwaobiektu;
-			//xd << "animacja " + nazwaobiektu << endl;
-			object->anim = new Animation("modele/" + object->object->name, nazwaobiektu, object);
-			animatedObjects.push_back(object);
-		}
-		if (nazwaobiektu == "v") {
-			object->alwaysDisplay = true;
-		}
-	}
-	SDL_Quit();
-
-	ostringstream stream;
-	Logger::log(Logger::LINE);
-	stream << "Utworzono " << totalVerticesCount << " trojkatow";
-	Logger::log(stream.str());
-	stream.str("");
-	stream << "Wczytanych obiektow: " << Object::objectsCount() << ", wyswietlonych obiektow:"
-			<< Entity::allObjects.size();
-	Logger::log(stream.str());
-
-	int residentTexturesCount = 0;
-	unsigned texturesCount = Texture::textures.size();
-	GLboolean *residentArray = new GLboolean[texturesCount];
-	glAreTexturesResident(texturesCount, &Texture::txtid[0], residentArray);
-
-	for (unsigned i = 0; i < texturesCount; i++)
-		if (residentArray[i]) {
-			residentTexturesCount++;
-		}
-	delete[] residentArray;
-
-	stream.str("");
-	stream << "Tekstur: " << texturesCount << ", rezydentne: " << residentTexturesCount << endl;
-	Logger::log(stream.str());
 }
 
 void zapisz() {
@@ -737,7 +628,7 @@ void __cdecl sortObjects(void *dupa) {
 	}
 }
 
-string utnij(string kutas) {//TODO
+string utnij(string kutas) { //TODO
 	string dupa = "";
 	int a = -1;
 	for (int i = kutas.length() - 1; i >= 0; i--)
@@ -752,19 +643,12 @@ string utnij(string kutas) {//TODO
 	return dupa;
 }
 
-string otworz(string nazwa, string koniec) {//TODO
+string otworz(string nazwa, string koniec) { //TODO
 	string nazwa2 = "";
 	string nazwa3 = "";
 	int tak = 0;
 	if (nazwa[1] == ':') {
-		int cycki = 0;
-		for (unsigned i = 0; i < nazwa.length(); i++)
-			if (nazwa[i] == '/' || nazwa[i] == '\\')
-				cycki = i;
-		string kutas = "";
-		for (unsigned i = cycki; i < nazwa.length(); i++)
-			kutas += nazwa[i];
-		return nazwa + kutas + koniec;
+		return nazwa;
 	}
 	for (unsigned i = 0; i < nazwa.length(); i++) {
 		nazwa3 += nazwa[i];
@@ -785,6 +669,11 @@ string otworz(string nazwa, string koniec) {//TODO
 	return nazwa2;;
 }
 
+string getFileExtension(string path) {
+	int pos = path.find_last_of(".");
+	return path.substr(pos, path.size());
+}
+
 void DrawString(double x, double y, double z, string string) {
 	glRasterPos3d(x, y, z);
 	for (unsigned i = 0; i < string.length(); i++)
@@ -797,8 +686,6 @@ void checkOpenGLExtension(string roz) {
 }
 
 int main(int argc, char* args[]) {
-	MD5 md5;
-	Logger::log(md5.digestFile("ustawienia/dupa.txt"));
 	Logger::log("Tworzenie okna...");
 	glutInit(&argc, args);
 	glutInitWindowSize(windowWidth, windowHeight);
@@ -856,7 +743,7 @@ int main(int argc, char* args[]) {
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-	loadObjects();
+	ObjectsLoader::getInstance()->loadObjects("ustawienia/dupa.xml");
 	glEnableClientState( GL_VERTEX_ARRAY);
 	glEnableClientState( GL_NORMAL_ARRAY);
 	culler = FrustumCuller::getInstance();
@@ -880,8 +767,6 @@ int main(int argc, char* args[]) {
  *
  *
  */
-
-
 
 /*
  x86/zlib1.dll

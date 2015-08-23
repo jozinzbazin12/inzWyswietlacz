@@ -162,8 +162,10 @@ private:
 			newNormals.push_back(normals[faces[i][2] * 3 + 1]);
 			newNormals.push_back(normals[faces[i][2] * 3 + 2]);
 
+			if(textureCords.size()){
 			newTextureCords.push_back(textureCords[faces[i][1] * 2]);
 			newTextureCords.push_back(textureCords[faces[i][1] * 2 + 1]);
+			}
 		}
 
 		sendToBuffer(newNormals, newVertices, newTextureCords, faces.size());
