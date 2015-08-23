@@ -28,7 +28,7 @@ private:
 			file >> text;
 			if (text == "newmtl") {
 				if (material) {
-					mtl.push_back(material);
+					mtl[material->name] = material;
 				}
 				file >> text;
 				material = new Material(text);
@@ -86,7 +86,7 @@ private:
 					material->setMapKd(textureNumber);
 			}
 		}
-		mtl.push_back(material);
+		mtl[material->name] = material;
 		ostringstream stream;
 		stream << "Utworzono " << mtl.size() << " materialow";
 		Logger::log(stream.str());
@@ -94,17 +94,16 @@ private:
 
 public:
 	static vector<MaterialLib*> materials;
-	vector<Material*> mtl;
+	map<string, Material*> mtl;
 	string path;
 
 	Material* searchMaterial(string name) {
-		for (unsigned i = 0; i < mtl.size(); i++) {
-			if (mtl[i]->name == name) {
-				return mtl[i];
-			}
+		Material* material = mtl[name];
+		if (!material) {
+			Logger::log(Logger::ERR + "nie znaleziono materia³u: " + name);
+			exit(0);
 		}
-		Logger::log(Logger::ERR+"nie znaleziono materia³u: "+name);
-		exit(0);
+		return material;
 	}
 
 	MaterialLib(string nazwa) {
@@ -113,8 +112,8 @@ public:
 		loadMtl(nazwa);
 	}
 	~MaterialLib() {
-		for (unsigned i = 0; i < mtl.size(); i++)
-			delete mtl[i];
+//	for (unsigned i = 0; i < mtl.size(); i++)
+//		delete mtl[i];
 	}
 };
 vector<MaterialLib*> MaterialLib::materials;
