@@ -1,0 +1,7 @@
+mapa2.png
+tex.png
+mtl.mtl
+2000
+2000
+
+//mapa,tekstura,material,dlugosc,szerokosc
