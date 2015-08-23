@@ -743,7 +743,7 @@ int main(int argc, char* args[]) {
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-	ObjectsLoader::getInstance()->loadObjects("ustawienia/dupa.xml");
+	ObjectsLoader::getInstance()->loadObjects("ustawienia/qtas.xml");
 	glEnableClientState( GL_VERTEX_ARRAY);
 	glEnableClientState( GL_NORMAL_ARRAY);
 	culler = FrustumCuller::getInstance();

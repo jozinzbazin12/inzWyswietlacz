@@ -115,6 +115,72 @@ private:
 		return vec;
 	}
 
+	int deleteDirectory(const string &refcstrRootDirectory, bool bDeleteSubdirectories = true) {
+		bool bSubdirectory = false;
+		HANDLE hFile;
+		string strFilePath;
+		string strPattern;
+		WIN32_FIND_DATA FileInformation;
+
+		strPattern = refcstrRootDirectory + "\\*.*";
+		hFile = ::FindFirstFile(strPattern.c_str(), &FileInformation);
+		if (hFile != INVALID_HANDLE_VALUE) {
+			do {
+				if (FileInformation.cFileName[0] != '.') {
+					strFilePath.erase();
+					strFilePath = refcstrRootDirectory + "\\" + FileInformation.cFileName;
+
+					if (FileInformation.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+						if (bDeleteSubdirectories) {
+							// Delete subdirectory
+							int iRC = deleteDirectory(strFilePath, bDeleteSubdirectories);
+							if (iRC)
+								return iRC;
+						} else
+							bSubdirectory = true;
+					} else {
+						// Set file attributes
+						if (::SetFileAttributes(strFilePath.c_str(), FILE_ATTRIBUTE_NORMAL) == FALSE)
+							return ::GetLastError();
+
+						// Delete file
+						if (::DeleteFile(strFilePath.c_str()) == FALSE)
+							return ::GetLastError();
+					}
+				}
+			} while (::FindNextFile(hFile, &FileInformation) == TRUE);
+
+			// Close handle
+			::FindClose(hFile);
+
+			DWORD dwError = ::GetLastError();
+			if (dwError != ERROR_NO_MORE_FILES)
+				return dwError;
+			else {
+				if (!bSubdirectory) {
+					// Set directory attributes
+					if (::SetFileAttributes(refcstrRootDirectory.c_str(), FILE_ATTRIBUTE_NORMAL) == FALSE)
+						return ::GetLastError();
+				}
+			}
+		}
+		return 0;
+	}
+
+public:
+	static int mapX, mapZ;
+	long double stosunekx;
+	long double stosuneky;
+	long double stosunekz;
+	int wymx, wymz;
+	Object* mapObject;
+
+	void setMapSize(double lengthX, double lengthZ, double scaleY) {
+		wymx = lengthX;
+		wymz = lengthZ;
+		stosuneky = scaleY;
+	}
+
 	void createMap(string mapName, string textureName, string mtlName) {
 		if (tryLoadLastMap(mapName)) {
 			return;
@@ -255,68 +321,7 @@ private:
 		zapisywacz.close();
 	}
 
-	int deleteDirectory(const string &refcstrRootDirectory, bool bDeleteSubdirectories = true) {
-		bool bSubdirectory = false;
-		HANDLE hFile;
-		string strFilePath;
-		string strPattern;
-		WIN32_FIND_DATA FileInformation;
-
-		strPattern = refcstrRootDirectory + "\\*.*";
-		hFile = ::FindFirstFile(strPattern.c_str(), &FileInformation);
-		if (hFile != INVALID_HANDLE_VALUE) {
-			do {
-				if (FileInformation.cFileName[0] != '.') {
-					strFilePath.erase();
-					strFilePath = refcstrRootDirectory + "\\" + FileInformation.cFileName;
-
-					if (FileInformation.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-						if (bDeleteSubdirectories) {
-							// Delete subdirectory
-							int iRC = deleteDirectory(strFilePath, bDeleteSubdirectories);
-							if (iRC)
-								return iRC;
-						} else
-							bSubdirectory = true;
-					} else {
-						// Set file attributes
-						if (::SetFileAttributes(strFilePath.c_str(), FILE_ATTRIBUTE_NORMAL) == FALSE)
-							return ::GetLastError();
-
-						// Delete file
-						if (::DeleteFile(strFilePath.c_str()) == FALSE)
-							return ::GetLastError();
-					}
-				}
-			} while (::FindNextFile(hFile, &FileInformation) == TRUE);
-
-			// Close handle
-			::FindClose(hFile);
-
-			DWORD dwError = ::GetLastError();
-			if (dwError != ERROR_NO_MORE_FILES)
-				return dwError;
-			else {
-				if (!bSubdirectory) {
-					// Set directory attributes
-					if (::SetFileAttributes(refcstrRootDirectory.c_str(), FILE_ATTRIBUTE_NORMAL) == FALSE)
-						return ::GetLastError();
-				}
-			}
-		}
-		return 0;
-	}
-
-public:
-
-	static int mapX, mapZ;
-	static long double stosunekx;
-	static long double stosuneky;
-	static long double stosunekz;
-	int wymx, wymz;
-	Object* mapObject;
-
-	static float calculateHeight(float x, float y, float z) {
+	float calculateHeight(float x, float y, float z) {
 		int indexX, indexZ;
 		long double valueX, valueZ;
 		float suma = 0, suma2 = 0;
@@ -371,15 +376,9 @@ public:
 		//return 0;
 	}
 
-	Map(string name, string tex, string mtl) {
-		createMap(name, tex, mtl);
-	}
 };
 int** Map::heights;
 int Map::mapX = 0;
 int Map::mapZ = 0;
-long double Map::stosunekx;
-long double Map::stosuneky;
-long double Map::stosunekz;
 
 #endif /* SRC_MAP_H_ */
