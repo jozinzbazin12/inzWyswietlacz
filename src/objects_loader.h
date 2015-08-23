@@ -47,7 +47,7 @@ public:
 		GLfloat a, b, c, d;
 		string stringValue;
 		char* fileContent = fileToChar(path);
-
+		unsigned long loadTime = time(0);
 		//Logger::log(fileContent);
 		xml_document<> document;
 		try {
@@ -61,31 +61,39 @@ public:
 
 		for (xml_node<> * node = root->first_node(); node; node = node->next_sibling()) {
 			stringValue = node->name();
-			if (stringValue == "Map") {
-				//xml_node<>* settings=leaf->first_node();
+			if (stringValue == "Map") { //todo ladowac info
+				xml_node<>* settings = node->first_node();
 				stringValue = node->first_attribute("mapFile")->value();
-				mapBuilder = new Map(stringValue, "mapy/tekstury/tex.png", "mapy/mtl/mtl.mtl");
+				mapBuilder = new Map();
+				a = stod(settings->first_node("scaleX")->value());
+				b = stod(settings->first_node("scaleY")->value());
+				c = stod(settings->first_node("scaleZ")->value());
+				mapBuilder->wymx = a; //todo
+				mapBuilder->stosuneky = b;
+				mapBuilder->wymz = c;
+				mapBuilder->createMap(stringValue, "mapy/tekstury/tex.png", "mapy/mtl/mtl.mtl");
+				Object::addObject(mapBuilder->mapObject);
 				Entity* mapObject = new Entity(mapBuilder->mapObject);
 				Entity::allObjects.push_back(mapObject);
 				mapObject->alwaysDisplay = true;
-				mapObject->setScale(Map::stosunekx, Map::stosuneky, Map::stosunekz);
+				mapObject->setScale(mapBuilder->stosunekx, mapBuilder->stosuneky, mapBuilder->stosunekz);
 			} else {
 				string objectName = node->first_attribute("objectFile")->value();
 				Object* object = Object::getObject(objectName);
 				if (object == NULL) {
 					object = new Object(objectName);
+					Object::addObject(object);
 				}
-				Object::addObject(object);
 				Entity* entity = new Entity(object);
 				xml_node<>* settings = node->first_node();
 				stringValue = settings->first_node("relative")->value();
 				a = stod(settings->first_node("posX")->value());
-				b = stod(settings->first_node("posZ")->value());
-				c = stod(settings->first_node("posY")->value());
+				b = stod(settings->first_node("posY")->value());
+				c = stod(settings->first_node("posZ")->value());
 				if (stringValue == "false") {
 					entity->setPosition(a, d, c);
 				} else {
-					d = Map::calculateHeight(a, b, c);
+					d = mapBuilder->calculateHeight(a, b, c);
 					entity->setPosition(a, d, c);
 				}
 
@@ -127,6 +135,7 @@ public:
 		stream.str("");
 		stream << "Tekstur: " << texturesCount << ", rezydentne: " << residentTexturesCount << endl;
 		Logger::log(stream.str());
+		Logger::log("Zakoñczono wczytywanie w " + to_string(time(0) - loadTime) + " s.");
 	}
 
 };
