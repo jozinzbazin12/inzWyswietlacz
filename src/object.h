@@ -2,7 +2,6 @@ class Object {
 private:
 	static vector<Object*> objects;
 	static map<string, Object*> objectsMap;
-	Subobject* lastSubobject = NULL;
 	MaterialLib* mtl;
 
 	int getNextFaceNumber(string& a) {
@@ -57,10 +56,9 @@ private:
 		file >> text;
 		//xd << this->nazwa << endl;
 		Material* tmpmtl = NULL;
-		MaterialLib* newLib = new MaterialLib(utnij(this->name) + "/" + text);
-		MaterialLib::materials.push_back(newLib);
-		mtl = MaterialLib::materials.back();
-
+		MaterialLib* mtl = new MaterialLib(utnij(this->name) + "/" + text);
+		MaterialLib::materials.push_back(mtl);
+		Subobject* lastSubobject = NULL;
 		while (!file.eof()) {
 			file >> text;
 			if (text == "o") {
