@@ -38,7 +38,7 @@ private:
 		ifstream src(mtl.c_str(), ios::binary);
 		ofstream dst("modele/0/0.mtl", ios::binary);
 		ifstream src2(texture.c_str(), ios::binary);
-		ofstream dst2(dupaa.c_str(), ios::binary);
+		ofstream dst2("modele/0/" + dupaa, ios::binary);
 		dst << src.rdbuf();
 		dst2 << src2.rdbuf();
 		src.close();
@@ -81,7 +81,7 @@ private:
 				sprawdzacz2 >> mapZ;
 
 				string mapHash = md5.digestFile(mapFile);
-				if (map ==  name && hash == mapHash) {
+				if (map == name && hash == mapHash) {
 					Logger::log("Jest zrobiona mapa, wczytuje...");
 					loadHeights();
 					stosunekx = (float) wymx / (float) mapX;
@@ -115,19 +115,12 @@ private:
 		return vec;
 	}
 
-	void createMap(string nazwa2, string tekstura2, string mtl2) {
-		string mapName = "mapy/mapy/" + nazwa2;
-		string textureName = "mapy/tekstury/" + tekstura2;
-		string mtlName = "mapy/mtl/" + mtl2;
-		string destTextureName = "modele/0/tex.";
-		destTextureName += tekstura2[tekstura2.size() - 3];
-		destTextureName += tekstura2[tekstura2.size() - 2];
-		destTextureName += tekstura2[tekstura2.size() - 1];
+	void createMap(string mapName, string textureName, string mtlName) {
 		if (tryLoadLastMap(mapName)) {
 			return;
 		}
 		deleteDirectory("modele/0/");
-		copyToModels(mtlName, textureName, destTextureName);
+		copyToModels(mtlName, textureName, "tex" + getFileExtension(textureName));
 		Logger::log("Nie ma mapy, probuje utworzyc\n");
 		SDL_Surface *txt = IMG_Load(mapName.c_str());
 		if (txt == NULL) {
@@ -378,19 +371,7 @@ public:
 		//return 0;
 	}
 
-	Map() {
-		fstream file;
-		file.open("ustawienia/mapa.txt");
-
-		string name;
-		string tex;
-		string mtl;
-		file >> name;
-		file >> tex;
-		file >> mtl;
-		file >> wymx;
-		file >> wymz;
-		file.close();
+	Map(string name, string tex, string mtl) {
 		createMap(name, tex, mtl);
 	}
 };
