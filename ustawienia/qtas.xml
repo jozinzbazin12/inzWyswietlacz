@@ -2,299 +2,17 @@
 <Objects>
     <Map mapFile="D:\Dropbox\Programy\EclipseCpp\Wyswietlacz\mapy\mapy\mapa2.png">
         <Settings>
-            <posX>0.0</posX>
-            <posY>0.0</posY>
-            <posZ>0.0</posZ>
-            <scaleX>2000</scaleX>
-            <scaleY>2</scaleY>
-            <scaleZ>2000</scaleZ>
-            <rotationX>0.0</rotationX>
-            <rotationY>0.0</rotationY>
-            <rotationZ>0.0</rotationZ>
-            <relative>false</relative>
+            <lengthX>2000.0</lengthX>
+            <lengthY>4</lengthY>
+            <lengthZ>2000.0</lengthZ>
         </Settings>
+        <Light posX="2.0" posY="5.0" posZ="5.0" mode="0.0">
+            <Ambient r="1.0" g="1.0" b="1.0" a="1.0"/>
+            <Diffuse r="0.5" g="0.5" b="0.5" a="0.5"/>
+            <Specular r="0.8" g="0.8" b="0.8" a="0.8"/>
+        </Light>
     </Map>
-	<Object objectFile="D:\modele\fox\fox.obj">
-        <Settings>
-            <posX>11.21</posX>
-            <posY>0.0</posY>
-            <posZ>18.5099</posZ>
-            <scaleX>0.05</scaleX>
-            <scaleY>0.05</scaleY>
-            <scaleZ>0.05</scaleZ>
-            <rotationX>-0.84999</rotationX>
-            <rotationY>152.9</rotationY>
-            <rotationZ>0.0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-		<Object objectFile="D:/modele/lincoln/lincoln.obj">
-        <Settings>
-            <posX>-24.451</posX>
-            <posY>-0.15</posY>
-            <posZ>-0.504296</posZ>
-            <scaleX>1</scaleX>
-            <scaleY>1</scaleY>
-            <scaleZ>1</scaleZ>
-            <rotationX>0.0999988</rotationX>
-            <rotationY>13.4999</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-		<Object objectFile="D:/modele/lincoln/lincoln.obj">
-        <Settings>
-            <posX>40.2464</posX>
-            <posY>0</posY>
-            <posZ>32.5711</posZ>
-            <scaleX>1</scaleX>
-            <scaleY>1</scaleY>
-            <scaleZ>1</scaleZ>
-            <rotationX>0.449997</rotationX>
-            <rotationY>-95.8</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-	<Object objectFile="D:/modele/lincoln/lincoln.obj">
-        <Settings>
-            <posX>-27.6953</posX>
-            <posY>0</posY>
-            <posZ>21.0852</posZ>
-            <scaleX>1</scaleX>
-            <scaleY>1</scaleY>
-            <scaleZ>1</scaleZ>
-            <rotationX>1.55</rotationX>
-            <rotationY>157</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-	<Object objectFile="D:/modele/portal/portal.obj">
-        <Settings>
-            <posX>-3.0258</posX>
-            <posY>1.25</posY>
-            <posZ>-10.6039</posZ>
-            <scaleX>2.54007</scaleX>
-            <scaleY>2.54007</scaleY>
-            <scaleZ>2.54007</scaleZ>
-            <rotationX>0</rotationX>
-            <rotationY>60</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-		<Object objectFile="D:/modele/superman/superman.obj">
-        <Settings>
-            <posX>8.94503</posX>
-            <posY>15</posY>
-            <posZ>16.576</posZ>
-            <scaleX>2.95</scaleX>
-            <scaleY>2.95</scaleY>
-            <scaleZ>2.95</scaleZ>
-            <rotationX>0</rotationX>
-            <rotationY>134.65</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-		<Object objectFile="D:/modele/kuce/twilight/twilight.obj">
-        <Settings>
-            <posX>-4.57357</posX>
-            <posY>0</posY>
-            <posZ>-17.355</posZ>
-            <scaleX>2</scaleX>
-            <scaleY>2</scaleY>
-            <scaleZ>2</scaleZ>
-            <rotationX>3.99997</rotationX>
-            <rotationY>25.3499</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-		<Object objectFile="D:/modele/kuce/rarity/rarity.obj">
-        <Settings>
-            <posX>-1.85312</posX>
-            <posY>0</posY>
-            <posZ>-18.8435</posZ>
-            <scaleX>2</scaleX>
-            <scaleY>2</scaleY>
-            <scaleZ>2</scaleZ>
-            <rotationX>5.64997</rotationX>
-            <rotationY>-18.2001</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-		<Object objectFile="D:/modele/kuce/rainbow/rainbow.obj">
-        <Settings>
-            <posX>1.4328</posX>
-            <posY>0</posY>
-            <posZ>-17.4025</posZ>
-            <scaleX>2</scaleX>
-            <scaleY>2</scaleY>
-            <scaleZ>2</scaleZ>
-            <rotationX>5.84997</rotationX>
-            <rotationY>-29.0501</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-		<Object objectFile="D:/modele/kuce/fluttershy/fluttershy.obj">
-        <Settings>
-            <posX>3.72642</posX>
-            <posY>0</posY>
-            <posZ>-15.7527</posZ>
-            <scaleX>2</scaleX>
-            <scaleY>2</scaleY>
-            <scaleZ>2</scaleZ>
-            <rotationX>5.74997</rotationX>
-            <rotationY>-29.8001</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-		<Object objectFile="D:/modele/kuce/applejack/applejack.obj">
-        <Settings>
-            <posX>-8.21087</posX>
-            <posY>0</posY>
-            <posZ>-14.384</posZ>
-            <scaleX>2</scaleX>
-            <scaleY>2</scaleY>
-            <scaleZ>2</scaleZ>
-            <rotationX>-2.35003</rotationX>
-            <rotationY>50.2999</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-		<Object objectFile="D:/modele/kuce/pinkie/pinkie.obj">
-        <Settings>
-            <posX>-9.84997</posX>
-            <posY>0</posY>
-            <posZ>-11.079</posZ>
-            <scaleX>2</scaleX>
-            <scaleY>2</scaleY>
-            <scaleZ>2</scaleZ>
-            <rotationX>1.39997</rotationX>
-            <rotationY>49.3499</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-		<Object objectFile="D:/modele/kuce/celestia/celestia.obj">
-        <Settings>
-            <posX>5.62569</posX>
-            <posY>0</posY>
-            <posZ>-11.0432</posZ>
-            <scaleX>2</scaleX>
-            <scaleY>2</scaleY>
-            <scaleZ>2</scaleZ>
-            <rotationX>2.24997</rotationX>
-            <rotationY>-83.2501</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-		<Object objectFile="D:/modele/kuce/luna/luna.obj">
-        <Settings>
-            <posX>3.00568</posX>
-            <posY>0</posY>
-            <posZ>-5.74872</posZ>
-            <scaleX>2</scaleX>
-            <scaleY>2</scaleY>
-            <scaleZ>2</scaleZ>
-            <rotationX>4.14997</rotationX>
-            <rotationY>-142.1</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-		<Object objectFile="D:/modele/kuce/derpy/derpy.obj">
-        <Settings>
-            <posX>-8.9962</posX>
-            <posY>0</posY>
-            <posZ>-6.95719</posZ>
-            <scaleX>2</scaleX>
-            <scaleY>2</scaleY>
-            <scaleZ>2</scaleZ>
-            <rotationX>3.69996</rotationX>
-            <rotationY>109.5</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-		<Object objectFile="D:/modele/kuce/trixie/trixie.obj">
-        <Settings>
-            <posX>-6.32177</posX>
-            <posY>0</posY>
-            <posZ>-3.48878</posZ>
-            <scaleX>2</scaleX>
-            <scaleY>2</scaleY>
-            <scaleZ>2</scaleZ>
-            <rotationX>2.44997</rotationX>
-            <rotationY>-189.9</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-		<Object objectFile="D:/modele/kuce/lyra/lyra.obj">
-        <Settings>
-            <posX>0.191319</posX>
-            <posY>0</posY>
-            <posZ>-2.13645</posZ>
-            <scaleX>2</scaleX>
-            <scaleY>2</scaleY>
-            <scaleZ>2</scaleZ>
-            <rotationX>9.79996</rotationX>
-            <rotationY>-165.9</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-		<Object objectFile="D:/modele/kuce/bonbon/bonbon.obj">
-        <Settings>
-            <posX>-3.09685</posX>
-            <posY>0</posY>
-            <posZ>-1.54068</posZ>
-            <scaleX>2</scaleX>
-            <scaleY>2</scaleY>
-            <scaleZ>2</scaleZ>
-            <rotationX>2.89997</rotationX>
-            <rotationY>-186.5</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-		<Object objectFile="D:/modele/krystal/krystal.obj">
-        <Settings>
-            <posX>30.4356</posX>
-            <posY>0</posY>
-            <posZ>9.15793</posZ>
-            <scaleX>1.6</scaleX>
-            <scaleY>1.6</scaleY>
-            <scaleZ>1.6</scaleZ>
-            <rotationX>5.39997</rotationX>
-            <rotationY>-14.6001</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-		<Object objectFile="D:/modele/renamon/renamon.obj">
-        <Settings>
-            <posX>28.2808</posX>
-            <posY>0</posY>
-            <posZ>13.8653</posZ>
-            <scaleX>2</scaleX>
-            <scaleY>2</scaleY>
-            <scaleZ>2</scaleZ>
-            <rotationX>4.09997</rotationX>
-            <rotationY>145.95</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-		<Object objectFile="D:/modele/gens/gens.obj">
+    <Object objectFile="D:/modele/gens/gens.obj">
         <Settings>
             <posX>14.626</posX>
             <posY>2.7</posY>
@@ -304,148 +22,413 @@
             <scaleZ>5.15</scaleZ>
             <rotationX>-12.3</rotationX>
             <rotationY>189.9</rotationY>
-            <rotationZ>0</rotationZ>
+            <rotationZ>0.0</rotationZ>
             <relative>true</relative>
         </Settings>
     </Object>
-		<Object objectFile="D:/modele/gens/gens.obj">
+    <Object objectFile="D:/modele/gens/gens.obj">
         <Settings>
             <posX>11.9105</posX>
-            <posY>0</posY>
+            <posY>0.0</posY>
             <posZ>-3.69771</posZ>
-            <scaleX>4</scaleX>
-            <scaleY>4</scaleY>
-            <scaleZ>4</scaleZ>
-            <rotationX>0</rotationX>
-            <rotationY>30</rotationY>
-            <rotationZ>0</rotationZ>
+            <scaleX>4.0</scaleX>
+            <scaleY>4.0</scaleY>
+            <scaleZ>4.0</scaleZ>
+            <rotationX>0.0</rotationX>
+            <rotationY>30.0</rotationY>
+            <rotationZ>0.0</rotationZ>
             <relative>true</relative>
         </Settings>
     </Object>
-		<Object objectFile="D:/modele/most/most.obj">
-        <Settings>
-            <posX>32.4531</posX>
-            <posY>0</posY>
-            <posZ>102.126</posZ>
-            <scaleX>2</scaleX>
-            <scaleY>2</scaleY>
-            <scaleZ>2</scaleZ>
-            <rotationX>0.649997</rotationX>
-            <rotationY>-133.2</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-	
-		<Object objectFile="D:/modele/skydome/skydome.obj">
-        <Settings>
-            <posX>0</posX>
-            <posY>0</posY>
-            <posZ>0</posZ>
-            <scaleX>200</scaleX>
-            <scaleY>200</scaleY>
-            <scaleZ>200</scaleZ>
-            <rotationX>0</rotationX>
-            <rotationY>0</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>false</relative>
-        </Settings>
-    </Object>
-			<Object objectFile="D:/modele/kamien/kamien.obj">
+    <Object objectFile="D:/modele/kamien/kamien.obj">
         <Settings>
             <posX>14.8559</posX>
-            <posY>0</posY>
+            <posY>0.0</posY>
             <posZ>33.6652</posZ>
-            <scaleX>2</scaleX>
-            <scaleY>2</scaleY>
-            <scaleZ>2</scaleZ>
-            <rotationX>0</rotationX>
-            <rotationY>0</rotationY>
-            <rotationZ>0</rotationZ>
+            <scaleX>2.0</scaleX>
+            <scaleY>2.0</scaleY>
+            <scaleZ>2.0</scaleZ>
+            <rotationX>0.0</rotationX>
+            <rotationY>0.0</rotationY>
+            <rotationZ>0.0</rotationZ>
             <relative>false</relative>
         </Settings>
     </Object>
-		<Object objectFile="D:/modele/lincoln/lincoln.obj">
-        <Settings>
-            <posX>40.2464</posX>
-            <posY>0</posY>
-            <posZ>32.5711</posZ>
-            <scaleX>1</scaleX>
-            <scaleY>1</scaleY>
-            <scaleZ>1</scaleZ>
-            <rotationX>0.449997</rotationX>
-            <rotationY>-95.8</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>false</relative>
-        </Settings>
-    </Object>
-		<Object objectFile="D:/modele/lincoln/lincoln.obj">
-        <Settings>
-            <posX>-27.6953</posX>
-            <posY>0</posY>
-            <posZ>21.0852</posZ>
-            <scaleX>1</scaleX>
-            <scaleY>1</scaleY>
-            <scaleZ>1</scaleZ>
-            <rotationX>1.55</rotationX>
-            <rotationY> 157</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>false</relative>
-        </Settings>
-    </Object>
-		<Object objectFile="D:/modele/superman/superman.obj">
-        <Settings>
-            <posX>-40.06</posX>
-            <posY>0</posY>
-            <posZ>-9.25003</posZ>
-            <scaleX>3</scaleX>
-            <scaleY>3</scaleY>
-            <scaleZ>3</scaleZ>
-            <rotationX>0</rotationX>
-            <rotationY>0</rotationY>
-            <rotationZ>0</rotationZ>
-            <relative>false</relative>
-        </Settings>
-    </Object>
-		<Object objectFile="D:/modele/kamien/kamien.obj">
+    <Object objectFile="D:/modele/kamien/kamien.obj">
         <Settings>
             <posX>22.1651</posX>
-            <posY>0</posY>
+            <posY>0.0</posY>
             <posZ>-13.9516</posZ>
             <scaleX>0.65</scaleX>
             <scaleY>0.65</scaleY>
             <scaleZ>0.65</scaleZ>
-            <rotationX>0</rotationX>
-            <rotationY>0</rotationY>
-            <rotationZ>0</rotationZ>
+            <rotationX>0.0</rotationX>
+            <rotationY>0.0</rotationY>
+            <rotationZ>0.0</rotationZ>
             <relative>false</relative>
         </Settings>
     </Object>
-		<Object objectFile="D:/modele/kamien/kamien.obj">
+    <Object objectFile="D:/modele/kamien/kamien.obj">
         <Settings>
             <posX>-39.7398</posX>
-            <posY>-1</posY>
+            <posY>-1.0</posY>
             <posZ>41.3972</posZ>
-            <scaleX>2</scaleX>
-            <scaleY>2</scaleY>
-            <scaleZ>2</scaleZ>
-            <rotationX>0</rotationX>
-            <rotationY>0</rotationY>
-            <rotationZ>0</rotationZ>
+            <scaleX>2.0</scaleX>
+            <scaleY>2.0</scaleY>
+            <scaleZ>2.0</scaleZ>
+            <rotationX>0.0</rotationX>
+            <rotationY>0.0</rotationY>
+            <rotationZ>0.0</rotationZ>
             <relative>false</relative>
         </Settings>
     </Object>
-		<Object objectFile="D:/modele/kamien/kamien.obj">
+    <Object objectFile="D:/modele/kamien/kamien.obj">
         <Settings>
             <posX>-9.26935</posX>
-            <posY>0</posY>
+            <posY>0.0</posY>
             <posZ>40.1707</posZ>
-            <scaleX>1</scaleX>
-            <scaleY>1</scaleY>
-            <scaleZ>1</scaleZ>
-            <rotationX>0</rotationX>
-            <rotationY>0</rotationY>
-            <rotationZ>0</rotationZ>
+            <scaleX>1.0</scaleX>
+            <scaleY>1.0</scaleY>
+            <scaleZ>1.0</scaleZ>
+            <rotationX>0.0</rotationX>
+            <rotationY>0.0</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>false</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/krystal/krystal.obj">
+        <Settings>
+            <posX>30.4356</posX>
+            <posY>0.0</posY>
+            <posZ>9.15793</posZ>
+            <scaleX>1.6</scaleX>
+            <scaleY>1.6</scaleY>
+            <scaleZ>1.6</scaleZ>
+            <rotationX>5.39997</rotationX>
+            <rotationY>-14.6001</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/kuce/applejack/applejack.obj">
+        <Settings>
+            <posX>-8.21087</posX>
+            <posY>0.0</posY>
+            <posZ>-14.384</posZ>
+            <scaleX>2.0</scaleX>
+            <scaleY>2.0</scaleY>
+            <scaleZ>2.0</scaleZ>
+            <rotationX>-2.35003</rotationX>
+            <rotationY>50.2999</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/kuce/bonbon/bonbon.obj">
+        <Settings>
+            <posX>-3.09685</posX>
+            <posY>0.0</posY>
+            <posZ>-1.54068</posZ>
+            <scaleX>2.0</scaleX>
+            <scaleY>2.0</scaleY>
+            <scaleZ>2.0</scaleZ>
+            <rotationX>2.89997</rotationX>
+            <rotationY>-186.5</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/kuce/celestia/celestia.obj">
+        <Settings>
+            <posX>5.62569</posX>
+            <posY>0.0</posY>
+            <posZ>-11.0432</posZ>
+            <scaleX>2.0</scaleX>
+            <scaleY>2.0</scaleY>
+            <scaleZ>2.0</scaleZ>
+            <rotationX>2.24997</rotationX>
+            <rotationY>-83.2501</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/kuce/derpy/derpy.obj">
+        <Settings>
+            <posX>-8.9962</posX>
+            <posY>0.0</posY>
+            <posZ>-6.95719</posZ>
+            <scaleX>2.0</scaleX>
+            <scaleY>2.0</scaleY>
+            <scaleZ>2.0</scaleZ>
+            <rotationX>3.69996</rotationX>
+            <rotationY>109.5</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/kuce/fluttershy/fluttershy.obj">
+        <Settings>
+            <posX>3.72642</posX>
+            <posY>0.0</posY>
+            <posZ>-15.7527</posZ>
+            <scaleX>2.0</scaleX>
+            <scaleY>2.0</scaleY>
+            <scaleZ>2.0</scaleZ>
+            <rotationX>5.74997</rotationX>
+            <rotationY>-29.8001</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/kuce/luna/luna.obj">
+        <Settings>
+            <posX>3.00568</posX>
+            <posY>0.0</posY>
+            <posZ>-5.74872</posZ>
+            <scaleX>2.0</scaleX>
+            <scaleY>2.0</scaleY>
+            <scaleZ>2.0</scaleZ>
+            <rotationX>4.14997</rotationX>
+            <rotationY>-142.1</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/kuce/lyra/lyra.obj">
+        <Settings>
+            <posX>0.191319</posX>
+            <posY>0.0</posY>
+            <posZ>-2.13645</posZ>
+            <scaleX>2.0</scaleX>
+            <scaleY>2.0</scaleY>
+            <scaleZ>2.0</scaleZ>
+            <rotationX>9.79996</rotationX>
+            <rotationY>-165.9</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/kuce/pinkie/pinkie.obj">
+        <Settings>
+            <posX>-9.84997</posX>
+            <posY>0.0</posY>
+            <posZ>-11.079</posZ>
+            <scaleX>2.0</scaleX>
+            <scaleY>2.0</scaleY>
+            <scaleZ>2.0</scaleZ>
+            <rotationX>1.39997</rotationX>
+            <rotationY>49.3499</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/kuce/rainbow/rainbow.obj">
+        <Settings>
+            <posX>1.4328</posX>
+            <posY>0.0</posY>
+            <posZ>-17.4025</posZ>
+            <scaleX>2.0</scaleX>
+            <scaleY>2.0</scaleY>
+            <scaleZ>2.0</scaleZ>
+            <rotationX>5.84997</rotationX>
+            <rotationY>-29.0501</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/kuce/rarity/rarity.obj">
+        <Settings>
+            <posX>-1.85312</posX>
+            <posY>0.0</posY>
+            <posZ>-18.8435</posZ>
+            <scaleX>2.0</scaleX>
+            <scaleY>2.0</scaleY>
+            <scaleZ>2.0</scaleZ>
+            <rotationX>5.64997</rotationX>
+            <rotationY>-18.2001</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/kuce/trixie/trixie.obj">
+        <Settings>
+            <posX>-6.32177</posX>
+            <posY>0.0</posY>
+            <posZ>-3.48878</posZ>
+            <scaleX>2.0</scaleX>
+            <scaleY>2.0</scaleY>
+            <scaleZ>2.0</scaleZ>
+            <rotationX>2.44997</rotationX>
+            <rotationY>-189.9</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/kuce/twilight/twilight.obj">
+        <Settings>
+            <posX>-4.57357</posX>
+            <posY>0.0</posY>
+            <posZ>-17.355</posZ>
+            <scaleX>2.0</scaleX>
+            <scaleY>2.0</scaleY>
+            <scaleZ>2.0</scaleZ>
+            <rotationX>3.99997</rotationX>
+            <rotationY>25.3499</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/lincoln/lincoln.obj">
+        <Settings>
+            <posX>-24.451</posX>
+            <posY>-0.15</posY>
+            <posZ>-0.504296</posZ>
+            <scaleX>1.0</scaleX>
+            <scaleY>1.0</scaleY>
+            <scaleZ>1.0</scaleZ>
+            <rotationX>0.0999988</rotationX>
+            <rotationY>13.4999</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/lincoln/lincoln.obj">
+        <Settings>
+            <posX>40.2464</posX>
+            <posY>0.0</posY>
+            <posZ>32.5711</posZ>
+            <scaleX>1.0</scaleX>
+            <scaleY>1.0</scaleY>
+            <scaleZ>1.0</scaleZ>
+            <rotationX>0.449997</rotationX>
+            <rotationY>-95.8</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/lincoln/lincoln.obj">
+        <Settings>
+            <posX>-27.6953</posX>
+            <posY>0.0</posY>
+            <posZ>21.0852</posZ>
+            <scaleX>1.0</scaleX>
+            <scaleY>1.0</scaleY>
+            <scaleZ>1.0</scaleZ>
+            <rotationX>1.55</rotationX>
+            <rotationY>157.0</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/lincoln/lincoln.obj">
+        <Settings>
+            <posX>40.2464</posX>
+            <posY>0.0</posY>
+            <posZ>32.5711</posZ>
+            <scaleX>1.0</scaleX>
+            <scaleY>1.0</scaleY>
+            <scaleZ>1.0</scaleZ>
+            <rotationX>0.449997</rotationX>
+            <rotationY>-95.8</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>false</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/lincoln/lincoln.obj">
+        <Settings>
+            <posX>-27.6953</posX>
+            <posY>0.0</posY>
+            <posZ>21.0852</posZ>
+            <scaleX>1.0</scaleX>
+            <scaleY>1.0</scaleY>
+            <scaleZ>1.0</scaleZ>
+            <rotationX>1.55</rotationX>
+            <rotationY>157.0</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>false</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/most/most.obj">
+        <Settings>
+            <posX>32.4531</posX>
+            <posY>0.0</posY>
+            <posZ>102.126</posZ>
+            <scaleX>2.0</scaleX>
+            <scaleY>2.0</scaleY>
+            <scaleZ>2.0</scaleZ>
+            <rotationX>0.649997</rotationX>
+            <rotationY>-133.2</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/portal/portal.obj">
+        <Settings>
+            <posX>-3.0258</posX>
+            <posY>1.25</posY>
+            <posZ>-10.6039</posZ>
+            <scaleX>2.54007</scaleX>
+            <scaleY>2.54007</scaleY>
+            <scaleZ>2.54007</scaleZ>
+            <rotationX>0.0</rotationX>
+            <rotationY>60.0</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/renamon/renamon.obj">
+        <Settings>
+            <posX>28.2808</posX>
+            <posY>0.0</posY>
+            <posZ>13.8653</posZ>
+            <scaleX>2.0</scaleX>
+            <scaleY>2.0</scaleY>
+            <scaleZ>2.0</scaleZ>
+            <rotationX>4.09997</rotationX>
+            <rotationY>145.95</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/skydome/skydome.obj">
+        <Settings>
+            <posX>0.0</posX>
+            <posY>0.0</posY>
+            <posZ>0.0</posZ>
+            <scaleX>200.0</scaleX>
+            <scaleY>200.0</scaleY>
+            <scaleZ>200.0</scaleZ>
+            <rotationX>0.0</rotationX>
+            <rotationY>0.0</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>false</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/superman/superman.obj">
+        <Settings>
+            <posX>8.94503</posX>
+            <posY>15.0</posY>
+            <posZ>16.576</posZ>
+            <scaleX>2.95</scaleX>
+            <scaleY>2.95</scaleY>
+            <scaleZ>2.95</scaleZ>
+            <rotationX>0.0</rotationX>
+            <rotationY>134.65</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:/modele/superman/superman.obj">
+        <Settings>
+            <posX>-40.06</posX>
+            <posY>0.0</posY>
+            <posZ>-9.25003</posZ>
+            <scaleX>3.0</scaleX>
+            <scaleY>3.0</scaleY>
+            <scaleZ>3.0</scaleZ>
+            <rotationX>0.0</rotationX>
+            <rotationY>0.0</rotationY>
+            <rotationZ>0.0</rotationZ>
             <relative>false</relative>
         </Settings>
     </Object>
@@ -687,6 +670,118 @@
             <relative>true</relative>
         </Settings>
     </Object>
+    <Object objectFile="D:\modele\drzewo\drzewo2\drzewo2.obj">
+        <Settings>
+            <posX>259.29344295733245</posX>
+            <posY>0.0</posY>
+            <posZ>-394.53201498147155</posZ>
+            <scaleX>1.2374586961073053</scaleX>
+            <scaleY>2.0219949953187797</scaleY>
+            <scaleZ>4.341877164550939</scaleZ>
+            <rotationX>0.0</rotationX>
+            <rotationY>-13.239636575802592</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:\modele\drzewo\drzewo2\drzewo2.obj">
+        <Settings>
+            <posX>87.83687025027712</posX>
+            <posY>0.0</posY>
+            <posZ>-634.4730224264383</posZ>
+            <scaleX>1.7265603964980496</scaleX>
+            <scaleY>3.4636093492087072</scaleY>
+            <scaleZ>3.465104111441907</scaleZ>
+            <rotationX>0.0</rotationX>
+            <rotationY>51.42816854430109</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:\modele\drzewo\drzewo2\drzewo2.obj">
+        <Settings>
+            <posX>-524.5162283382924</posX>
+            <posY>0.0</posY>
+            <posZ>-15.977664748018128</posZ>
+            <scaleX>3.864872539704421</scaleX>
+            <scaleY>4.824248128091037</scaleY>
+            <scaleZ>1.9613399096823487</scaleZ>
+            <rotationX>0.0</rotationX>
+            <rotationY>-96.47691198812991</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:\modele\drzewo\drzewo2\drzewo2.obj">
+        <Settings>
+            <posX>-316.35030437971</posX>
+            <posY>0.0</posY>
+            <posZ>-921.4952799770442</posZ>
+            <scaleX>4.46452615617439</scaleX>
+            <scaleY>3.26982603707097</scaleY>
+            <scaleZ>1.2517063300530382</scaleZ>
+            <rotationX>0.0</rotationX>
+            <rotationY>-157.22188742757635</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:\modele\drzewo\drzewo2\drzewo2.obj">
+        <Settings>
+            <posX>180.75490844527053</posX>
+            <posY>0.0</posY>
+            <posZ>245.06558137400907</posZ>
+            <scaleX>4.958217449478984</scaleX>
+            <scaleY>2.4341584799720812</scaleY>
+            <scaleZ>1.9510929026172987</scaleZ>
+            <rotationX>0.0</rotationX>
+            <rotationY>-174.1521209423365</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:\modele\drzewo\drzewo2\drzewo2.obj">
+        <Settings>
+            <posX>330.30855132792067</posX>
+            <posY>0.0</posY>
+            <posZ>64.15166849591719</posZ>
+            <scaleX>1.705321557586374</scaleX>
+            <scaleY>2.358669376998866</scaleY>
+            <scaleZ>2.3011621809818825</scaleZ>
+            <rotationX>0.0</rotationX>
+            <rotationY>-129.66402783337307</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:\modele\drzewo\drzewo2\drzewo2.obj">
+        <Settings>
+            <posX>-495.536489666109</posX>
+            <posY>0.0</posY>
+            <posZ>-274.47477800778427</posZ>
+            <scaleX>1.3001246512446758</scaleX>
+            <scaleY>4.8373803858068385</scaleY>
+            <scaleZ>3.0680009713405254</scaleZ>
+            <rotationX>0.0</rotationX>
+            <rotationY>-121.35597341615247</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:\modele\drzewo\drzewo2\drzewo2.obj">
+        <Settings>
+            <posX>-296.7638222083631</posX>
+            <posY>0.0</posY>
+            <posZ>85.55992978407062</posZ>
+            <scaleX>1.7172115679957631</scaleX>
+            <scaleY>4.477140424934444</scaleY>
+            <scaleZ>3.0203405372703145</scaleZ>
+            <rotationX>0.0</rotationX>
+            <rotationY>-30.24312345195068</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
     <Object objectFile="D:\modele\drzewo\drzewo3\drzewo3.obj">
         <Settings>
             <posX>-821.7334556609388</posX>
@@ -865,118 +960,6 @@
             <scaleZ>1.2189491569857536</scaleZ>
             <rotationX>0.0</rotationX>
             <rotationY>-11.423606193682474</rotationY>
-            <rotationZ>0.0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-	<Object objectFile="D:\modele\drzewo\drzewo2\drzewo2.obj">
-        <Settings>
-            <posX>259.29344295733245</posX>
-            <posY>0.0</posY>
-            <posZ>-394.53201498147155</posZ>
-            <scaleX>1.2374586961073053</scaleX>
-            <scaleY>2.0219949953187797</scaleY>
-            <scaleZ>4.341877164550939</scaleZ>
-            <rotationX>0.0</rotationX>
-            <rotationY>-13.239636575802592</rotationY>
-            <rotationZ>0.0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-    <Object objectFile="D:\modele\drzewo\drzewo2\drzewo2.obj">
-        <Settings>
-            <posX>87.83687025027712</posX>
-            <posY>0.0</posY>
-            <posZ>-634.4730224264383</posZ>
-            <scaleX>1.7265603964980496</scaleX>
-            <scaleY>3.4636093492087072</scaleY>
-            <scaleZ>3.465104111441907</scaleZ>
-            <rotationX>0.0</rotationX>
-            <rotationY>51.42816854430109</rotationY>
-            <rotationZ>0.0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-    <Object objectFile="D:\modele\drzewo\drzewo2\drzewo2.obj">
-        <Settings>
-            <posX>-524.5162283382924</posX>
-            <posY>0.0</posY>
-            <posZ>-15.977664748018128</posZ>
-            <scaleX>3.864872539704421</scaleX>
-            <scaleY>4.824248128091037</scaleY>
-            <scaleZ>1.9613399096823487</scaleZ>
-            <rotationX>0.0</rotationX>
-            <rotationY>-96.47691198812991</rotationY>
-            <rotationZ>0.0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-    <Object objectFile="D:\modele\drzewo\drzewo2\drzewo2.obj">
-        <Settings>
-            <posX>-316.35030437971</posX>
-            <posY>0.0</posY>
-            <posZ>-921.4952799770442</posZ>
-            <scaleX>4.46452615617439</scaleX>
-            <scaleY>3.26982603707097</scaleY>
-            <scaleZ>1.2517063300530382</scaleZ>
-            <rotationX>0.0</rotationX>
-            <rotationY>-157.22188742757635</rotationY>
-            <rotationZ>0.0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-    <Object objectFile="D:\modele\drzewo\drzewo2\drzewo2.obj">
-        <Settings>
-            <posX>180.75490844527053</posX>
-            <posY>0.0</posY>
-            <posZ>245.06558137400907</posZ>
-            <scaleX>4.958217449478984</scaleX>
-            <scaleY>2.4341584799720812</scaleY>
-            <scaleZ>1.9510929026172987</scaleZ>
-            <rotationX>0.0</rotationX>
-            <rotationY>-174.1521209423365</rotationY>
-            <rotationZ>0.0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-    <Object objectFile="D:\modele\drzewo\drzewo2\drzewo2.obj">
-        <Settings>
-            <posX>330.30855132792067</posX>
-            <posY>0.0</posY>
-            <posZ>64.15166849591719</posZ>
-            <scaleX>1.705321557586374</scaleX>
-            <scaleY>2.358669376998866</scaleY>
-            <scaleZ>2.3011621809818825</scaleZ>
-            <rotationX>0.0</rotationX>
-            <rotationY>-129.66402783337307</rotationY>
-            <rotationZ>0.0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-    <Object objectFile="D:\modele\drzewo\drzewo2\drzewo2.obj">
-        <Settings>
-            <posX>-495.536489666109</posX>
-            <posY>0.0</posY>
-            <posZ>-274.47477800778427</posZ>
-            <scaleX>1.3001246512446758</scaleX>
-            <scaleY>4.8373803858068385</scaleY>
-            <scaleZ>3.0680009713405254</scaleZ>
-            <rotationX>0.0</rotationX>
-            <rotationY>-121.35597341615247</rotationY>
-            <rotationZ>0.0</rotationZ>
-            <relative>true</relative>
-        </Settings>
-    </Object>
-    <Object objectFile="D:\modele\drzewo\drzewo2\drzewo2.obj">
-        <Settings>
-            <posX>-296.7638222083631</posX>
-            <posY>0.0</posY>
-            <posZ>85.55992978407062</posZ>
-            <scaleX>1.7172115679957631</scaleX>
-            <scaleY>4.477140424934444</scaleY>
-            <scaleZ>3.0203405372703145</scaleZ>
-            <rotationX>0.0</rotationX>
-            <rotationY>-30.24312345195068</rotationY>
             <rotationZ>0.0</rotationZ>
             <relative>true</relative>
         </Settings>
@@ -1285,6 +1268,20 @@
             <scaleZ>4.659668451281595</scaleZ>
             <rotationX>0.0</rotationX>
             <rotationY>-87.02990660399077</rotationY>
+            <rotationZ>0.0</rotationZ>
+            <relative>true</relative>
+        </Settings>
+    </Object>
+    <Object objectFile="D:\modele\fox\fox.obj">
+        <Settings>
+            <posX>11.21</posX>
+            <posY>0.0</posY>
+            <posZ>18.5099</posZ>
+            <scaleX>0.05</scaleX>
+            <scaleY>0.05</scaleY>
+            <scaleZ>0.05</scaleZ>
+            <rotationX>-0.84999</rotationX>
+            <rotationY>152.9</rotationY>
             <rotationZ>0.0</rotationZ>
             <relative>true</relative>
         </Settings>

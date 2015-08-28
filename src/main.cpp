@@ -35,6 +35,7 @@ class Material;
 class MaterialLib;
 class FrustumCuller;
 class Texture;
+class Light;
 ////////////////////////////////////////////
 vector<Entity*> animatedObjects;
 Entity * selectedEntity;
@@ -61,15 +62,6 @@ int ktorapos = 0;
 GLfloat kutas[] = { 0.4f, 0.4f, 0.4f, 0.4f };
 int selectedEntityPos = -1;
 int selectedObjectPos = 0;
-GLfloat light_ambient[] = { 0.1f, 0.1f, 0.1f, 0.1f };
-GLfloat light_diffuse[] = { 0.5f, 0.5f, 0.5f, 0.5f };
-GLfloat light_specular[] = { 0.8f, 0.8f, 0.8f, 0.8f };
-GLfloat light_position[] = { 2.0f, 5.0f, 5.0f, 0.0f };
-
-GLfloat mat_ambient[] = { 0.7f, 0.7f, 0.7f, 1.0f };
-GLfloat mat_diffuse[] = { 0.8f, 0.8f, 0.8f, 1.0f };
-GLfloat mat_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-GLfloat high_shininess[] = { 100.0f };
 
 HANDLE hThread;
 HANDLE hThread2;
@@ -88,8 +80,11 @@ Information info;
 #include "animation.h"
 #include "map.h"
 #include "frustum_culler.h"
+#include "light.h"
 #include "objects_loader.h"
+
 FrustumCuller* culler;
+Light* light = Light::getInstance();
 
 void resize(int width, int height) {
 	const float ar = (float) width / (float) height / 2;
@@ -320,23 +315,23 @@ void klawiaturka(unsigned char key, int x, int y) {
 	case 39:
 		switch (ktoreswiatlo) {
 		case 0:
-			if (light_ambient[ktorapos] < 1)
-				light_ambient[ktorapos] += 0.1;
-			glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+			if (light->ambient[ktorapos] < 1)
+				light->ambient[ktorapos] += 0.1;
+			glLightfv(GL_LIGHT0, GL_AMBIENT, light->ambient);
 			break;
 		case 1:
-			if (light_diffuse[ktorapos] < 1)
-				light_diffuse[ktorapos] += 0.1;
-			glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+			if (light->diffuse[ktorapos] < 1)
+				light->diffuse[ktorapos] += 0.1;
+			glLightfv(GL_LIGHT0, GL_DIFFUSE, light->diffuse);
 			break;
 		case 2:
-			if (light_specular[ktorapos] < 1)
-				light_specular[ktorapos] += 0.1;
-			glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+			if (light->specular[ktorapos] < 1)
+				light->specular[ktorapos] += 0.1;
+			glLightfv(GL_LIGHT0, GL_SPECULAR, light->specular);
 			break;
 		case 3:
-			light_position[ktorapos] += 0.1;
-			glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+			light->position[ktorapos] += 0.1;
+			glLightfv(GL_LIGHT0, GL_POSITION, light->position);
 			break;
 		}
 		break;
@@ -344,23 +339,23 @@ void klawiaturka(unsigned char key, int x, int y) {
 	case ';':
 		switch (ktoreswiatlo) {
 		case 0:
-			if (light_ambient[ktorapos] > 0)
-				light_ambient[ktorapos] -= 0.1;
-			glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+			if (light->ambient[ktorapos] > 0)
+				light->ambient[ktorapos] -= 0.1;
+			glLightfv(GL_LIGHT0, GL_AMBIENT, light->ambient);
 			break;
 		case 1:
-			if (light_diffuse[ktorapos] > 0)
-				light_diffuse[ktorapos] -= 0.1;
-			glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+			if (light->diffuse[ktorapos] > 0)
+				light->diffuse[ktorapos] -= 0.1;
+			glLightfv(GL_LIGHT0, GL_DIFFUSE, light->diffuse);
 			break;
 		case 2:
-			if (light_specular[ktorapos] > 0)
-				light_specular[ktorapos] -= 0.1;
-			glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+			if (light->specular[ktorapos] > 0)
+				light->specular[ktorapos] -= 0.1;
+			glLightfv(GL_LIGHT0, GL_SPECULAR, light->specular);
 			break;
 		case 3:
-			light_position[ktorapos] -= 0.1;
-			glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+			light->position[ktorapos] -= 0.1;
+			glLightfv(GL_LIGHT0, GL_POSITION, light->position);
 			break;
 		}
 		break;
@@ -571,10 +566,12 @@ void __cdecl inform(void *kutas) {
 		x1 << posX;
 		y1 << posY;
 		z1 << posZ;
-		amb << light_ambient[0] << " " << light_ambient[1] << " " << light_ambient[2] << " " << light_ambient[3];
-		diff << light_diffuse[0] << " " << light_diffuse[1] << " " << light_diffuse[2] << " " << light_diffuse[3];
-		spec << light_specular[0] << " " << light_specular[1] << " " << light_specular[2] << " " << light_specular[3];
-		pos << light_position[0] << " " << light_position[1] << " " << light_position[2] << " " << light_position[3];
+		amb << light->ambient[0] << " " << light->ambient[1] << " " << light->ambient[2] << " " << light->ambient[3];
+		diff << light->diffuse[0] << " " << light->diffuse[1] << " " << light->diffuse[2] << " " << light->diffuse[3];
+		spec << light->specular[0] << " " << light->specular[1] << " " << light->specular[2] << " "
+				<< light->specular[3];
+		pos << light->position[0] << " " << light->position[1] << " " << light->position[2] << " "
+				<< light->position[3];
 		poss << "Swiatlo: " << ktoreswiatlo << " Pozycja: " << ktorapos;
 		ob << selectedEntityPos;
 		ob2 << selectedObjectPos;
@@ -739,10 +736,6 @@ int main(int argc, char* args[]) {
 	glMatrixMode(GL_MODELVIEW);
 	glEnable(GL_BLEND);
 	glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 	ObjectsLoader::getInstance()->loadObjects("ustawienia/qtas.xml");
 	glEnableClientState( GL_VERTEX_ARRAY);
 	glEnableClientState( GL_NORMAL_ARRAY);
@@ -756,6 +749,10 @@ int main(int argc, char* args[]) {
 }
 //TODO zapis
 //todo przezroczystosc  gore do obiektu || rysowanie samych podobiektow
+//TODO przebudowanie opcji mapy
+//TODO dorobienie animacji
+//TODO dorobienie dzieci
+//TODO wypisywanie hashu
 /*
  * wielowoatkowe wczytywanie dopiero po xml
  *
