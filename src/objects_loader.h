@@ -65,12 +65,39 @@ public:
 				xml_node<>* settings = node->first_node();
 				stringValue = node->first_attribute("mapFile")->value();
 				mapBuilder = new Map();
-				a = stod(settings->first_node("scaleX")->value());
-				b = stod(settings->first_node("scaleY")->value());
-				c = stod(settings->first_node("scaleZ")->value());
+				a = stod(settings->first_node("lengthX")->value());
+				b = stod(settings->first_node("lengthY")->value());
+				c = stod(settings->first_node("lengthZ")->value());
 				mapBuilder->wymx = a; //todo
 				mapBuilder->stosuneky = b;
 				mapBuilder->wymz = c;
+				xml_node<>* lightSettings = node->first_node("Light");
+				if (lightSettings) {
+					xml_node<>* type = lightSettings->first_node("Ambient");
+					if (type) {
+						a = stod(type->first_attribute("r")->value());
+						b = stod(type->first_attribute("g")->value());
+						c = stod(type->first_attribute("b")->value());
+						d = stod(type->first_attribute("a")->value());
+						Light::getInstance()->setAmbient(a, b, c, d);
+					}
+					type = lightSettings->first_node("Diffuse");
+					if (type) {
+						a = stod(type->first_attribute("r")->value());
+						b = stod(type->first_attribute("g")->value());
+						c = stod(type->first_attribute("b")->value());
+						d = stod(type->first_attribute("a")->value());
+						Light::getInstance()->setDiffuse(a, b, c, d);
+					}
+					type = lightSettings->first_node("Specular");
+					if (type) {
+						a = stod(type->first_attribute("r")->value());
+						b = stod(type->first_attribute("g")->value());
+						c = stod(type->first_attribute("b")->value());
+						d = stod(type->first_attribute("a")->value());
+						Light::getInstance()->setSpecular(a, b, c, d);
+					}
+				}
 				mapBuilder->createMap(stringValue, "mapy/tekstury/tex.png", "mapy/mtl/mtl.mtl");
 				Object::addObject(mapBuilder->mapObject);
 				Entity* mapObject = new Entity(mapBuilder->mapObject);
@@ -126,10 +153,11 @@ public:
 		GLboolean *residentArray = new GLboolean[texturesCount];
 		glAreTexturesResident(texturesCount, &Texture::txtid[0], residentArray);
 
-		for (unsigned i = 0; i < texturesCount; i++)
+		for (unsigned i = 0; i < texturesCount; i++) {
 			if (residentArray[i]) {
 				residentTexturesCount++;
 			}
+		}
 		delete[] residentArray;
 
 		stream.str("");

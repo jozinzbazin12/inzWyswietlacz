@@ -34,11 +34,11 @@ private:
 //		t1[2] = t1[2] < 0 ? t1[2] * -1 : t1[2];
 	}
 
-	void copyToModels(string mtl, string texture, string dupaa) {
+	void copyToModels(string mtl, string texture, string destTexture) {
 		ifstream src(mtl.c_str(), ios::binary);
 		ofstream dst("modele/0/0.mtl", ios::binary);
 		ifstream src2(texture.c_str(), ios::binary);
-		ofstream dst2("modele/0/" + dupaa, ios::binary);
+		ofstream dst2("modele/0/" + destTexture, ios::binary);
 		dst << src.rdbuf();
 		dst2 << src2.rdbuf();
 		src.close();
@@ -86,13 +86,11 @@ private:
 					loadHeights();
 					stosunekx = (float) wymx / (float) mapX;
 					stosunekz = (float) wymz / (float) mapZ;
-					stosuneky = 2;
 					mapObject = new Object("0", true);
 					sprawdzacz.close();
 					sprawdzacz2.close();
 					return true;
 				}
-
 			}
 		}
 		sprawdzacz.close();
@@ -134,18 +132,22 @@ private:
 						if (bDeleteSubdirectories) {
 							// Delete subdirectory
 							int iRC = deleteDirectory(strFilePath, bDeleteSubdirectories);
-							if (iRC)
+							if (iRC) {
 								return iRC;
-						} else
+							}
+						} else {
 							bSubdirectory = true;
+						}
 					} else {
 						// Set file attributes
-						if (::SetFileAttributes(strFilePath.c_str(), FILE_ATTRIBUTE_NORMAL) == FALSE)
+						if (::SetFileAttributes(strFilePath.c_str(), FILE_ATTRIBUTE_NORMAL) == FALSE) {
 							return ::GetLastError();
+						}
 
 						// Delete file
-						if (::DeleteFile(strFilePath.c_str()) == FALSE)
+						if (::DeleteFile(strFilePath.c_str()) == FALSE) {
 							return ::GetLastError();
+						}
 					}
 				}
 			} while (::FindNextFile(hFile, &FileInformation) == TRUE);
@@ -154,13 +156,14 @@ private:
 			::FindClose(hFile);
 
 			DWORD dwError = ::GetLastError();
-			if (dwError != ERROR_NO_MORE_FILES)
+			if (dwError != ERROR_NO_MORE_FILES) {
 				return dwError;
-			else {
+			} else {
 				if (!bSubdirectory) {
 					// Set directory attributes
-					if (::SetFileAttributes(refcstrRootDirectory.c_str(), FILE_ATTRIBUTE_NORMAL) == FALSE)
+					if (::SetFileAttributes(refcstrRootDirectory.c_str(), FILE_ATTRIBUTE_NORMAL) == FALSE) {
 						return ::GetLastError();
+					}
 				}
 			}
 		}
@@ -195,7 +198,6 @@ public:
 		}
 		stosunekx = (float) wymx / (float) txt->w;
 		stosunekz = (float) wymz / (float) txt->h;
-		stosuneky = 2;
 		mapX = txt->w;
 		mapZ = txt->h;
 		unsigned pixel, r, g, b;
@@ -207,11 +209,11 @@ public:
 		int bpp = txt->format->BytesPerPixel;
 
 		heights = new int*[txt->h];
-		for (int i = 0; i < txt->h; i++)
+		for (int i = 0; i < txt->h; i++) {
 			heights[i] = new int[txt->w];
-
+		}
 		//heights
-		for (int i = 0; i < txt->h; i++)
+		for (int i = 0; i < txt->h; i++) {
 			for (int j = 0; j < txt->w; j++) {
 				pixel = ((Uint32*) txt->pixels)[i * (txt->pitch / sizeof(Uint32)) + j * bpp / 4];
 				r = pixel & 0x000000FF;
@@ -224,13 +226,14 @@ public:
 				zapisywacz2 << height << " ";
 				heights[i][j] = height;
 			}
+		}
 		zapisywacz2.close();
 
 		//face normals
 		float **vectors = new float*[(txt->w - 1) * (txt->h - 1) * 2];
 		int v = 0;
 		float t1[3], t2[3], t3[3], t4[3];
-		for (int i = 0; i < txt->h - 1; i++)
+		for (int i = 0; i < txt->h - 1; i++) {
 			for (int j = 0; j < txt->w - 1; j++) {
 				t1[0] = txt->h / 2 - i;
 				t1[1] = heights[i][j];  //i,j
@@ -251,6 +254,7 @@ public:
 				vectors[v++] = makeNormal(t1, t3, t2);
 				vectors[v++] = makeNormal(t4, t2, t1);
 			}
+		}
 		zapisywacz << "vt 0 0" << endl;
 		zapisywacz << "vt 0 2" << endl;
 		zapisywacz << "vt 2 0" << endl;
@@ -261,7 +265,7 @@ public:
 		//vertex normals
 		int vertex, vetex2;
 		float normals[3];
-		for (int i = 0; i < txt->h; i++)
+		for (int i = 0; i < txt->h; i++) {
 			for (int j = 0; j < txt->w; j++) {
 				vertex = i * (txt->w - 1) * 2 + j * 2;
 				vetex2 = (i - 1) * (txt->w - 1) * 2 + j * 2;
@@ -292,9 +296,10 @@ public:
 
 				zapisywacz << "vn " << normals[0] << " " << normals[1] << " " << normals[2] << endl;
 			}
+		}
 		//faces
 		int normal, normal2;
-		for (int i = 0; i < txt->h - 1; i++)
+		for (int i = 0; i < txt->h - 1; i++) {
 			for (int j = 1; j < txt->w; j++) {
 				vertex = i * txt->w + j;
 				vetex2 = (i + 1) * txt->w + j;
@@ -305,6 +310,7 @@ public:
 				zapisywacz << "f " << vertex + 1 << "/2/" << normal + 1 << " " << vetex2 << "/3/" << normal2 << " "
 						<< vetex2 + 1 << "/4/" << normal2 + 1 << endl;
 			}
+		}
 		Logger::log("Utworzono mape");
 		fstream sprawdzacz2;
 		sprawdzacz2.open("mapy/ostatnia.txt", ios::out);
@@ -314,8 +320,9 @@ public:
 		sprawdzacz2 << txt->h;
 		sprawdzacz2.close();
 		SDL_FreeSurface(txt);
-		for (int i = 0; i < v; i++)
+		for (int i = 0; i < v; i++) {
 			delete[] vectors[i];
+		}
 		delete[] vectors;
 		mapObject = new Object("0", true);
 		zapisywacz.close();
