@@ -15,7 +15,6 @@ private:
 		float floatValue;
 		string text;
 		ifstream file;
-		int textureNumber;
 
 		file.open(name.c_str());
 		if (!file.is_open()) {
@@ -78,12 +77,8 @@ private:
 			if (text == "map_Kd") {
 				file >> text;
 				string textureName = utnij(path) + "/";
-				textureNumber = Texture::isTextureAlreadyDefined(textureName + text);
-				if (textureNumber == -1) {
-					Texture::textures.push_back(new Texture(textureName + text, "map_Kd"));
-					material->setMapKd(Texture::textures.size() - 1);
-				} else
-					material->setMapKd(textureNumber);
+				Texture* txt = Texture::getTexture(textureName + text, "map_Kd");
+				material->setMapKd(txt);
 			}
 		}
 		mtl[material->name] = material;

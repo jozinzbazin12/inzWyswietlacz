@@ -83,6 +83,7 @@ Information info;
 #include "light.h"
 #include "objects_loader.h"
 
+map<string, Texture*> Texture::textures;
 FrustumCuller* culler;
 Light* light = Light::getInstance();
 
@@ -142,13 +143,13 @@ void drawObject(Entity *ob) {
 		 glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		 }
 		 */
-		if (mtl->tkdt != -1) {
+		if (mtl->tkdt) {
 			//	glActiveTexture(GL_TEXTURE0);
 			//	glClientActiveTexture( GL_TEXTURE0 );
 			glEnable(GL_TEXTURE_2D);
 			glBindBuffer(GL_ARRAY_BUFFER, Object::buff[object->buffer[2]]);
 			glTexCoordPointer(2, GL_FLOAT, 0, 0);
-			glBindTexture(GL_TEXTURE_2D, Texture::txtid[mtl->tkdt]);
+			glBindTexture(GL_TEXTURE_2D, mtl->tkdt->txtid);
 			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		}
 
@@ -159,7 +160,7 @@ void drawObject(Entity *ob) {
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glDrawArrays(GL_TRIANGLES, 0, object->vertexCount);
 
-		if (mtl->tkdt != -1) {
+		if (mtl->tkdt) {
 			glDisable(GL_TEXTURE_2D);
 			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 		}
@@ -174,26 +175,29 @@ void display(void) {
 	if (debug) {
 		glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
 		glLoadIdentity();
+		GLfloat x = -2.32;
+		GLfloat y = 1.25;
+		GLfloat z = -2.55;
+		GLfloat dy = 0.05;
+		DrawString(x, y -= dy, z, "FPS: " + info.fps);
+		DrawString(x, y -= dy, z, "X: " + info.x1);
+		DrawString(x, y -= dy, z, "Y: " + info.y1);
+		DrawString(x, y -= dy, z, "Z: " + info.z1);
+		DrawString(x, y -= dy, z, "Speed: " + info.speed);
 
-		DrawString(-2.32, 1.2, -2.5, "FPS: " + info.fps);
-		DrawString(-2.32, 1.15, -2.5, "X: " + info.x1);
-		DrawString(-2.32, 1.1, -2.5, "Y: " + info.y1);
-		DrawString(-2.32, 1.05, -2.5, "Z: " + info.z1);
-		DrawString(-2.32, 1, -2.5, "Speed: " + info.speed);
-
-		DrawString(-2.32, 0.95, -2.5, "Ambient: " + info.amb);
-		DrawString(-2.32, 0.9, -2.5, "Diffuse: " + info.diff);
-		DrawString(-2.32, 0.85, -2.5, "Specular: " + info.spec);
-		DrawString(-2.32, 0.8, -2.5, "Pos: " + info.pos);
-		DrawString(-2.32, 0.75, -2.5, "Pos: " + info.poss);
-		DrawString(-2.32, 0.7, -2.5, "Wszystkie obiekty: " + info.ileob + "   Wyswietlone obiekty: " + info.ileob2);
-		DrawString(-2.32, 0.65, -2.5,
+		DrawString(x, y -= dy, z, "Ambient: " + info.amb);
+		DrawString(x, y -= dy, z, "Diffuse: " + info.diff);
+		DrawString(x, y -= dy, z, "Specular: " + info.spec);
+		DrawString(x, y -= dy, z, "Pos: " + info.pos);
+		DrawString(x, y -= dy, z, "Pos: " + info.poss);
+		DrawString(x, y -= dy, z, "Wszystkie obiekty: " + info.ileob + "   Wyswietlone obiekty: " + info.ileob2);
+		DrawString(x, y -= dy, z,
 				"Obiekt: " + info.ob2 + "  " + Object::getObject(selectedObjectPos)->name + "   sztuk: "
 						+ info.licznikob);
 		if (selectedEntityPos != -1) {
-			DrawString(-2.32, 0.6, -2.5, "Zaznaczony obiekt: " + info.ob + "  " + selectedEntity->object->name);
+			DrawString(x, y -= dy, z, "Zaznaczony obiekt: " + info.ob + "  " + selectedEntity->object->name);
 			if (Entity::allObjects[selectedEntityPos]->parent)
-				DrawString(-2.32, 0.55, -2.5, "Dziecko obiektu: " + selectedEntity->parent->object->name);
+				DrawString(x, y -= dy, z, "Dziecko obiektu: " + selectedEntity->parent->object->name);
 		}
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
@@ -682,7 +686,7 @@ void checkOpenGLExtension(string roz) {
 		Logger::log(Logger::ERR + "nieobslugiwane roszerzenie " + roz);
 }
 
-int main(int argc, char* args[]) {
+int main(int argc, char** args) {
 	Logger::log("Tworzenie okna...");
 	glutInit(&argc, args);
 	glutInitWindowSize(windowWidth, windowHeight);
@@ -736,7 +740,11 @@ int main(int argc, char* args[]) {
 	glMatrixMode(GL_MODELVIEW);
 	glEnable(GL_BLEND);
 	glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
-	ObjectsLoader::getInstance()->loadObjects("ustawienia/qtas.xml");
+	if (argc > 1) {
+		ObjectsLoader::getInstance()->loadObjects(args[1]);
+	} else {
+		ObjectsLoader::getInstance()->loadObjects("ustawienia/qtas.xml");
+	}
 	glEnableClientState( GL_VERTEX_ARRAY);
 	glEnableClientState( GL_NORMAL_ARRAY);
 	culler = FrustumCuller::getInstance();

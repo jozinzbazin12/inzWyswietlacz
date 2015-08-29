@@ -11,17 +11,17 @@
 class Material {
 public:
 	GLenum s = GL_SMOOTH;
-	float kat[4]={};
-	float kdt[4]={};
-	float kst[4]={};
+	float kat[4] = { };
+	float kdt[4] = { };
+	float kst[4] = { };
 	int tkat = -1;
-	int tkdt = -1;
+	Texture* tkdt = NULL;
 	int tkst = -1;
-	float nst=0;
+	float nst = 0;
 	string name;
 
 	bool isTransparent() {
-		return kat[3] < 1 || (tkdt != -1 && Texture::textures[tkdt]->transparent);
+		return kat[3] < 1 || (tkdt && tkdt->transparent);
 	}
 	void setD(float d) {
 		this->kat[3] = d;
@@ -50,7 +50,7 @@ public:
 		this->kst[2] = kst[2];
 	}
 
-	void setMapKd(int tkdt) {
+	void setMapKd(Texture* tkdt) {
 		this->tkdt = tkdt;
 	}
 

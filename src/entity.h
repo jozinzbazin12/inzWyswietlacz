@@ -106,6 +106,7 @@ public:
 	}
 
 	Entity(Object *object) {
+		Logger::log("Tworzê obiekt " + object->name);
 		alwaysDisplay = false;
 		anim = NULL;
 		parent = NULL;
@@ -126,7 +127,6 @@ public:
 		this->ry = 0;
 		this->rz = 0;
 		object->counter++;
-		Logger::log("Tworze obiekt " + this->object->name, true);
 	}
 
 	~Entity() {

@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Objects>
-    <Map mapFile="C:\Users\Grzegorz\Desktop\1438030897838.jpg">
+    <Map mapFile="D:\Dropbox\Programy\EclipseCpp\Wyswietlacz\mapy\mapy\mapa2.png">
         <Settings>
-            <posX>1.0</posX>
-            <posY>2.0</posY>
-            <posZ>3.0</posZ>
-            <scaleX>100.0</scaleX>
-            <scaleY>200.0</scaleY>
-            <scaleZ>300.0</scaleZ>
-            <rotationX>10.0</rotationX>
-            <rotationY>20.0</rotationY>
-            <rotationZ>30.0</rotationZ>
-            <relative>false</relative>
+            <lengthX>2000.0</lengthX>
+            <lengthY>4</lengthY>
+            <lengthZ>2000.0</lengthZ>
         </Settings>
+        <Light posX="2.0" posY="5.0" posZ="5.0" mode="0.0">
+            <Ambient r="1.0" g="1.0" b="1.0" a="1.0"/>
+            <Diffuse r="0.5" g="0.5" b="0.5" a="0.5"/>
+            <Specular r="0.8" g="0.8" b="0.8" a="0.8"/>
+        </Light>
     </Map>
     <Object objectFile="D:\modele\kuce\applejack\applejack.obj">
         <Settings>

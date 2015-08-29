@@ -29,7 +29,8 @@ private:
 		}
 	}
 	void loadObject(string objectName, bool tag) {
-		Logger::log("Obiekt: " + objectName);
+		Logger::log("");
+		Logger::log("Wczytujê obiekt: " + objectName, true);
 		long long unsigned fileSize;
 		string text;
 		ifstream file;
@@ -141,10 +142,10 @@ private:
 
 		stream.str("");
 		Logger::log(Logger::LINE);
-		stream << "Wczytano " << subobjects.size() << " podobiektow";
+		stream << "Wczytano " << subobjects.size() << " podobiektów";
 		Logger::log(stream.str());
 		stream.str("");
-		stream << "Utworzono " << vertexCount << " trojkatow\n\n";
+		stream << "Utworzono " << vertexCount << " trojkatów";
 		Logger::log(stream.str());
 	}
 

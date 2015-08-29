@@ -10,6 +10,7 @@
 
 class Texture {
 private:
+	static map<string, Texture*> textures;
 	SDL_Surface *txt;
 	GLenum format;
 	GLenum internalformat;
@@ -19,58 +20,48 @@ private:
 		if (extension == ".png")
 			switch (txt->format->BytesPerPixel) {
 			case 4:
-				if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+				if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {
 					return GL_BGRA;
-				else
+				} else {
 					return GL_RGBA;
+				}
 			case 3:
-				if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+				if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {
 					return GL_BGR;
-				else
+				} else {
 					return GL_RGB;
+				}
 			}
-		if (extension == ".tif")
+		if (extension == ".tif") {
 			return GL_RGBA;
-		if (extension == ".tga")
+		}
+		if (extension == ".tga") {
 			switch (txt->format->BytesPerPixel) {
 			case 4:
 				return GL_BGRA;
 			case 3:
 				return GL_BGR;
 			}
+		}
 
-		if (extension == ".bmp")
+		if (extension == ".bmp") {
 			return GL_BGR;
-		if (txt->format->BytesPerPixel == 1)
+		}
+		if (txt->format->BytesPerPixel == 1) {
 			return GL_INTENSITY;
+		}
 		return GL_RGB;
-
-	}
-
-	string getExtension(string nazwa) {
-		int position = 0;
-		for (unsigned i = 0; i < nazwa.length(); i++)
-			if (nazwa[i] == '.')
-				position = i;
-		string format = "";
-		for (unsigned i = position; i < nazwa.length(); i++)
-			format += nazwa[i];
-		for (unsigned i = 0; i < format.length(); i++)
-			if (format[i] <= 'Z' && format[i] >= 'A')
-				format[i] += 32;
-		return format;
 	}
 
 public:
-	static vector<Texture*> textures;
-	static vector<GLuint> txtid;
+	GLuint txtid;
 	string textureName;
 	bool transparent;
 	void isTransparent() {
 		unsigned color;
 		transparent = false;
 		if (format == GL_RGBA || format == GL_BGRA) {
-			for (int i = 0; i < txt->h; i += 16)
+			for (int i = 0; i < txt->h; i += 16) {
 				for (int j = 0; j < txt->w; j += 16) {
 					color = ((unsigned int*) txt->pixels)[i * (txt->pitch / sizeof(unsigned int)) + j];
 					color &= 0xFF000000;
@@ -81,20 +72,37 @@ public:
 						return;
 					}
 				}
+			}
 		}
 	}
 
-	static int isTextureAlreadyDefined(string nazwa) {
-		for (unsigned i = 0; i < textures.size(); i++)
-			if (textures[i]->textureName == nazwa)
-				return i;
-		return -1;
+	static unsigned getTexturesCount() {
+		return textures.size();
+	}
+
+	static GLuint* getTextureIds() {
+		GLuint* tab = new GLuint[getTexturesCount()];
+		map<string, Texture*>::iterator iter;
+		unsigned i = 0;
+		for (iter = textures.begin(); iter != textures.end(); ++iter) {
+			tab[i++] = iter->second->txtid;
+		}
+		return tab;
+	}
+	static Texture* getTexture(string name, string type) {
+		string key = name + "_" + type;
+		Texture* txt = textures[key];
+		if (!txt) {
+			txt = new Texture(name, type);
+			textures[key] = txt;
+		}
+		return txt;
 	}
 
 	Texture(string nazwa, string tex) {
 		Logger::log("--Tekstura: " + nazwa);
 		textureName = nazwa;
-		extension = getExtension(nazwa);
+		extension = nazwa.substr(nazwa.find_last_of("."), nazwa.length());
 		txt = IMG_Load(nazwa.c_str());
 		if (extension == ".jpg" || extension == ".jpeg" || extension == ".jpe" || extension == ".jif"
 				|| extension == ".jfif" || extension == ".jfi")
@@ -114,19 +122,22 @@ public:
 		format = whichFormat();
 		isTransparent();
 		if (format == GL_RGBA || format == GL_BGRA) {
-			if (transparent)
+			if (transparent) {
 				internalformat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-			else
+			} else {
 				internalformat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+			}
 		}
-		if (format == GL_RGB || format == GL_BGR)
+		if (format == GL_RGB || format == GL_BGR) {
 			internalformat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-		if (format == GL_INTENSITY)
+		}
+		if (format == GL_INTENSITY) {
 			internalformat = GL_COMPRESSED_INTENSITY;
+		}
 		GLuint tab[1];
 		glGenTextures(1, &tab[0]);
 		glBindTexture(GL_TEXTURE_2D, tab[0]);
-		txtid.push_back(tab[0]);
+		txtid = tab[0];
 		glTexImage2D(GL_TEXTURE_2D, 0, internalformat, txt->w, txt->h, 0, format, GL_UNSIGNED_BYTE, txt->pixels);
 		glGenerateMipmap (GL_TEXTURE_2D);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -152,13 +163,11 @@ public:
 
 		glTexEnvf(GL_TEXTURE_FILTER_CONTROL, GL_TEXTURE_LOD_BIAS, -2);
 		GLclampf a = 1.0f;
-		glPrioritizeTextures(1, &txtid[txtid.size() - 1], &a);
+		glPrioritizeTextures(1, &txtid, &a);
 		SDL_FreeSurface(txt);
 
 	}
 
 };
-vector<GLuint> Texture::txtid;
-vector<Texture*> Texture::textures;
 
 #endif /* SRC_TEXTURE_H_ */

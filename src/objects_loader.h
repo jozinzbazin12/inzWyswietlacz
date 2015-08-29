@@ -20,17 +20,17 @@ private:
 	}
 
 	char* fileToChar(const char * nazwa_pliku) {
-		ifstream plik(nazwa_pliku);
-		if (plik.bad()) { // (3)
+		ifstream plik(nazwa_pliku, ios::binary);
+		if (!plik.is_open() || plik.bad()) {
 			Logger::log(Logger::ERR + "brak pliku z obiektami");
 			exit(-1);
 		}
 
 		filebuf * pbuf = plik.rdbuf();
 		long wielkosc_pliku = pbuf->pubseekoff(0, ios::end, ios::in);
-		plik.seekg(0);
+		pbuf->pubseekpos(0, plik.in);
 		char * wyjscie = new char[wielkosc_pliku + 1];
-		plik.read(wyjscie, wielkosc_pliku);
+		pbuf->sgetn(wyjscie, wielkosc_pliku);
 		wyjscie[wielkosc_pliku] = 0;
 		return wyjscie;
 	}
@@ -44,16 +44,18 @@ public:
 	}
 
 	void loadObjects(const char* path) {
+		Logger::log("£adujê plik: " + string(path), true);
 		GLfloat a, b, c, d;
 		string stringValue;
 		char* fileContent = fileToChar(path);
 		unsigned long loadTime = time(0);
-		//Logger::log(fileContent);
 		xml_document<> document;
 		try {
 			document.parse<0>(fileContent);
 		} catch (parse_error &p) {
-			Logger::log(Logger::ERR + p.what());
+			ostringstream str;
+			str << Logger::ERR << p.what() << ", " << p.where<char**>();
+			Logger::log(str.str());
 			exit(0);
 		}
 
@@ -61,7 +63,7 @@ public:
 
 		for (xml_node<> * node = root->first_node(); node; node = node->next_sibling()) {
 			stringValue = node->name();
-			if (stringValue == "Map") { //todo ladowac info
+			if (stringValue == "Map") {
 				xml_node<>* settings = node->first_node();
 				stringValue = node->first_attribute("mapFile")->value();
 				mapBuilder = new Map();
@@ -149,9 +151,9 @@ public:
 		Logger::log(stream.str());
 
 		int residentTexturesCount = 0;
-		unsigned texturesCount = Texture::textures.size();
+		unsigned texturesCount = Texture::getTexturesCount();
 		GLboolean *residentArray = new GLboolean[texturesCount];
-		glAreTexturesResident(texturesCount, &Texture::txtid[0], residentArray);
+		glAreTexturesResident(texturesCount, &Texture::getTextureIds()[0], residentArray);
 
 		for (unsigned i = 0; i < texturesCount; i++) {
 			if (residentArray[i]) {
