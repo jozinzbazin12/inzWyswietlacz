@@ -71,7 +71,7 @@ public:
 				b = stod(settings->first_node("lengthY")->value());
 				c = stod(settings->first_node("lengthZ")->value());
 				mapBuilder->wymx = a; //todo
-				mapBuilder->stosuneky = b;
+				mapBuilder->wymy = b;
 				mapBuilder->wymz = c;
 				xml_node<>* lightSettings = node->first_node("Light");
 				if (lightSettings) {

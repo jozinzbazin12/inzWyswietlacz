@@ -2,9 +2,9 @@
 <Objects>
     <Map mapFile="D:\modele\drzewo\drzewo2\bark_loo.jpg">
         <Settings>
-            <lengthX>0.0</lengthX>
-            <lengthY>0.0</lengthY>
-            <lengthZ>0.0</lengthZ>
+            <lengthX>2000</lengthX>
+            <lengthY>50</lengthY>
+            <lengthZ>2000</lengthZ>
         </Settings>
         <Light posX="0.0" posY="0.0" posZ="0.0" mode="0.0">
             <Ambient r="0.0" g="0.0" b="0.0" a="0.0"/>

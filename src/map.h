@@ -46,55 +46,80 @@ private:
 		src2.close();
 		dst2.close();
 	}
-//todo
-	void loadHeights() {
-		heights = new int*[mapX];
-		for (int i = 0; i < mapX; i++)
-			heights[i] = new int[mapZ];
-		fstream file;
-		file.open("mapy/wysokosci.txt");
-		if (!file.is_open()) {
-			Logger::log(Logger::ERR + "nie ma wysokosci");
-			exit(0);
+
+	void loadHeights(SDL_Surface* txt, fstream* dest = NULL) {
+		int bpp = txt->format->BytesPerPixel;
+		unsigned pixel, r, g, b;
+
+		heights = new int*[txt->h];
+		for (int i = 0; i < txt->h; i++) {
+			heights[i] = new int[txt->w];
 		}
 
-		for (int i = 0; i < mapX; i++)
-			for (int j = 0; j < mapZ; j++)
-				file >> heights[i][j];
-		file.close();
+		long double height;
+		long double max = -0xffff;
+		for (int i = 0; i < txt->h; i++) {
+			for (int j = 0; j < txt->w; j++) {
+				pixel = ((Uint32*) txt->pixels)[i * (txt->pitch / sizeof(Uint32)) + j * bpp / 4];
+				r = pixel & 0x000000FF;
+				g = pixel & 0x0000FF00;
+				b = pixel & 0x00FF0000;
+				g >>= 8;
+				b >>= 16;
+				height = ((r + b + g) / 3) - (double) 128;
+				if (dest) {
+					dest[0] << "v " << txt->h / 2 - i << " " << height << " " << j - txt->w / 2 << endl; //moze sie zjebac!
+				}
+				if (max < height) {
+					max = height;
+				}
+				heights[i][j] = height;
+			}
+		}
+		stosuneky = (float) wymy / max;
 	}
+
+	void loadHeights(string map) {
+		SDL_Surface* txt = IMG_Load(map.c_str());
+		loadHeights(txt, NULL);
+		SDL_FreeSurface(txt);
+	}
+
 //todo
 	bool tryLoadLastMap(string name) {
-		fstream sprawdzacz, sprawdzacz2;
+		fstream file, lastSettingsFile;
 		string map;
-		sprawdzacz.open(mapFile);
-		if (!sprawdzacz.is_open()) {
+		file.open(mapFile);
+		if (!file.is_open()) {
 			Logger::log("Nie ma mapy, probuje utworzyc");
 			return false;
 		} else {
-			sprawdzacz2.open("mapy/ostatnia.txt");
-			if (sprawdzacz2.is_open()) {
+			lastSettingsFile.open("mapy/ostatnia.txt");
+			if (lastSettingsFile.is_open()) {
 				string hash;
-				sprawdzacz2 >> hash;
-				sprawdzacz2 >> map;
-				sprawdzacz2 >> mapX;
-				sprawdzacz2 >> mapZ;
+				string hash2;
+				lastSettingsFile >> hash;
+				lastSettingsFile >> hash2;
+				lastSettingsFile >> map;
+				lastSettingsFile >> mapX;
+				lastSettingsFile >> mapZ;
 
 				string mapHash = md5.digestFile(mapFile);
-				if (map == name && hash == mapHash) {
+				string mapImageHash = md5.digestFile(name.c_str());
+				if (map == name && hash == mapHash && hash2 == mapImageHash) {
 					Logger::log("Jest zrobiona mapa, wczytuje...");
-					loadHeights();
+					loadHeights(map);
 					stosunekx = (float) wymx / (float) mapX;
 					stosunekz = (float) wymz / (float) mapZ;
 					mapObject = new Object("0", true);
-					sprawdzacz.close();
-					sprawdzacz2.close();
+					file.close();
+					lastSettingsFile.close();
 					return true;
 				}
 			}
 		}
-		sprawdzacz.close();
-		sprawdzacz2.close();
+		file.close();
+		lastSettingsFile.close();
 		return false;
 	}
 
@@ -175,13 +200,13 @@ public:
 	long double stosunekx;
 	long double stosuneky;
 	long double stosunekz;
-	int wymx, wymz;
+	int wymx, wymy, wymz;
 	Object* mapObject;
 
-	void setMapSize(double lengthX, double lengthZ, double scaleY) {
+	void setMapSize(double lengthX, double lengthY, double lengthZ) {
 		wymx = lengthX;
+		wymy = lengthY;
 		wymz = lengthZ;
-		stosuneky = scaleY;
 	}
 
 	void createMap(string mapName, string textureName, string mtlName) {
@@ -191,43 +216,20 @@ public:
 		deleteDirectory("modele/0/");
 		copyToModels(mtlName, textureName, "tex" + getFileExtension(textureName));
 		Logger::log("Nie ma mapy, probuje utworzyc\n");
-		SDL_Surface *txt = IMG_Load(mapName.c_str());
+		SDL_Surface* txt = IMG_Load(mapName.c_str());
 		if (txt == NULL) {
-			Logger::log(Logger::ERR + "chujowy obrazek");
+			Logger::log(Logger::ERR + "nie uda³o siê otworzyc mapy");
 			exit(0);
 		}
 		stosunekx = (float) wymx / (float) txt->w;
 		stosunekz = (float) wymz / (float) txt->h;
 		mapX = txt->w;
 		mapZ = txt->h;
-		unsigned pixel, r, g, b;
-		long double height;
-		fstream zapisywacz, zapisywacz2;
-		zapisywacz.open("modele/0/0.obj", ios::out);
-		zapisywacz2.open("mapy/wysokosci.txt", ios::out);
-		zapisywacz << "mtllib 0.mtl\no kutas" << endl;
-		int bpp = txt->format->BytesPerPixel;
+		fstream destObject;
+		destObject.open("modele/0/0.obj", ios::out);
+		destObject << "mtllib 0.mtl\no kutas" << endl;
 
-		heights = new int*[txt->h];
-		for (int i = 0; i < txt->h; i++) {
-			heights[i] = new int[txt->w];
-		}
-		//heights
-		for (int i = 0; i < txt->h; i++) {
-			for (int j = 0; j < txt->w; j++) {
-				pixel = ((Uint32*) txt->pixels)[i * (txt->pitch / sizeof(Uint32)) + j * bpp / 4];
-				r = pixel & 0x000000FF;
-				g = pixel & 0x0000FF00;
-				b = pixel & 0x00FF0000;
-				g >>= 8;
-				b >>= 16;
-				height = ((r + b + g) / 3) - (double) 128;
-				zapisywacz << "v " << txt->h / 2 - i << " " << height << " " << j - txt->w / 2 << endl; //moze sie zjebac!
-				zapisywacz2 << height << " ";
-				heights[i][j] = height;
-			}
-		}
-		zapisywacz2.close();
+		loadHeights(txt, &destObject);
 
 		//face normals
 		float **vectors = new float*[(txt->w - 1) * (txt->h - 1) * 2];
@@ -255,12 +257,12 @@ public:
 				vectors[v++] = makeNormal(t4, t2, t1);
 			}
 		}
-		zapisywacz << "vt 0 0" << endl;
-		zapisywacz << "vt 0 2" << endl;
-		zapisywacz << "vt 2 0" << endl;
-		zapisywacz << "vt 2 2" << endl;
-		zapisywacz << "usemtl cipa" << endl; //TODO
-		zapisywacz << "s 1" << endl;
+		destObject << "vt 0 0" << endl;
+		destObject << "vt 0 2" << endl;
+		destObject << "vt 2 0" << endl;
+		destObject << "vt 2 2" << endl;
+		destObject << "usemtl cipa" << endl; //TODO
+		destObject << "s 1" << endl;
 
 		//vertex normals
 		int vertex, vetex2;
@@ -294,7 +296,7 @@ public:
 				normals[1] = vectors[vertex > 1 && vertex < v ? vertex - 1 : 0][1];
 				normals[2] = vectors[vertex > 1 && vertex < v ? vertex - 1 : 0][2];
 
-				zapisywacz << "vn " << normals[0] << " " << normals[1] << " " << normals[2] << endl;
+				destObject << "vn " << normals[0] << " " << normals[1] << " " << normals[2] << endl;
 			}
 		}
 		//faces
@@ -305,9 +307,9 @@ public:
 				vetex2 = (i + 1) * txt->w + j;
 				normal = vertex;
 				normal2 = vetex2;
-				zapisywacz << "f " << vertex << "/1/" << normal << " " << vertex + 1 << "/2/" << normal + 1 << " "
+				destObject << "f " << vertex << "/1/" << normal << " " << vertex + 1 << "/2/" << normal + 1 << " "
 						<< vetex2 << "/3/" << normal2 << endl;
-				zapisywacz << "f " << vertex + 1 << "/2/" << normal + 1 << " " << vetex2 << "/3/" << normal2 << " "
+				destObject << "f " << vertex + 1 << "/2/" << normal + 1 << " " << vetex2 << "/3/" << normal2 << " "
 						<< vetex2 + 1 << "/4/" << normal2 + 1 << endl;
 			}
 		}
@@ -315,6 +317,7 @@ public:
 		fstream sprawdzacz2;
 		sprawdzacz2.open("mapy/ostatnia.txt", ios::out);
 		sprawdzacz2 << md5.digestFile(mapFile) << endl;
+		sprawdzacz2 << md5.digestFile(mapName.c_str()) << endl;
 		sprawdzacz2 << mapName << endl;
 		sprawdzacz2 << txt->w << endl;
 		sprawdzacz2 << txt->h;
@@ -325,7 +328,7 @@ public:
 		}
 		delete[] vectors;
 		mapObject = new Object("0", true);
-		zapisywacz.close();
+		destObject.close();
 	}
 
 	float calculateHeight(float x, float y, float z) {

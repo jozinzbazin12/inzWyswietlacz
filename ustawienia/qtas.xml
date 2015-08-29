@@ -3,7 +3,7 @@
     <Map mapFile="D:\Dropbox\Programy\EclipseCpp\Wyswietlacz\mapy\mapy\mapa2.png">
         <Settings>
             <lengthX>2000.0</lengthX>
-            <lengthY>4</lengthY>
+            <lengthY>200</lengthY>
             <lengthZ>2000.0</lengthZ>
         </Settings>
         <Light posX="2.0" posY="5.0" posZ="5.0" mode="0.0">
