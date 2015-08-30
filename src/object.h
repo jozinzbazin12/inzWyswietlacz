@@ -1,6 +1,7 @@
 class Object {
 private:
 	static HANDLE mutex;
+	static HANDLE bufferMutex;
 	static vector<Object*> objects;
 	static map<string, Object*> objectsMap;
 	MaterialLib* mtl;
@@ -150,8 +151,8 @@ private:
 		Logger::log(stream.str());
 	}
 
-	Subobject* bindObject(vector<GLfloat> vertices, vector<GLfloat> normals, vector<GLfloat> textureCords,
-			vector<GLfloat*> &faces, Material* mtl) {
+	Subobject* bindObject(vector<GLfloat> vertices, vector<GLfloat> normals, vector<GLfloat> textureCords, vector<GLfloat*> &faces,
+			Material* mtl) {
 		vector<GLfloat> newNormals;
 		vector<GLfloat> newVertices;
 		vector<GLfloat> newTextureCords;
@@ -170,27 +171,30 @@ private:
 			}
 		}
 
-		sendToBuffer(newNormals, newVertices, newTextureCords, faces.size());
-		Subobject* subObject = new Subobject(faces.size(), mtl, buff.size() - 3);
+		unsigned bufferId = sendToBuffer(newNormals, newVertices, newTextureCords, faces.size());
+		Subobject* subObject = new Subobject(faces.size(), mtl, bufferId);
 		subobjects.push_back(subObject);
 		faces.clear();
 		return subObject;
 	}
 
-	void sendToBuffer(vector<GLfloat> normals, vector<GLfloat> vertices, vector<GLfloat> textureCords, int facesSize) {
-		unsigned size = buff.size();
+	unsigned sendToBuffer(vector<GLfloat> normals, vector<GLfloat> vertices, vector<GLfloat> textureCords, int facesSize) {
 		GLuint buffers[3];
+		WaitForSingleObject(bufferMutex, INFINITE);
 		glGenBuffers(3, &buffers[0]);
+		unsigned size = buff.size();
 		buff.push_back(buffers[0]);
 		buff.push_back(buffers[1]);
 		buff.push_back(buffers[2]);
 
-		glBindBuffer(GL_ARRAY_BUFFER, buff[size]);
+		glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
 		glBufferData(GL_ARRAY_BUFFER, facesSize * 3 * sizeof(GLfloat), &vertices[0], GL_STATIC_READ);
-		glBindBuffer(GL_ARRAY_BUFFER, buff[size + 1]);
+		glBindBuffer(GL_ARRAY_BUFFER, buffers[1]);
 		glBufferData(GL_ARRAY_BUFFER, facesSize * 3 * sizeof(GLfloat), &normals[0], GL_STATIC_READ);
-		glBindBuffer(GL_ARRAY_BUFFER, buff[size + 2]);
+		glBindBuffer(GL_ARRAY_BUFFER, buffers[2]);
 		glBufferData(GL_ARRAY_BUFFER, facesSize * 2 * sizeof(GLfloat), &textureCords[0], GL_STATIC_READ);
+		ReleaseMutex(bufferMutex);
+		return size;
 	}
 
 	void copyElements(GLfloat t[3], vector<GLfloat> w, int a) {
@@ -280,6 +284,7 @@ public:
 	}
 };
 HANDLE Object::mutex = CreateMutex(NULL, FALSE, NULL);
+HANDLE Object::bufferMutex = CreateMutex(NULL, FALSE, NULL);
 vector<GLuint> Object::buff;
 vector<Object*> Object::objects;
 map<string, Object*> Object::objectsMap;

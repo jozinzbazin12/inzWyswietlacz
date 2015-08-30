@@ -54,13 +54,8 @@ private:
 		return GL_RGB;
 	}
 
-public:
-	GLuint txtid;
-	string textureName;
-	bool transparent;
-	void isTransparent() {
+	bool isTransparent() {
 		unsigned color;
-		transparent = false;
 		if (format == GL_RGBA || format == GL_BGRA) {
 			for (int i = 0; i < txt->h; i += 16) {
 				for (int j = 0; j < txt->w; j += 16) {
@@ -69,13 +64,18 @@ public:
 					color >>= 24;
 					if (color < 255) {
 						Logger::log("Przezroczysta       " + textureName);
-						transparent = true;
-						return;
+						return true;
 					}
 				}
 			}
 		}
+		return false;
 	}
+
+public:
+	GLuint txtid;
+	string textureName;
+	bool transparent = false;
 
 	static unsigned getTexturesCount() {
 		return textures.size();
@@ -98,7 +98,7 @@ public:
 
 			WaitForSingleObject(mutex, INFINITE);
 			textures[key] = txt;
-			ReleaseMutex (mutex);
+			ReleaseMutex(mutex);
 		}
 		return txt;
 	}
@@ -124,7 +124,7 @@ public:
 			exit(0);
 		}
 		format = whichFormat();
-		isTransparent();
+		transparent = isTransparent();
 		if (format == GL_RGBA || format == GL_BGRA) {
 			if (transparent) {
 				internalformat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;

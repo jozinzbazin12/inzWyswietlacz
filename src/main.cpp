@@ -161,6 +161,7 @@ void drawObject(Entity *ob) {
 		glBindBuffer(GL_ARRAY_BUFFER, Object::buff[object->buffer[1]]);
 		glNormalPointer(GL_FLOAT, 0, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		//Logger::log(ob->object->name);
 		glDrawArrays(GL_TRIANGLES, 0, object->vertexCount);
 
 		if (mtl->tkdt) {
@@ -237,18 +238,18 @@ void display(void) {
 	glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
 
 	glDisable(GL_BLEND);
-	for (unsigned i = 0; i < Entity::solidObjectsToDisplay.size(); i++)
-		if (Entity::solidObjectsToDisplay[i]) {
-			drawObject(Entity::solidObjectsToDisplay[i]);
-		}
-	glEnable(GL_BLEND);
-	for (unsigned i = 0; i < Entity::transparentObjectsToDisplay.size(); i++) {
-		if (Entity::transparentObjectsToDisplay[i]) {
-			drawObject(Entity::transparentObjectsToDisplay[i]);
-		}
-	}
+//	for (unsigned i = 0; i < Entity::solidObjectsToDisplay.size(); i++)
+//		if (Entity::solidObjectsToDisplay[i]) {
+//			drawObject(Entity::solidObjectsToDisplay[i]);
+//		}
+//	glEnable(GL_BLEND);
+//	for (unsigned i = 0; i < Entity::transparentObjectsToDisplay.size(); i++) {
+//		if (Entity::transparentObjectsToDisplay[i]) {
+//			drawObject(Entity::transparentObjectsToDisplay[i]);
+//		}
+//	}
 
-//	for(int i=0; i<Entity::allEntitiesCount(); i++) drawObject(Entity::getEntity(i));
+	for(int i=0; i<Entity::allEntitiesCount(); i++) drawObject(Entity::getEntity(i));
 	glutSwapBuffers();
 }
 
@@ -761,12 +762,11 @@ int main(int argc, char** args) {
 }
 //TODO zapis
 //todo przezroczystosc  gore do obiektu || rysowanie samych podobiektow
-//TODO przebudowanie opcji mapy
 //TODO dorobienie animacji
 //TODO dorobienie dzieci
 //TODO wypisywanie hashu
 
-//TODO przelecie calego pliku i zrobienie obiektow, potem 2 raz i tworzenie entity, przy starcie na mape wrzucic null i sprawdzac czy klucz istneieje
+//TODO wywala sie na drawarrays();, pewnie cos z buforami; glgenbuffers sie pierdoli; ustawic jeszcze raz kontekst?
 /*x86/zlib1.dll
  x86/freeglut.dll
  x86/glew32.dll
