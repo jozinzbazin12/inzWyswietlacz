@@ -10,6 +10,9 @@
 
 class Entity {
 private:
+	static vector<Entity*> allObjects;
+	static HANDLE mutex;
+
 	void updateRotation() {
 		const float a = 0.01745329251;
 		if (ry)
@@ -66,15 +69,35 @@ public:
 	GLfloat realMin[3][3], realMax[3][3];
 	Animation *anim;
 	bool alwaysDisplay;
-	static vector<Entity*> allObjects;
 	static vector<Entity*> solidObjectsToDisplay;
 	static vector<Entity*> transparentObjectsToDisplay;
 
+	static Entity* getEntity(int pos) {
+		WaitForSingleObject(mutex, INFINITE);
+		Entity* result = allObjects[pos];
+		ReleaseMutex(mutex);
+		return result;
+	}
+
+	static void addEntity(Entity* entity) {
+		WaitForSingleObject(mutex, INFINITE);
+		allObjects.push_back(entity);
+		ReleaseMutex(mutex);
+	}
+
+	static int allEntitiesCount() {
+		return allObjects.size();
+	}
+
+	static void setEntity(Entity* e, int pos) {
+		allObjects[pos] = e;
+	}
 	static bool compare(Entity* e1, Entity* e2) {
 		int val = pow(posX - e1->px, 2) + pow(posY - e1->py, 2) + pow(posZ - e1->pz, 2);
 		int val2 = pow(posX - e2->px, 2) + pow(posY - e2->py, 2) + pow(posZ - e2->pz, 2);
 		return val > val2;
 	}
+
 	void recalculate() {
 		for (int i = 0; i < 3; i++)
 			for (int j = 0; j < 3; j++) {
@@ -149,7 +172,7 @@ public:
 		object->counter--;
 	}
 };
-
+HANDLE Entity::mutex = CreateMutex(NULL, FALSE, NULL);
 vector<Entity*> Entity::allObjects;
 vector<Entity*> Entity::solidObjectsToDisplay;
 vector<Entity*> Entity::transparentObjectsToDisplay;

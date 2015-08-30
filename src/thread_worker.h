@@ -7,35 +7,28 @@
 
 #ifndef SRC_THREAD_WORKER_H_
 #define SRC_THREAD_WORKER_H_
+using namespace rapidxml;
 class ThreadWorker {
 private:
-	static map<string, void*> results;
 	static HANDLE threadsMutex;
-	static HANDLE resultsMutex;
-	static list<HANDLE> threads;
 	static ThreadWorker* instance;
-	static int count;
+	static int maxCount;
 	static int currentCount;
 	static HGLRC mainContext;
 	static HDC hdc;
 	static list<HGLRC> freeContexts;
 	static list<HGLRC> busyContexts;
+	static Map* map;
 
 	ThreadWorker() {
 		threadsMutex = CreateMutex(NULL, FALSE, NULL);
-		resultsMutex = CreateMutex(NULL, FALSE, NULL);
 		HWND window = GetActiveWindow();
 		hdc = GetDC(window);
 		mainContext = wglGetCurrentContext();
 	}
 
-	int getThreadsCount() {
-		return threads.size();
-	}
-
-	static HGLRC startLife() {
+	static HGLRC startGlLife() {
 		WaitForSingleObject(threadsMutex, INFINITE);
-		threads.push_back(GetCurrentThread());
 		HGLRC context = freeContexts.front();
 		busyContexts.push_front(context);
 		ReleaseMutex(threadsMutex);
@@ -44,31 +37,69 @@ private:
 		return context;
 	}
 
-	static void endLife(HGLRC loaderContext) {
+	static void endGlLife(HGLRC loaderContext) {
 		wglMakeCurrent(NULL, NULL);
-
 		WaitForSingleObject(threadsMutex, INFINITE);
+		currentCount--;
 		busyContexts.remove(loaderContext);
 		freeContexts.push_back(loaderContext);
-		threads.remove(GetCurrentThread());
 		ReleaseMutex(threadsMutex);
 	}
 
 	void wait() {
-		while (getThreadsCount() == count) {
+		while (currentCount >= maxCount) {
 			Sleep(5);
 		}
 	}
 
-	static void loadObjectThread(void* arg) {
-		HGLRC context = startLife();
-		string* name = static_cast<string*>(arg);
-		Object* object = new Object(name[0]);
+	static void loadEntityThread(void* arg) {
+		GLfloat a, b, c, d;
+		string stringValue;
+		xml_node<>* node = static_cast<xml_node<>*>(arg);
 
-		WaitForSingleObject(resultsMutex, INFINITE);
-		results[objectKey(name[0])] = object;
-		ReleaseMutex(resultsMutex);
-		endLife(context);
+		string objectName = node->first_attribute("objectFile")->value();
+		Object* object;
+		while (!Object::isPresentObject(objectName)) {
+			Sleep(10);
+		}
+		object = Object::getObject(objectName);
+		Entity* entity = new Entity(object);
+		xml_node<>* settings = node->first_node();
+		stringValue = settings->first_node("relative")->value();
+		a = stod(settings->first_node("posX")->value());
+		b = stod(settings->first_node("posY")->value());
+		c = stod(settings->first_node("posZ")->value());
+		if (stringValue == "false") {
+			entity->setPosition(a, b, c);
+		} else {
+			d = map->calculateHeight(a, b, c);
+			entity->setPosition(a, d, c);
+		}
+
+		a = stod(settings->first_node("scaleX")->value());
+		b = stod(settings->first_node("scaleY")->value());
+		c = stod(settings->first_node("scaleZ")->value());
+		entity->setScale(a, b, c);
+
+		a = stod(settings->first_node("rotationX")->value());
+		b = stod(settings->first_node("rotationY")->value());
+		c = stod(settings->first_node("rotationZ")->value());
+		entity->setRotation(a, b, c);
+		Entity::addEntity(entity);
+
+		currentCount--;
+	}
+
+	static void loadObjectThread(void* arg) {
+		HGLRC context = startGlLife();
+		string *name = static_cast<string*>(arg);
+		string nameValue = name[0];
+
+		Object::reserveObject(nameValue);
+		Object* object = new Object(nameValue);
+		Object::addObject(object);
+		delete name;
+		endGlLife(context);
 	}
 
 	static string objectKey(string name) {
@@ -83,11 +114,14 @@ public:
 		return instance;
 	}
 
+	static void setMap(Map* map_) {
+		map = map_;
+	}
 	void setThreadsCount(int count) {
 		if (count < 1) {
 			count = 1;
 		}
-		this->count = count;
+		this->maxCount = count;
 		for (int i = 0; i < count; i++) {
 			HGLRC loaderContext = wglCreateContext(hdc);
 			if (!wglShareLists(mainContext, loaderContext)) { // Order matters
@@ -97,40 +131,45 @@ public:
 		}
 	}
 
-	Object* loadObject(string name) {
+	void loadEntity(xml_node<>* node) {
 		wait();
-		void* args = static_cast<void*>(&name);
-		HANDLE h = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) loadObjectThread, (void*) args, 0, NULL);
-		WaitForSingleObject(h, INFINITE);
+		void* args = static_cast<void*>(node);
+		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) loadEntityThread, (void*) args, 0, NULL);
+		currentCount++;
+	}
 
-		Object* result;
-		WaitForSingleObject(resultsMutex, INFINITE);
-		result = static_cast<Object*>(results[objectKey(name)]);
-		ReleaseMutex(resultsMutex);
-
-		return result;
+	void loadObject(string name) {
+		wait();
+		if (!Object::isPresentObject(name)) {
+			string* name2 = new string(name);
+			void* args = static_cast<void*>(name2);
+			CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) loadObjectThread, (void*) args, 0, NULL);
+			currentCount++;
+		}
 	}
 
 	void finish() {
+		while (currentCount) {
+			Sleep(10);
+		}
 		wglMakeCurrent(hdc, mainContext);
 	}
 
 	~ThreadWorker() {
 		CloseHandle(threadsMutex);
-		CloseHandle(resultsMutex);
 		instance = NULL;
-		for (list<HGLRC>::iterator it = freeContexts.begin(); it != freeContexts.end(); ++it) {
-			wglDeleteContext(*it);
-		}
+//		for (list<HGLRC>::iterator it = freeContexts.begin(); it != freeContexts.end(); ++it) {
+//			wglDeleteContext(*it);
+//		}
 	}
 
 };
-int ThreadWorker::count = 0;
+
+Map* ThreadWorker::map = NULL;
+int ThreadWorker::maxCount = 0;
+int ThreadWorker::currentCount = 0;
 ThreadWorker* ThreadWorker::instance = NULL;
-map<string, void*> ThreadWorker::results;
 HANDLE ThreadWorker::threadsMutex;
-HANDLE ThreadWorker::resultsMutex;
-list<HANDLE> ThreadWorker::threads;
 HDC ThreadWorker::hdc = NULL;
 HGLRC ThreadWorker::mainContext = NULL;
 list<HGLRC> ThreadWorker::freeContexts;

@@ -7,8 +7,6 @@
 
 #ifndef SRC_OBJECTS_LOADER_H_
 #define SRC_OBJECTS_LOADER_H_
-#include <rapidxml.hpp>
-#include <rapidxml_print.hpp>
 using namespace rapidxml;
 class ObjectsLoader {
 private:
@@ -65,10 +63,17 @@ public:
 		xml_node<> * root = document.first_node();
 		for (xml_node<> * node = root->first_node(); node; node = node->next_sibling()) {
 			stringValue = node->name();
+			if (stringValue == "Object") {
+				worker->loadObject(node->first_attribute("objectFile")->value());
+			}
+		}
+		for (xml_node<> * node = root->first_node(); node; node = node->next_sibling()) {
+			stringValue = node->name();
 			if (stringValue == "Map") {
 				xml_node<>* settings = node->first_node();
 				stringValue = node->first_attribute("mapFile")->value();
 				mapBuilder = new Map();
+				ThreadWorker::setMap(mapBuilder);
 				a = stod(settings->first_node("lengthX")->value());
 				b = stod(settings->first_node("lengthY")->value());
 				c = stod(settings->first_node("lengthZ")->value());
@@ -105,39 +110,11 @@ public:
 				mapBuilder->createMap(stringValue, "mapy/tekstury/tex.png", "mapy/mtl/mtl.mtl");
 				Object::addObject(mapBuilder->mapObject);
 				Entity* mapObject = new Entity(mapBuilder->mapObject);
-				Entity::allObjects.push_back(mapObject);
+				Entity::addEntity(mapObject);
 				mapObject->alwaysDisplay = true;
 				mapObject->setScale(mapBuilder->stosunekx, mapBuilder->stosuneky, mapBuilder->stosunekz);
 			} else {
-				string objectName = node->first_attribute("objectFile")->value();
-				Object* object = Object::getObject(objectName);
-				if (object == NULL) {
-					object = worker->loadObject(objectName);
-					Object::addObject(object);
-				}
-				Entity* entity = new Entity(object);
-				xml_node<>* settings = node->first_node();
-				stringValue = settings->first_node("relative")->value();
-				a = stod(settings->first_node("posX")->value());
-				b = stod(settings->first_node("posY")->value());
-				c = stod(settings->first_node("posZ")->value());
-				if (stringValue == "false") {
-					entity->setPosition(a, d, c);
-				} else {
-					d = mapBuilder->calculateHeight(a, b, c);
-					entity->setPosition(a, d, c);
-				}
-
-				a = stod(settings->first_node("scaleX")->value());
-				b = stod(settings->first_node("scaleY")->value());
-				c = stod(settings->first_node("scaleZ")->value());
-				entity->setScale(a, b, c);
-
-				a = stod(settings->first_node("rotationX")->value());
-				b = stod(settings->first_node("rotationY")->value());
-				c = stod(settings->first_node("rotationZ")->value());
-				entity->setRotation(a, b, c);
-				Entity::allObjects.push_back(entity);
+				worker->loadEntity(node);
 			}
 		}
 		worker->finish();
@@ -150,7 +127,7 @@ public:
 		Logger::log(stream.str());
 		stream.str("");
 		stream << "Wczytanych obiektow: " << Object::objectsCount() << ", wyswietlonych obiektow:"
-				<< Entity::allObjects.size();
+				<< Entity::allEntitiesCount();
 		Logger::log(stream.str());
 
 		int residentTexturesCount = 0;

@@ -1,5 +1,6 @@
 class Object {
 private:
+	static HANDLE mutex;
 	static vector<Object*> objects;
 	static map<string, Object*> objectsMap;
 	MaterialLib* mtl;
@@ -163,9 +164,9 @@ private:
 			newNormals.push_back(normals[faces[i][2] * 3 + 1]);
 			newNormals.push_back(normals[faces[i][2] * 3 + 2]);
 
-			if(textureCords.size()){
-			newTextureCords.push_back(textureCords[faces[i][1] * 2]);
-			newTextureCords.push_back(textureCords[faces[i][1] * 2 + 1]);
+			if (textureCords.size()) {
+				newTextureCords.push_back(textureCords[faces[i][1] * 2]);
+				newTextureCords.push_back(textureCords[faces[i][1] * 2 + 1]);
 			}
 		}
 
@@ -231,16 +232,37 @@ public:
 	bool transparent = false;
 
 	static Object* getObject(string key) {
-		return objectsMap[key];
+		WaitForSingleObject(mutex, INFINITE);
+		Object* result = objectsMap[key];
+		ReleaseMutex(mutex);
+		return result;
 	}
 
 	static Object* getObject(int pos) {
-		return objects[pos];
+		WaitForSingleObject(mutex, INFINITE);
+		Object* result = objects[pos];
+		ReleaseMutex(mutex);
+		return result;
+	}
+
+	static bool isPresentObject(string name) {
+		WaitForSingleObject(mutex, INFINITE);
+		bool result = !(objectsMap.find(name) == objectsMap.end());
+		ReleaseMutex(mutex);
+		return result;
+	}
+
+	static void reserveObject(string name) {
+		WaitForSingleObject(mutex, INFINITE);
+		objectsMap[name] = NULL;
+		ReleaseMutex(mutex);
 	}
 
 	static void addObject(Object* obj) {
+		WaitForSingleObject(mutex, INFINITE);
 		objects.push_back(obj);
 		objectsMap[obj->name] = obj;
+		ReleaseMutex(mutex);
 	}
 
 	static int objectsCount() {
@@ -257,6 +279,7 @@ public:
 		delete mtl;
 	}
 };
+HANDLE Object::mutex = CreateMutex(NULL, FALSE, NULL);
 vector<GLuint> Object::buff;
 vector<Object*> Object::objects;
 map<string, Object*> Object::objectsMap;

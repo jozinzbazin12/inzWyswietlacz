@@ -10,6 +10,7 @@
 
 class Texture {
 private:
+	static HANDLE mutex;
 	static map<string, Texture*> textures;
 	SDL_Surface *txt;
 	GLenum format;
@@ -94,7 +95,10 @@ public:
 		Texture* txt = textures[key];
 		if (!txt) {
 			txt = new Texture(name, type);
+
+			WaitForSingleObject(mutex, INFINITE);
 			textures[key] = txt;
+			ReleaseMutex (mutex);
 		}
 		return txt;
 	}
@@ -169,5 +173,6 @@ public:
 	}
 
 };
+HANDLE Texture::mutex = CreateMutex(NULL, FALSE, NULL);
 
 #endif /* SRC_TEXTURE_H_ */

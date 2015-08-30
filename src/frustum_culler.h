@@ -73,7 +73,7 @@ public:
 	}
 
 	bool isInViewField(int i) {
-		if (Entity::allObjects[i]->alwaysDisplay)
+		if (Entity::getEntity(i)->alwaysDisplay)
 			return true;
 		if (selectedEntityPos == -1) {
 			px2 = posX;
@@ -92,10 +92,10 @@ public:
 			pz2 += selectedEntity->pz;
 
 		}
-		Entity::allObjects[i]->recalculate();
-		if (checkZ(Entity::allObjects[i]->realMin[2], Entity::allObjects[i]->realMax[2])
-				&& chechY(Entity::allObjects[i]->realMin[1], Entity::allObjects[i]->realMax[1])
-				&& checkX(Entity::allObjects[i]->realMin[0], Entity::allObjects[i]->realMax[0])) {
+		Entity::getEntity(i)->recalculate();
+		if (checkZ(Entity::getEntity(i)->realMin[2], Entity::getEntity(i)->realMax[2])
+				&& chechY(Entity::getEntity(i)->realMin[1], Entity::getEntity(i)->realMax[1])
+				&& checkX(Entity::getEntity(i)->realMin[0], Entity::getEntity(i)->realMax[0])) {
 			return true;
 		}
 		return false;

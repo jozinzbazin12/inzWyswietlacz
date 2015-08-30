@@ -18,6 +18,8 @@
 #include <array>
 #include <algorithm>
 #include <map>
+#include <rapidxml.hpp>
+#include <rapidxml_print.hpp>
 using namespace std;
 #include "logger.h"
 ////////////////////////////////////////////
@@ -197,7 +199,7 @@ void display(void) {
 						+ info.licznikob);
 		if (selectedEntityPos != -1) {
 			DrawString(x, y -= dy, z, "Zaznaczony obiekt: " + info.ob + "  " + selectedEntity->object->name);
-			if (Entity::allObjects[selectedEntityPos]->parent)
+			if (Entity::getEntity(selectedEntityPos)->parent)
 				DrawString(x, y -= dy, z, "Dziecko obiektu: " + selectedEntity->parent->object->name);
 		}
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -246,7 +248,7 @@ void display(void) {
 		}
 	}
 
-	//for(int i=0; i<ileobiektow; i++) rysuj(Entity::allObjects[i]);
+//	for(int i=0; i<Entity::allEntitiesCount(); i++) drawObject(Entity::getEntity(i));
 	glutSwapBuffers();
 }
 
@@ -366,65 +368,66 @@ void klawiaturka(unsigned char key, int x, int y) {
 		break;
 
 	case '8':
-		Entity::allObjects[selectedEntityPos]->sx += predkosc;
-		Entity::allObjects[selectedEntityPos]->sy += predkosc;
-		Entity::allObjects[selectedEntityPos]->sz += predkosc;
-		if (Entity::allObjects[selectedEntityPos]->anim) {
-			Entity::allObjects[selectedEntityPos]->anim->startSx += predkosc;
-			Entity::allObjects[selectedEntityPos]->anim->startSy += predkosc;
-			Entity::allObjects[selectedEntityPos]->anim->startSz += predkosc;
+		Entity::getEntity(selectedEntityPos)->sx += predkosc;
+		Entity::getEntity(selectedEntityPos)->sy += predkosc;
+		Entity::getEntity(selectedEntityPos)->sz += predkosc;
+		if (Entity::getEntity(selectedEntityPos)->anim) {
+			Entity::getEntity(selectedEntityPos)->anim->startSx += predkosc;
+			Entity::getEntity(selectedEntityPos)->anim->startSy += predkosc;
+			Entity::getEntity(selectedEntityPos)->anim->startSz += predkosc;
 		}
 		break;
 
 	case '5':
-		Entity::allObjects[selectedEntityPos]->sx -= predkosc;
-		Entity::allObjects[selectedEntityPos]->sy -= predkosc;
-		Entity::allObjects[selectedEntityPos]->sz -= predkosc;
-		if (Entity::allObjects[selectedEntityPos]->anim) {
-			Entity::allObjects[selectedEntityPos]->anim->startSx -= predkosc;
-			Entity::allObjects[selectedEntityPos]->anim->startSy -= predkosc;
-			Entity::allObjects[selectedEntityPos]->anim->startSz -= predkosc;
+		Entity::getEntity(selectedEntityPos)->sx -= predkosc;
+		Entity::getEntity(selectedEntityPos)->sy -= predkosc;
+		Entity::getEntity(selectedEntityPos)->sz -= predkosc;
+		if (Entity::getEntity(selectedEntityPos)->anim) {
+			Entity::getEntity(selectedEntityPos)->anim->startSx -= predkosc;
+			Entity::getEntity(selectedEntityPos)->anim->startSy -= predkosc;
+			Entity::getEntity(selectedEntityPos)->anim->startSz -= predkosc;
 		}
 		break;
 
 	case '4':
 		if (selectedEntityPos > -1) {
-			selectedEntity = Entity::allObjects[--selectedEntityPos];
-			posX = Entity::allObjects[selectedEntityPos]->px;
-			posY = Entity::allObjects[selectedEntityPos]->py;
-			posZ = Entity::allObjects[selectedEntityPos]->pz;
-			cx2 = -Entity::allObjects[selectedEntityPos]->rx;
-			cy2 = -Entity::allObjects[selectedEntityPos]->ry;
+			selectedEntity = Entity::getEntity(--selectedEntityPos);
+			posX = Entity::getEntity(selectedEntityPos)->px;
+			posY = Entity::getEntity(selectedEntityPos)->py;
+			posZ = Entity::getEntity(selectedEntityPos)->pz;
+			cx2 = -Entity::getEntity(selectedEntityPos)->rx;
+			cy2 = -Entity::getEntity(selectedEntityPos)->ry;
 		}
 		break;
 
 	case '6':
-		if (selectedEntityPos < (int) Entity::allObjects.size() - 1) {
-			selectedEntity = Entity::allObjects[++selectedEntityPos];
-			posX = Entity::allObjects[selectedEntityPos]->px;
-			posY = Entity::allObjects[selectedEntityPos]->py;
-			posZ = Entity::allObjects[selectedEntityPos]->pz;
-			cx2 = -Entity::allObjects[selectedEntityPos]->rx;
-			cy2 = -Entity::allObjects[selectedEntityPos]->ry;
+		if (selectedEntityPos < (int) Entity::allEntitiesCount() - 1) {
+			selectedEntity = Entity::getEntity(++selectedEntityPos);
+			posX = Entity::getEntity(selectedEntityPos)->px;
+			posY = Entity::getEntity(selectedEntityPos)->py;
+			posZ = Entity::getEntity(selectedEntityPos)->pz;
+			cx2 = -Entity::getEntity(selectedEntityPos)->rx;
+			cy2 = -Entity::getEntity(selectedEntityPos)->ry;
 		}
 		break;
 
 	case '7':
 		if (selectedEntityPos != -1) {
-			delete Entity::allObjects[selectedEntityPos];
-			Entity::allObjects[selectedEntityPos] = Entity::allObjects[Entity::allObjects.size()];
-			Entity::allObjects[Entity::allObjects.size()] = NULL;
+			delete Entity::getEntity(selectedEntityPos);
+			Entity::setEntity(Entity::getEntity(Entity::allEntitiesCount()), selectedEntityPos);
+			Entity::setEntity(NULL, Entity::allEntitiesCount());
 			selectedEntityPos = -1;
 			selectedEntity = NULL;
 		}
 		break;
 
 	case '9':
-		Entity::allObjects.push_back(new Entity(Object::getObject(selectedObjectPos)));
-		if (selectedEntityPos != -1)
-			Entity::allObjects[Entity::allObjects.size() - 1]->parent = Entity::allObjects[selectedEntityPos];
-		selectedEntityPos = Entity::allObjects.size() - 1;
-		selectedEntity = Entity::allObjects[selectedEntityPos];
+		Entity::addEntity(new Entity(Object::getObject(selectedObjectPos)));
+		if (selectedEntityPos != -1) {
+			//	Entity::allObjects[Entity::allObjects.size() - 1]->parent = Entity::getEntity(selectedEntityPos);
+		}
+		selectedEntityPos = Entity::allEntitiesCount() - 1;
+		selectedEntity = Entity::getEntity(selectedEntityPos);
 		break;
 
 	case '1':
@@ -511,33 +514,33 @@ void zapisz() {
 //	int j;
 //	for (int i = 0; i < ileobiektow; i++) {
 //		for (j = 0; j < ileobiektow2; j++)
-//			if (Entity::allObjects[i]->object == obiekty[j])
+//			if (Entity::getEntity(i)->object == obiekty[j])
 //				break;
 //		zapisywacz << endl << "o " << j << endl;
-//		if (Entity::allObjects[i]->anim) {
-//			if (Entity::allObjects[i]->anim->startpx || Entity::allObjects[i]->anim->startpy
-//					|| Entity::allObjects[i]->anim->startpz)
-//				zapisywacz << "p " << Entity::allObjects[i]->anim->startpx << " "
-//						<< Entity::allObjects[i]->anim->startpy << " " << Entity::allObjects[i]->anim->startpz << endl;
-//			if (Entity::allObjects[i]->anim->startsx || Entity::allObjects[i]->anim->startsy
-//					|| Entity::allObjects[i]->anim->startsz)
-//				zapisywacz << "s " << Entity::allObjects[i]->anim->startsx << " "
-//						<< Entity::allObjects[i]->anim->startsy << " " << Entity::allObjects[i]->anim->startsz << endl;
-//			if (Entity::allObjects[i]->anim->startrx || Entity::allObjects[i]->anim->startry
-//					|| Entity::allObjects[i]->anim->startrz)
-//				zapisywacz << "r " << Entity::allObjects[i]->anim->startrx << " "
-//						<< Entity::allObjects[i]->anim->startry << " " << Entity::allObjects[i]->anim->startrz << endl;
-//			zapisywacz << "a" << Entity::allObjects[i]->anim->nazwa << endl;
+//		if (Entity::getEntity(i)->anim) {
+//			if (Entity::getEntity(i)->anim->startpx || Entity::getEntity(i)->anim->startpy
+//					|| Entity::getEntity(i)->anim->startpz)
+//				zapisywacz << "p " << Entity::getEntity(i)->anim->startpx << " "
+//						<< Entity::getEntity(i)->anim->startpy << " " << Entity::getEntity(i)->anim->startpz << endl;
+//			if (Entity::getEntity(i)->anim->startsx || Entity::getEntity(i)->anim->startsy
+//					|| Entity::getEntity(i)->anim->startsz)
+//				zapisywacz << "s " << Entity::getEntity(i)->anim->startsx << " "
+//						<< Entity::getEntity(i)->anim->startsy << " " << Entity::getEntity(i)->anim->startsz << endl;
+//			if (Entity::getEntity(i)->anim->startrx || Entity::getEntity(i)->anim->startry
+//					|| Entity::getEntity(i)->anim->startrz)
+//				zapisywacz << "r " << Entity::getEntity(i)->anim->startrx << " "
+//						<< Entity::getEntity(i)->anim->startry << " " << Entity::getEntity(i)->anim->startrz << endl;
+//			zapisywacz << "a" << Entity::getEntity(i)->anim->nazwa << endl;
 //		} else {
-//			if (Entity::allObjects[i]->px || Entity::allObjects[i]->py || Entity::allObjects[i]->pz)
-//				zapisywacz << "p " << Entity::allObjects[i]->px << " " << Entity::allObjects[i]->py << " "
-//						<< Entity::allObjects[i]->pz << endl;
-//			if (Entity::allObjects[i]->sx || Entity::allObjects[i]->sy || Entity::allObjects[i]->sz)
-//				zapisywacz << "s " << Entity::allObjects[i]->sx << " " << Entity::allObjects[i]->sy << " "
-//						<< Entity::allObjects[i]->sz << endl;
-//			if (Entity::allObjects[i]->rx || Entity::allObjects[i]->ry || Entity::allObjects[i]->rz)
-//				zapisywacz << "r " << Entity::allObjects[i]->rx << " " << Entity::allObjects[i]->ry << " "
-//						<< Entity::allObjects[i]->rz << endl;
+//			if (Entity::getEntity(i)->px || Entity::getEntity(i)->py || Entity::getEntity(i)->pz)
+//				zapisywacz << "p " << Entity::getEntity(i)->px << " " << Entity::getEntity(i)->py << " "
+//						<< Entity::getEntity(i)->pz << endl;
+//			if (Entity::getEntity(i)->sx || Entity::getEntity(i)->sy || Entity::getEntity(i)->sz)
+//				zapisywacz << "s " << Entity::getEntity(i)->sx << " " << Entity::getEntity(i)->sy << " "
+//						<< Entity::getEntity(i)->sz << endl;
+//			if (Entity::getEntity(i)->rx || Entity::getEntity(i)->ry || Entity::getEntity(i)->rz)
+//				zapisywacz << "r " << Entity::getEntity(i)->rx << " " << Entity::getEntity(i)->ry << " "
+//						<< Entity::getEntity(i)->rz << endl;
 //		}
 //
 //	}
@@ -580,7 +583,7 @@ void __cdecl inform(void *kutas) {
 		poss << "Swiatlo: " << ktoreswiatlo << " Pozycja: " << ktorapos;
 		ob << selectedEntityPos;
 		ob2 << selectedObjectPos;
-		ileob << Entity::allObjects.size();
+		ileob << Entity::allEntitiesCount();
 		ileob2 << Entity::solidObjectsToDisplay.size() + Entity::transparentObjectsToDisplay.size();
 		licznikob << Object::getObject(selectedObjectPos)->counter;
 		cameraSpeed << predkosc;
@@ -610,15 +613,15 @@ void __cdecl inform(void *kutas) {
 
 void __cdecl sortObjects(void *dupa) {
 	while (1) {
-		unsigned objectsCount = Entity::allObjects.size();
+		unsigned objectsCount = Entity::allEntitiesCount();
 		vector<Entity*> transparentObjects;
 		vector<Entity*> solidObjects;
 		for (unsigned i = 0; i < objectsCount; i++) {
 			if (culler->isInViewField(i)) {
-				if (Entity::allObjects[i]->object->transparent) {
-					transparentObjects.push_back(Entity::allObjects[i]);
+				if (Entity::getEntity(i)->object->transparent) {
+					transparentObjects.push_back(Entity::getEntity(i));
 				} else {
-					solidObjects.push_back(Entity::allObjects[i]);
+					solidObjects.push_back(Entity::getEntity(i));
 				}
 			}
 		}
@@ -762,20 +765,9 @@ int main(int argc, char** args) {
 //TODO dorobienie animacji
 //TODO dorobienie dzieci
 //TODO wypisywanie hashu
-/*
- * wielowoatkowe wczytywanie dopiero po xml
- *
- *
- *
- *
- *
- *
- *
- *
- */
 
-/*
- x86/zlib1.dll
+//TODO przelecie calego pliku i zrobienie obiektow, potem 2 raz i tworzenie entity, przy starcie na mape wrzucic null i sprawdzac czy klucz istneieje
+/*x86/zlib1.dll
  x86/freeglut.dll
  x86/glew32.dll
  x86/libjpeg-9.dll
