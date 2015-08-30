@@ -59,8 +59,10 @@ public:
 			exit(0);
 		}
 
-		xml_node<> * root = document.first_node();
+		ThreadWorker* worker = ThreadWorker::getInstance();
+		worker->setThreadsCount(2);
 
+		xml_node<> * root = document.first_node();
 		for (xml_node<> * node = root->first_node(); node; node = node->next_sibling()) {
 			stringValue = node->name();
 			if (stringValue == "Map") {
@@ -70,7 +72,7 @@ public:
 				a = stod(settings->first_node("lengthX")->value());
 				b = stod(settings->first_node("lengthY")->value());
 				c = stod(settings->first_node("lengthZ")->value());
-				mapBuilder->wymx = a; //todo
+				mapBuilder->wymx = a;
 				mapBuilder->wymy = b;
 				mapBuilder->wymz = c;
 				xml_node<>* lightSettings = node->first_node("Light");
@@ -110,7 +112,7 @@ public:
 				string objectName = node->first_attribute("objectFile")->value();
 				Object* object = Object::getObject(objectName);
 				if (object == NULL) {
-					object = new Object(objectName);
+					object = worker->loadObject(objectName);
 					Object::addObject(object);
 				}
 				Entity* entity = new Entity(object);
@@ -138,7 +140,8 @@ public:
 				Entity::allObjects.push_back(entity);
 			}
 		}
-
+		worker->finish();
+		delete worker;
 		SDL_Quit();
 
 		ostringstream stream;

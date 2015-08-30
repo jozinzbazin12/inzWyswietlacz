@@ -81,6 +81,7 @@ Information info;
 #include "map.h"
 #include "frustum_culler.h"
 #include "light.h"
+#include "thread_worker.h"
 #include "objects_loader.h"
 
 map<string, Texture*> Texture::textures;
