@@ -186,6 +186,7 @@ private:
 		buff.push_back(buffers[0]);
 		buff.push_back(buffers[1]);
 		buff.push_back(buffers[2]);
+		ReleaseMutex(bufferMutex);
 
 		glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
 		glBufferData(GL_ARRAY_BUFFER, facesSize * 3 * sizeof(GLfloat), &vertices[0], GL_STATIC_READ);
@@ -193,7 +194,7 @@ private:
 		glBufferData(GL_ARRAY_BUFFER, facesSize * 3 * sizeof(GLfloat), &normals[0], GL_STATIC_READ);
 		glBindBuffer(GL_ARRAY_BUFFER, buffers[2]);
 		glBufferData(GL_ARRAY_BUFFER, facesSize * 2 * sizeof(GLfloat), &textureCords[0], GL_STATIC_READ);
-		ReleaseMutex(bufferMutex);
+
 		return size;
 	}
 

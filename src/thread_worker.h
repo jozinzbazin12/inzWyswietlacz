@@ -11,19 +11,16 @@ using namespace rapidxml;
 class ThreadWorker {
 private:
 	static HANDLE threadsMutex;
-	static HANDLE objectMutex;
 	static ThreadWorker* instance;
 	static int maxCount;
 	static int currentCount;
 	static HGLRC mainContext;
 	static HDC hdc;
 	static list<HGLRC> freeContexts;
-	static list<HGLRC> busyContexts;
 	static Map* map;
 
 	ThreadWorker() {
 		threadsMutex = CreateMutex(NULL, FALSE, NULL);
-		objectMutex = CreateMutex(NULL, FALSE, NULL);
 		HWND window = GetActiveWindow();
 		hdc = GetDC(window);
 		mainContext = wglGetCurrentContext();
@@ -32,10 +29,9 @@ private:
 	static HGLRC startGlLife() {
 		WaitForSingleObject(threadsMutex, INFINITE);
 		HGLRC context = freeContexts.front();
-		busyContexts.push_front(context);
+		freeContexts.pop_front();
 		ReleaseMutex(threadsMutex);
 		wglMakeCurrent(hdc, context);
-		glewInit();
 		return context;
 	}
 
@@ -43,7 +39,6 @@ private:
 		wglMakeCurrent(NULL, NULL);
 		WaitForSingleObject(threadsMutex, INFINITE);
 		currentCount--;
-		busyContexts.remove(loaderContext);
 		freeContexts.push_back(loaderContext);
 		ReleaseMutex(threadsMutex);
 	}
@@ -118,6 +113,7 @@ public:
 	static void setMap(Map* map_) {
 		map = map_;
 	}
+
 	void setThreadsCount(int count) {
 		if (count < 1) {
 			count = 1;
@@ -142,7 +138,7 @@ public:
 	void loadObject(string name) {
 		wait();
 		if (!Object::isPresentObject(name)) {
-			Object::reserveObject (name);
+			Object::reserveObject(name);
 			string* name2 = new string(name);
 			void* args = static_cast<void*>(name2);
 			CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) loadObjectThread, (void*) args, 0, NULL);
@@ -159,7 +155,6 @@ public:
 
 	~ThreadWorker() {
 		CloseHandle(threadsMutex);
-		CloseHandle(objectMutex);
 		instance = NULL;
 //		for (list<HGLRC>::iterator it = freeContexts.begin(); it != freeContexts.end(); ++it) {
 //			wglDeleteContext(*it);
@@ -173,9 +168,7 @@ int ThreadWorker::maxCount = 0;
 int ThreadWorker::currentCount = 0;
 ThreadWorker* ThreadWorker::instance = NULL;
 HANDLE ThreadWorker::threadsMutex;
-HANDLE ThreadWorker::objectMutex;
 HDC ThreadWorker::hdc = NULL;
 HGLRC ThreadWorker::mainContext = NULL;
 list<HGLRC> ThreadWorker::freeContexts;
-list<HGLRC> ThreadWorker::busyContexts;
 #endif /* SRC_THREAD_WORKER_H_ */

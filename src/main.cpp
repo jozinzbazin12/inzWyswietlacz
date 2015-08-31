@@ -766,7 +766,6 @@ int main(int argc, char** args) {
 //TODO dorobienie dzieci
 //TODO wypisywanie hashu
 
-//TODO wywala sie na drawarrays();, pewnie cos z buforami; glgenbuffers sie pierdoli; ustawic jeszcze raz kontekst?
 /*x86/zlib1.dll
  x86/freeglut.dll
  x86/glew32.dll

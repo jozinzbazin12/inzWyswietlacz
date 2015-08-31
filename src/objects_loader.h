@@ -58,7 +58,7 @@ public:
 		}
 
 		ThreadWorker* worker = ThreadWorker::getInstance();
-		worker->setThreadsCount(2);
+		worker->setThreadsCount(3);
 
 		xml_node<> * root = document.first_node();
 		for (xml_node<> * node = root->first_node(); node; node = node->next_sibling()) {
