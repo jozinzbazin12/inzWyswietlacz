@@ -11,7 +11,6 @@ using namespace rapidxml;
 class ObjectsLoader {
 private:
 	static ObjectsLoader* instance;
-	Map* mapBuilder;
 
 	ObjectsLoader() {
 
@@ -43,7 +42,6 @@ public:
 
 	void loadObjects(const char* path) {
 		Logger::log("£adujê plik: " + string(path), true);
-		GLfloat a, b, c, d;
 		string stringValue;
 		char* fileContent = fileToChar(path);
 		unsigned long loadTime = time(0);
@@ -58,61 +56,13 @@ public:
 		}
 
 		ThreadWorker* worker = ThreadWorker::getInstance();
-		worker->setThreadsCount(3);
+		worker->setThreadsCount(1);
 
 		xml_node<> * root = document.first_node();
 		for (xml_node<> * node = root->first_node(); node; node = node->next_sibling()) {
 			stringValue = node->name();
-			if (stringValue == "Object") {
-				worker->loadObject(node->first_attribute("objectFile")->value());
-			}
-		}
-		for (xml_node<> * node = root->first_node(); node; node = node->next_sibling()) {
-			stringValue = node->name();
 			if (stringValue == "Map") {
-				xml_node<>* settings = node->first_node();
-				stringValue = node->first_attribute("mapFile")->value();
-				mapBuilder = new Map();
-				ThreadWorker::setMap(mapBuilder);
-				a = stod(settings->first_node("lengthX")->value());
-				b = stod(settings->first_node("lengthY")->value());
-				c = stod(settings->first_node("lengthZ")->value());
-				mapBuilder->wymx = a;
-				mapBuilder->wymy = b;
-				mapBuilder->wymz = c;
-				xml_node<>* lightSettings = node->first_node("Light");
-				if (lightSettings) {
-					xml_node<>* type = lightSettings->first_node("Ambient");
-					if (type) {
-						a = stod(type->first_attribute("r")->value());
-						b = stod(type->first_attribute("g")->value());
-						c = stod(type->first_attribute("b")->value());
-						d = stod(type->first_attribute("a")->value());
-						Light::getInstance()->setAmbient(a, b, c, d);
-					}
-					type = lightSettings->first_node("Diffuse");
-					if (type) {
-						a = stod(type->first_attribute("r")->value());
-						b = stod(type->first_attribute("g")->value());
-						c = stod(type->first_attribute("b")->value());
-						d = stod(type->first_attribute("a")->value());
-						Light::getInstance()->setDiffuse(a, b, c, d);
-					}
-					type = lightSettings->first_node("Specular");
-					if (type) {
-						a = stod(type->first_attribute("r")->value());
-						b = stod(type->first_attribute("g")->value());
-						c = stod(type->first_attribute("b")->value());
-						d = stod(type->first_attribute("a")->value());
-						Light::getInstance()->setSpecular(a, b, c, d);
-					}
-				}
-				mapBuilder->createMap(stringValue, "mapy/tekstury/tex.png", "mapy/mtl/mtl.mtl");
-				Object::addObject(mapBuilder->mapObject);
-				Entity* mapObject = new Entity(mapBuilder->mapObject);
-				Entity::addEntity(mapObject);
-				mapObject->alwaysDisplay = true;
-				mapObject->setScale(mapBuilder->stosunekx, mapBuilder->stosuneky, mapBuilder->stosunekz);
+				worker->loadMap(node);
 			} else {
 				worker->loadEntity(node);
 			}
@@ -126,8 +76,7 @@ public:
 		stream << "Utworzono " << totalVerticesCount << " trojkatow";
 		Logger::log(stream.str());
 		stream.str("");
-		stream << "Wczytanych obiektow: " << Object::objectsCount() << ", wyswietlonych obiektow:"
-				<< Entity::allEntitiesCount();
+		stream << "Wczytanych obiektow: " << Object::objectsCount() << ", wyswietlonych obiektow:" << Entity::allEntitiesCount();
 		Logger::log(stream.str());
 
 		int residentTexturesCount = 0;

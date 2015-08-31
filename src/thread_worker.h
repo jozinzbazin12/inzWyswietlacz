@@ -17,7 +17,7 @@ private:
 	static HGLRC mainContext;
 	static HDC hdc;
 	static list<HGLRC> freeContexts;
-	static Map* map;
+	static Map* mapBuilder;
 
 	ThreadWorker() {
 		threadsMutex = CreateMutex(NULL, FALSE, NULL);
@@ -50,16 +50,22 @@ private:
 	}
 
 	static void loadEntityThread(void* arg) {
+		HGLRC context = startGlLife();
 		GLfloat a, b, c, d;
 		string stringValue;
 		xml_node<>* node = static_cast<xml_node<>*>(arg);
 
 		string objectName = node->first_attribute("objectFile")->value();
 		Object* object;
-		while (!Object::isPresentObject(objectName)) {
-			Sleep(10);
+		if (Object::isPresentObject(objectName)) {
+			while (!(object = Object::getObject(objectName))) {
+				Sleep(10);
+			}
+		} else {
+			Object::reserveObject(objectName);
+			object = new Object(objectName);
+			Object::addObject(object);
 		}
-		object = Object::getObject(objectName);
 		Entity* entity = new Entity(object);
 		xml_node<>* settings = node->first_node();
 		stringValue = settings->first_node("relative")->value();
@@ -69,7 +75,10 @@ private:
 		if (stringValue == "false") {
 			entity->setPosition(a, b, c);
 		} else {
-			d = map->calculateHeight(a, b, c);
+			while (!mapBuilder) {
+				Sleep(10);
+			}
+			d = mapBuilder->calculateHeight(a, b, c);
 			entity->setPosition(a, d, c);
 		}
 
@@ -84,20 +93,58 @@ private:
 		entity->setRotation(a, b, c);
 		Entity::addEntity(entity);
 
-		currentCount--;
-	}
-
-	static void loadObjectThread(void* arg) {
-		string *name = static_cast<string*>(arg);
-		string nameValue = name[0];
-
-		HGLRC context = startGlLife();
-		Object* object = new Object(nameValue);
-		Object::addObject(object);
-		delete name;
 		endGlLife(context);
 	}
 
+	static void loadMapThread(void* arg) {
+		HGLRC context = startGlLife();
+		GLfloat a, b, c, d;
+		string stringValue;
+		xml_node<>* node = static_cast<xml_node<>*>(arg);
+		xml_node<>* settings = node->first_node();
+		stringValue = node->first_attribute("mapFile")->value();
+		mapBuilder = new Map();
+		a = stod(settings->first_node("lengthX")->value());
+		b = stod(settings->first_node("lengthY")->value());
+		c = stod(settings->first_node("lengthZ")->value());
+		mapBuilder->wymx = a;
+		mapBuilder->wymy = b;
+		mapBuilder->wymz = c;
+		xml_node<>* lightSettings = node->first_node("Light");
+		if (lightSettings) {
+			xml_node<>* type = lightSettings->first_node("Ambient");
+			if (type) {
+				a = stod(type->first_attribute("r")->value());
+				b = stod(type->first_attribute("g")->value());
+				c = stod(type->first_attribute("b")->value());
+				d = stod(type->first_attribute("a")->value());
+				Light::getInstance()->setAmbient(a, b, c, d);
+			}
+			type = lightSettings->first_node("Diffuse");
+			if (type) {
+				a = stod(type->first_attribute("r")->value());
+				b = stod(type->first_attribute("g")->value());
+				c = stod(type->first_attribute("b")->value());
+				d = stod(type->first_attribute("a")->value());
+				Light::getInstance()->setDiffuse(a, b, c, d);
+			}
+			type = lightSettings->first_node("Specular");
+			if (type) {
+				a = stod(type->first_attribute("r")->value());
+				b = stod(type->first_attribute("g")->value());
+				c = stod(type->first_attribute("b")->value());
+				d = stod(type->first_attribute("a")->value());
+				Light::getInstance()->setSpecular(a, b, c, d);
+			}
+		}
+		mapBuilder->createMap(stringValue, "mapy/tekstury/tex.png", "mapy/mtl/mtl.mtl");
+		Object::addObject(mapBuilder->mapObject);
+		Entity* mapObject = new Entity(mapBuilder->mapObject);
+		Entity::addEntity(mapObject);
+		mapObject->alwaysDisplay = true;
+		mapObject->setScale(mapBuilder->stosunekx, mapBuilder->stosuneky, mapBuilder->stosunekz);
+		endGlLife(context);
+	}
 	static string objectKey(string name) {
 		return "object-" + name;
 	}
@@ -108,10 +155,6 @@ public:
 			instance = new ThreadWorker();
 		}
 		return instance;
-	}
-
-	static void setMap(Map* map_) {
-		map = map_;
 	}
 
 	void setThreadsCount(int count) {
@@ -135,15 +178,14 @@ public:
 		currentCount++;
 	}
 
-	void loadObject(string name) {
+	static void setMap(Map* dupa) {
+		mapBuilder = dupa;
+	}
+	void loadMap(xml_node<>* node) {
 		wait();
-		if (!Object::isPresentObject(name)) {
-			Object::reserveObject(name);
-			string* name2 = new string(name);
-			void* args = static_cast<void*>(name2);
-			CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) loadObjectThread, (void*) args, 0, NULL);
-			currentCount++;
-		}
+		void* args = static_cast<void*>(node);
+		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) loadMapThread, (void*) args, 0, NULL);
+		currentCount++;
 	}
 
 	void finish() {
@@ -163,7 +205,7 @@ public:
 
 };
 
-Map* ThreadWorker::map = NULL;
+Map* ThreadWorker::mapBuilder = NULL;
 int ThreadWorker::maxCount = 0;
 int ThreadWorker::currentCount = 0;
 ThreadWorker* ThreadWorker::instance = NULL;
