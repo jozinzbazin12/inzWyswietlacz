@@ -94,9 +94,8 @@ public:
 		string key = name + "_" + type;
 		Texture* txt = textures[key];
 		if (!txt) {
-			txt = new Texture(name, type);
-
 			WaitForSingleObject(mutex, INFINITE);
+			txt = new Texture(name, type);
 			textures[key] = txt;
 			ReleaseMutex(mutex);
 		}

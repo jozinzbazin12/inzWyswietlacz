@@ -174,8 +174,8 @@ public:
 	void loadEntity(xml_node<>* node) {
 		wait();
 		void* args = static_cast<void*>(node);
-		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) loadEntityThread, (void*) args, 0, NULL);
 		currentCount++;
+		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) loadEntityThread, (void*) args, 0, NULL);
 	}
 
 	static void setMap(Map* dupa) {
@@ -184,8 +184,8 @@ public:
 	void loadMap(xml_node<>* node) {
 		wait();
 		void* args = static_cast<void*>(node);
-		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) loadMapThread, (void*) args, 0, NULL);
 		currentCount++;
+		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) loadMapThread, (void*) args, 0, NULL);
 	}
 
 	void finish() {

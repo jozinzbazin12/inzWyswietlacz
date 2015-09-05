@@ -1,3 +1,4 @@
+
 #define GLEW_STATIC
 #define _SECURE_SCL 0
 #define _HAS_ITERATOR_DEBUGGING 0
@@ -238,18 +239,18 @@ void display(void) {
 	glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
 
 	glDisable(GL_BLEND);
-//	for (unsigned i = 0; i < Entity::solidObjectsToDisplay.size(); i++)
-//		if (Entity::solidObjectsToDisplay[i]) {
-//			drawObject(Entity::solidObjectsToDisplay[i]);
-//		}
-//	glEnable(GL_BLEND);
-//	for (unsigned i = 0; i < Entity::transparentObjectsToDisplay.size(); i++) {
-//		if (Entity::transparentObjectsToDisplay[i]) {
-//			drawObject(Entity::transparentObjectsToDisplay[i]);
-//		}
-//	}
+	for (unsigned i = 0; i < Entity::solidObjectsToDisplay.size(); i++)
+		if (Entity::solidObjectsToDisplay[i]) {
+			drawObject(Entity::solidObjectsToDisplay[i]);
+		}
+	glEnable(GL_BLEND);
+	for (unsigned i = 0; i < Entity::transparentObjectsToDisplay.size(); i++) {
+		if (Entity::transparentObjectsToDisplay[i]) {
+			drawObject(Entity::transparentObjectsToDisplay[i]);
+		}
+	}
 
-	for(int i=0; i<Entity::allEntitiesCount(); i++) drawObject(Entity::getEntity(i));
+//	for(int i=0; i<Entity::allEntitiesCount(); i++) drawObject(Entity::getEntity(i));
 	glutSwapBuffers();
 }
 
@@ -750,8 +751,8 @@ int main(int argc, char** args) {
 	} else {
 		ObjectsLoader::getInstance()->loadObjects("ustawienia/qtas.xml");
 	}
-	glEnableClientState( GL_VERTEX_ARRAY);
-	glEnableClientState( GL_NORMAL_ARRAY);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_NORMAL_ARRAY);
 	culler = FrustumCuller::getInstance();
 	hThread = (HANDLE) _beginthread(animate, 0, NULL);
 	hThread2 = (HANDLE) _beginthread(inform, 0, NULL);
@@ -765,7 +766,7 @@ int main(int argc, char** args) {
 //TODO dorobienie animacji
 //TODO dorobienie dzieci
 //TODO wypisywanie hashu
-
+// TODO bufferdata zajmuje 7s z 19
 /*x86/zlib1.dll
  x86/freeglut.dll
  x86/glew32.dll
