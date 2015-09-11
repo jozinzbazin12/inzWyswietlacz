@@ -174,10 +174,16 @@ void drawObject(Entity *ob) {
 
 void display(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	if (!frames++)
+	if(light->ready){
+		light->commit();
+		light->setReady(false);
+	}
+	if (!frames++) {
 		frameCounter = clock();
+	}
 	if (debug) {
-		glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
+		glDisable(GL_LIGHTING);
+		glColor3f(0, 0, 0);
 		glLoadIdentity();
 		GLfloat x = -2.32;
 		GLfloat y = 1.25;
@@ -205,9 +211,11 @@ void display(void) {
 				DrawString(x, y -= dy, z, "Dziecko obiektu: " + selectedEntity->parent->object->name);
 			}
 		}
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_LIGHTING);
+		glColor3f(0.5, 0.5, 0.5);
+	} else {
+		glColor3f(0.5, 0.5, 0.5);
 	}
-
 	glLoadIdentity();
 	if (selectedEntityPos > -1) {
 		glTranslatef(0, 0, -cameraDistance); //obrot kamery
@@ -776,11 +784,12 @@ int main(int argc, char** args) {
 	glClearColor(1, 1, 1, 1);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-	glEnable(GL_LIGHT0);
 	glEnable(GL_NORMALIZE);
 	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
 	glMatrixMode(GL_MODELVIEW);
 	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT);
 	glEnable(GL_COLOR_MATERIAL);
 	light->commit();
@@ -796,7 +805,6 @@ int main(int argc, char** args) {
 	hThread = (HANDLE) _beginthread(animate, 0, NULL);
 	hThread2 = (HANDLE) _beginthread(inform, 0, NULL);
 	hThread3 = (HANDLE) _beginthread(sortObjects, 0, NULL);
-
 	glutMainLoop();
 	return 0;
 }

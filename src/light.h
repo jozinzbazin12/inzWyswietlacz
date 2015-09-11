@@ -17,6 +17,7 @@ public:
 	GLfloat diffuse[4] = { 0.5f, 0.5f, 0.5f, 0.5f };
 	GLfloat specular[4] = { 0.8f, 0.8f, 0.8f, 0.8f };
 	GLfloat position[4] = { 2.0f, 5.0f, 5.0f, 0.0f };
+	bool ready = false;
 
 	static Light* getInstance() {
 		if (!instance) {
@@ -59,7 +60,11 @@ public:
 		glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
 		glLightfv(GL_LIGHT0, GL_POSITION, position);
 	}
+
+	void setReady(bool arg) {
+		ready = arg;
+	}
 };
-Light* Light::instance=NULL;
+Light* Light::instance = NULL;
 
 #endif /* SRC_LIGHT_H_ */

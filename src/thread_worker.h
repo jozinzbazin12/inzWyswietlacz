@@ -137,7 +137,7 @@ private:
 				Light::getInstance()->setSpecular(a, b, c, d);
 			}
 		}
-		Light::getInstance()->commit();
+		Light::getInstance()->setReady(true);
 		mapBuilder->createMap(stringValue, "mapy/tekstury/tex.png", "mapy/mtl/mtl.mtl");
 		Object::addObject(mapBuilder->mapObject);
 		Entity* mapObject = new Entity(mapBuilder->mapObject);
