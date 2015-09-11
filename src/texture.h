@@ -12,6 +12,7 @@ class Texture {
 private:
 	static HANDLE mutex;
 	static map<string, Texture*> textures;
+	static GLfloat filter[4];
 	SDL_Surface *txt;
 	GLenum format;
 	GLenum internalformat;
@@ -107,8 +108,8 @@ public:
 		textureName = nazwa;
 		extension = nazwa.substr(nazwa.find_last_of("."), nazwa.length());
 		txt = IMG_Load(nazwa.c_str());
-		if (extension == ".jpg" || extension == ".jpeg" || extension == ".jpe" || extension == ".jif"
-				|| extension == ".jfif" || extension == ".jfi")
+		if (extension == ".jpg" || extension == ".jpeg" || extension == ".jpe" || extension == ".jif" || extension == ".jfif"
+				|| extension == ".jfi")
 			extension = ".jpg";
 		if (extension == ".bmp" || extension == ".dib")
 			extension = ".bmp";
@@ -137,10 +138,8 @@ public:
 		if (format == GL_INTENSITY) {
 			internalformat = GL_COMPRESSED_INTENSITY;
 		}
-		GLuint tab[1];
-		glGenTextures(1, &tab[0]);
-		glBindTexture(GL_TEXTURE_2D, tab[0]);
-		txtid = tab[0];
+		glGenTextures(1, &txtid);
+		glBindTexture(GL_TEXTURE_2D, txtid);
 		glTexImage2D(GL_TEXTURE_2D, 0, internalformat, txt->w, txt->h, 0, format, GL_UNSIGNED_BYTE, txt->pixels);
 		glGenerateMipmap (GL_TEXTURE_2D);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -157,7 +156,7 @@ public:
 			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
 			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
 			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB, GL_SRC_COLOR);
-			glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, kutas);
+			glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, filter);
 
 			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
 			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA, GL_TEXTURE);
@@ -173,5 +172,5 @@ public:
 
 };
 HANDLE Texture::mutex = CreateMutex(NULL, FALSE, NULL);
-
+GLfloat Texture::filter[4] = { 0.2f, 0.2f, 0.2f, 0.2f };
 #endif /* SRC_TEXTURE_H_ */

@@ -11,8 +11,9 @@
 class Light {
 private:
 	static Light* instance;
+
 public:
-	GLfloat ambient[4] = { 0.1f, 0.1f, 0.1f, 0.1f };
+	GLfloat ambient[4] = { 0.5f, 0.5f, 0.5f, 0.5f };
 	GLfloat diffuse[4] = { 0.5f, 0.5f, 0.5f, 0.5f };
 	GLfloat specular[4] = { 0.8f, 0.8f, 0.8f, 0.8f };
 	GLfloat position[4] = { 2.0f, 5.0f, 5.0f, 0.0f };

@@ -23,7 +23,7 @@
 using namespace std;
 #include "logger.h"
 ////////////////////////////////////////////
-void DrawString(double x, double y, double z, string string);
+void DrawString(GLfloat x, GLfloat y, GLfloat z, string string);
 string otworz(string nazwa, string koniec);
 string utnij(string dupa);
 void zapisz();
@@ -61,7 +61,6 @@ int windowHeight = 700, windowWidth = 1300;
 long long unsigned totalVerticesCount = 0;
 int ktoreswiatlo = 0;
 int ktorapos = 0;
-GLfloat kutas[] = { 0.4f, 0.4f, 0.4f, 0.4f };
 int selectedEntityPos = -1;
 int selectedObjectPos = 0;
 
@@ -202,21 +201,23 @@ void display(void) {
 		}
 		if (selectedEntityPos != -1) {
 			DrawString(x, y -= dy, z, "Zaznaczony obiekt: " + info.ob + "  " + selectedEntity->object->name);
-			if (Entity::getEntity(selectedEntityPos)->parent)
+			if (Entity::getEntity(selectedEntityPos)->parent) {
 				DrawString(x, y -= dy, z, "Dziecko obiektu: " + selectedEntity->parent->object->name);
+			}
 		}
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 
 	glLoadIdentity();
-	if (selectedEntityPos > -1)
+	if (selectedEntityPos > -1) {
 		glTranslatef(0, 0, -cameraDistance); //obrot kamery
+	}
 	glRotatef(cx, 1, 0, 0);
 	glRotatef(cy, 0, 1, 0);
 
-	if (selectedEntityPos == -1)
+	if (selectedEntityPos == -1) {
 		glTranslatef(-posX, -posY, -posZ);
-	else {
+	} else {
 		if (rotationEnabled) {
 			selectedEntity->rx = cx2;
 			selectedEntity->ry = -cy2;
@@ -259,6 +260,7 @@ void display(void) {
 }
 
 void klawiaturka(unsigned char key, int x, int y) {
+	Entity* e;
 	switch (key) {
 	case 27:
 		exit(0);
@@ -296,51 +298,60 @@ void klawiaturka(unsigned char key, int x, int y) {
 		debug ^= true;
 		break;
 	case '=':
-		if (predkosc < 30)
+		if (predkosc < 30) {
 			predkosc += 0.1;
+		}
 		break;
 
 	case '-':
-		if (predkosc > 0)
+		if (predkosc > 0) {
 			predkosc -= 0.1;
+		}
 		break;
 
 	case '{':
-		if (ktoreswiatlo > 0)
+		if (ktoreswiatlo > 0) {
 			ktoreswiatlo--;
+		}
 		break;
 
 	case '}':
-		if (ktoreswiatlo < 3)
+		if (ktoreswiatlo < 3) {
 			ktoreswiatlo++;
+		}
 		break;
 
 	case '[':
-		if (ktorapos > 0)
+		if (ktorapos > 0) {
 			ktorapos--;
+		}
 		break;
 
 	case ']':
-		if (ktorapos < 3)
+		if (ktorapos < 3) {
 			ktorapos++;
+		}
 		break;
 
 	case 39:
 		switch (ktoreswiatlo) {
 		case 0:
-			if (light->ambient[ktorapos] < 1)
+			if (light->ambient[ktorapos] < 1) {
 				light->ambient[ktorapos] += 0.1;
-			glLightfv(GL_LIGHT0, GL_AMBIENT, light->ambient);
+				glLightfv(GL_LIGHT0, GL_AMBIENT, light->ambient);
+			}
 			break;
 		case 1:
-			if (light->diffuse[ktorapos] < 1)
+			if (light->diffuse[ktorapos] < 1) {
 				light->diffuse[ktorapos] += 0.1;
-			glLightfv(GL_LIGHT0, GL_DIFFUSE, light->diffuse);
+				glLightfv(GL_LIGHT0, GL_DIFFUSE, light->diffuse);
+			}
 			break;
 		case 2:
-			if (light->specular[ktorapos] < 1)
+			if (light->specular[ktorapos] < 1) {
 				light->specular[ktorapos] += 0.1;
-			glLightfv(GL_LIGHT0, GL_SPECULAR, light->specular);
+				glLightfv(GL_LIGHT0, GL_SPECULAR, light->specular);
+			}
 			break;
 		case 3:
 			light->position[ktorapos] += 0.1;
@@ -352,19 +363,22 @@ void klawiaturka(unsigned char key, int x, int y) {
 	case ';':
 		switch (ktoreswiatlo) {
 		case 0:
-			if (light->ambient[ktorapos] > 0)
+			if (light->ambient[ktorapos] > 0) {
 				light->ambient[ktorapos] -= 0.1;
-			glLightfv(GL_LIGHT0, GL_AMBIENT, light->ambient);
+				glLightfv(GL_LIGHT0, GL_AMBIENT, light->ambient);
+			}
 			break;
 		case 1:
-			if (light->diffuse[ktorapos] > 0)
+			if (light->diffuse[ktorapos] > 0) {
 				light->diffuse[ktorapos] -= 0.1;
-			glLightfv(GL_LIGHT0, GL_DIFFUSE, light->diffuse);
+				glLightfv(GL_LIGHT0, GL_DIFFUSE, light->diffuse);
+			}
 			break;
 		case 2:
-			if (light->specular[ktorapos] > 0)
+			if (light->specular[ktorapos] > 0) {
 				light->specular[ktorapos] -= 0.1;
-			glLightfv(GL_LIGHT0, GL_SPECULAR, light->specular);
+				glLightfv(GL_LIGHT0, GL_SPECULAR, light->specular);
+			}
 			break;
 		case 3:
 			light->position[ktorapos] -= 0.1;
@@ -374,46 +388,48 @@ void klawiaturka(unsigned char key, int x, int y) {
 		break;
 
 	case '8':
-		Entity::getEntity(selectedEntityPos)->sx += predkosc;
-		Entity::getEntity(selectedEntityPos)->sy += predkosc;
-		Entity::getEntity(selectedEntityPos)->sz += predkosc;
-		if (Entity::getEntity(selectedEntityPos)->anim) {
-			Entity::getEntity(selectedEntityPos)->anim->startSx += predkosc;
-			Entity::getEntity(selectedEntityPos)->anim->startSy += predkosc;
-			Entity::getEntity(selectedEntityPos)->anim->startSz += predkosc;
+		e = Entity::getEntity(selectedEntityPos);
+		e->sx += predkosc;
+		e->sy += predkosc;
+		e->sz += predkosc;
+		if (e->anim) {
+			e->anim->startSx += predkosc;
+			e->anim->startSy += predkosc;
+			e->anim->startSz += predkosc;
 		}
 		break;
 
 	case '5':
-		Entity::getEntity(selectedEntityPos)->sx -= predkosc;
-		Entity::getEntity(selectedEntityPos)->sy -= predkosc;
-		Entity::getEntity(selectedEntityPos)->sz -= predkosc;
-		if (Entity::getEntity(selectedEntityPos)->anim) {
-			Entity::getEntity(selectedEntityPos)->anim->startSx -= predkosc;
-			Entity::getEntity(selectedEntityPos)->anim->startSy -= predkosc;
-			Entity::getEntity(selectedEntityPos)->anim->startSz -= predkosc;
+		e = Entity::getEntity(selectedEntityPos);
+		e->sx -= predkosc;
+		e->sy -= predkosc;
+		e->sz -= predkosc;
+		if (e->anim) {
+			e->anim->startSx -= predkosc;
+			e->anim->startSy -= predkosc;
+			e->anim->startSz -= predkosc;
 		}
 		break;
 
 	case '4':
 		if (selectedEntityPos > -1) {
 			selectedEntity = Entity::getEntity(--selectedEntityPos);
-			posX = Entity::getEntity(selectedEntityPos)->px;
-			posY = Entity::getEntity(selectedEntityPos)->py;
-			posZ = Entity::getEntity(selectedEntityPos)->pz;
-			cx2 = -Entity::getEntity(selectedEntityPos)->rx;
-			cy2 = -Entity::getEntity(selectedEntityPos)->ry;
+			posX = selectedEntity->px;
+			posY = selectedEntity->py;
+			posZ = selectedEntity->pz;
+			cx2 = -selectedEntity->rx;
+			cy2 = -selectedEntity->ry;
 		}
 		break;
 
 	case '6':
 		if (selectedEntityPos < (int) Entity::allEntitiesCount() - 1) {
 			selectedEntity = Entity::getEntity(++selectedEntityPos);
-			posX = Entity::getEntity(selectedEntityPos)->px;
-			posY = Entity::getEntity(selectedEntityPos)->py;
-			posZ = Entity::getEntity(selectedEntityPos)->pz;
-			cx2 = -Entity::getEntity(selectedEntityPos)->rx;
-			cy2 = -Entity::getEntity(selectedEntityPos)->ry;
+			posX = selectedEntity->px;
+			posY = selectedEntity->py;
+			posZ = selectedEntity->pz;
+			cx2 = -selectedEntity->rx;
+			cy2 = -selectedEntity->ry;
 		}
 		break;
 
@@ -437,13 +453,15 @@ void klawiaturka(unsigned char key, int x, int y) {
 		break;
 
 	case '1':
-		if (selectedObjectPos > 0)
+		if (selectedObjectPos > 0) {
 			selectedObjectPos--;
+		}
 		break;
 
 	case '3':
-		if (selectedObjectPos < Object::objectsCount() - 1)
+		if (selectedObjectPos < Object::objectsCount() - 1) {
 			selectedObjectPos++;
+		}
 		break;
 
 	case '*':
@@ -461,10 +479,12 @@ void mouseButton1(int x, int y) {
 	h = glutGet( GLUT_WINDOW_HEIGHT);
 	cx -= (h / 2 - y) / 20.0;
 	cy -= (w / 2 - x) / 20.0;
-	if (cx > 90)
+	if (cx > 90) {
 		cx = 90;
-	if (cx < -90)
+	}
+	if (cx < -90) {
 		cx = -90;
+	}
 	rotationEnabled = false;
 	myk++; //TODO
 	if (myk >= 3) {
@@ -482,8 +502,9 @@ void mouseMotion(int x, int y) {
 		cz2 -= (w / 2 - x) / 15.0;
 	}
 
-	if (pressedRightButton)
+	if (pressedRightButton) {
 		cy2 -= (w / 2 - x) / 15.0;
+	}
 	myk2++;
 	rotationEnabled = true;
 	if (myk2 >= 3) {
@@ -493,21 +514,26 @@ void mouseMotion(int x, int y) {
 }
 
 void mouseButton2(int button, int state, int x, int y) {
-	if (state == GLUT_UP && button == GLUT_LEFT_BUTTON)
+	if (state == GLUT_UP && button == GLUT_LEFT_BUTTON) {
 		pressedLeftButton = false;
-	if (state == GLUT_DOWN && button == GLUT_LEFT_BUTTON)
+	}
+	if (state == GLUT_DOWN && button == GLUT_LEFT_BUTTON) {
 		pressedLeftButton = true;
-	if (state == GLUT_UP && button == GLUT_RIGHT_BUTTON)
+	}
+	if (state == GLUT_UP && button == GLUT_RIGHT_BUTTON) {
 		pressedRightButton = false;
-	if (state == GLUT_DOWN && button == GLUT_RIGHT_BUTTON)
+	}
+	if (state == GLUT_DOWN && button == GLUT_RIGHT_BUTTON) {
 		pressedRightButton = true;
+	}
 }
 
 void mouseWheel(int button, int dir, int x, int y) {
-	if (dir > 0)
+	if (dir > 0) {
 		cameraDistance -= predkosc;
-	else
+	} else {
 		cameraDistance += predkosc;
+	}
 }
 
 void idle(void) {
@@ -556,8 +582,9 @@ long long unsigned checkSize(string fileName) {
 	long long unsigned size;
 	ifstream stream;
 	stream.open(fileName.c_str(), fstream::binary);
-	if (!stream.is_open())
+	if (!stream.is_open()) {
 		exit(0);
+	}
 	stream.seekg(0, ios::end);
 	size = stream.tellg();
 	stream.close();
@@ -567,9 +594,11 @@ long long unsigned checkSize(string fileName) {
 
 void __cdecl animate(void *arg) {
 	while (1) {
-		if (selectedEntityPos == -1)
-			for (unsigned i = 0; i < animatedObjects.size(); i++)
+		if (selectedEntityPos == -1) {
+			for (unsigned i = 0; i < animatedObjects.size(); i++) {
 				animatedObjects[i]->anim->animuj(animatedObjects[i]);
+			}
+		}
 		Sleep(15);
 	}
 }
@@ -686,15 +715,17 @@ string getFileExtension(string path) {
 	return path.substr(pos, path.size());
 }
 
-void DrawString(double x, double y, double z, string string) {
-	glRasterPos3d(x, y, z);
-	for (unsigned i = 0; i < string.length(); i++)
+void DrawString(GLfloat x, GLfloat y, GLfloat z, string string) {
+	glRasterPos3f(x, y, z);
+	for (unsigned i = 0; i < string.length(); i++) {
 		glutBitmapCharacter( GLUT_BITMAP_9_BY_15, (int) string[i]);
+	}
 }
 
 void checkOpenGLExtension(string roz) {
-	if (!glewIsSupported(roz.c_str()))
+	if (!glewIsSupported(roz.c_str())) {
 		Logger::log(Logger::ERR + "nieobslugiwane roszerzenie " + roz);
+	}
 }
 
 int main(int argc, char** args) {
@@ -750,6 +781,9 @@ int main(int argc, char** args) {
 	glEnable(GL_LIGHTING);
 	glMatrixMode(GL_MODELVIEW);
 	glEnable(GL_BLEND);
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT);
+	glEnable(GL_COLOR_MATERIAL);
+	light->commit();
 	glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
 	if (argc > 1) {
 		ObjectsLoader::getInstance()->loadObjects(args[1]);
