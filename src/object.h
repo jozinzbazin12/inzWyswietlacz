@@ -245,7 +245,10 @@ public:
 
 	static Object* getObject(int pos) {
 		WaitForSingleObject(mutex, INFINITE);
-		Object* result = objects[pos];
+		Object* result=NULL;
+		if (objects.size()) {
+			result = objects[pos];
+		}
 		ReleaseMutex(mutex);
 		return result;
 	}

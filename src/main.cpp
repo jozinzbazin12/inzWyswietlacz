@@ -1,4 +1,3 @@
-
 #define GLEW_STATIC
 #define _SECURE_SCL 0
 #define _HAS_ITERATOR_DEBUGGING 0
@@ -196,9 +195,10 @@ void display(void) {
 		DrawString(x, y -= dy, z, "Pos: " + info.pos);
 		DrawString(x, y -= dy, z, "Pos: " + info.poss);
 		DrawString(x, y -= dy, z, "Wszystkie obiekty: " + info.ileob + "   Wyswietlone obiekty: " + info.ileob2);
-		DrawString(x, y -= dy, z,
-				"Obiekt: " + info.ob2 + "  " + Object::getObject(selectedObjectPos)->name + "   sztuk: "
-						+ info.licznikob);
+		Object* o = Object::getObject(selectedObjectPos);
+		if (o) {
+			DrawString(x, y -= dy, z, "Obiekt: " + info.ob2 + "  " + o->name + "   sztuk: " + info.licznikob);
+		}
 		if (selectedEntityPos != -1) {
 			DrawString(x, y -= dy, z, "Zaznaczony obiekt: " + info.ob + "  " + selectedEntity->object->name);
 			if (Entity::getEntity(selectedEntityPos)->parent)
@@ -578,16 +578,17 @@ void __cdecl inform(void *kutas) {
 		z1 << posZ;
 		amb << light->ambient[0] << " " << light->ambient[1] << " " << light->ambient[2] << " " << light->ambient[3];
 		diff << light->diffuse[0] << " " << light->diffuse[1] << " " << light->diffuse[2] << " " << light->diffuse[3];
-		spec << light->specular[0] << " " << light->specular[1] << " " << light->specular[2] << " "
-				<< light->specular[3];
-		pos << light->position[0] << " " << light->position[1] << " " << light->position[2] << " "
-				<< light->position[3];
+		spec << light->specular[0] << " " << light->specular[1] << " " << light->specular[2] << " " << light->specular[3];
+		pos << light->position[0] << " " << light->position[1] << " " << light->position[2] << " " << light->position[3];
 		poss << "Swiatlo: " << ktoreswiatlo << " Pozycja: " << ktorapos;
 		ob << selectedEntityPos;
 		ob2 << selectedObjectPos;
 		ileob << Entity::allEntitiesCount();
 		ileob2 << Entity::solidObjectsToDisplay.size() + Entity::transparentObjectsToDisplay.size();
-		licznikob << Object::getObject(selectedObjectPos)->counter;
+		Object* o = Object::getObject(selectedObjectPos);
+		if (o) {
+			licznikob << o->counter;
+		}
 		cameraSpeed << predkosc;
 		if (clock() - frameCounter >= CLOCKS_PER_SEC) {
 			fps << frames;

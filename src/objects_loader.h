@@ -11,12 +11,13 @@ using namespace rapidxml;
 class ObjectsLoader {
 private:
 	static ObjectsLoader* instance;
-	Map* mapBuilder;
+	static ThreadWorker* worker;
+	static Map* mapBuilder;
 	ObjectsLoader() {
 
 	}
 
-	char* fileToChar(const char * nazwa_pliku) {
+	static char* fileToChar(string nazwa_pliku) {
 		ifstream plik(nazwa_pliku, ios::binary);
 		if (!plik.is_open() || plik.bad()) {
 			Logger::log(Logger::ERR + "brak pliku z obiektami");
@@ -32,19 +33,13 @@ private:
 		return wyjscie;
 	}
 
-public:
-	static ObjectsLoader* getInstance() {
-		if (!instance) {
-			instance = new ObjectsLoader();
-		}
-		return instance;
-	}
-
-	void loadObjects(const char* path) {
-		Logger::log("£adujê plik: " + string(path), true);
+	static void loadThread(void *arg) {
+		string* path = static_cast<string*>(arg);
+		Logger::log("£adujê plik: " + *path, true);
 		string stringValue;
 		GLfloat a, b, c, d;
-		char* fileContent = fileToChar(path);
+		char* fileContent = fileToChar(*path);
+		delete path;
 		unsigned long loadTime = time(0);
 		xml_document<> document;
 		try {
@@ -55,9 +50,6 @@ public:
 			Logger::log(str.str());
 			exit(0);
 		}
-
-		ThreadWorker* worker = ThreadWorker::getInstance();
-		worker->setThreadsCount(2);
 
 		xml_node<> * root = document.first_node();
 		for (xml_node<> * node = root->first_node(); node; node = node->next_sibling()) {
@@ -101,12 +93,12 @@ public:
 					}
 				}
 				Light::getInstance()->commit();
-				mapBuilder->createMap(stringValue, "mapy/tekstury/tex.png", "mapy/mtl/mtl.mtl");
-				Object::addObject(mapBuilder->mapObject);
-				Entity* mapObject = new Entity(mapBuilder->mapObject);
-				Entity::addEntity(mapObject);
-				mapObject->alwaysDisplay = true;
-				mapObject->setScale(mapBuilder->stosunekx, mapBuilder->stosuneky, mapBuilder->stosunekz);
+//				mapBuilder->createMap(stringValue, "mapy/tekstury/tex.png", "mapy/mtl/mtl.mtl");
+//				Object::addObject(mapBuilder->mapObject);
+//				Entity* mapObject = new Entity(mapBuilder->mapObject);
+//				Entity::addEntity(mapObject);
+//				mapObject->alwaysDisplay = true;
+//				mapObject->setScale(mapBuilder->stosunekx, mapBuilder->stosuneky, mapBuilder->stosunekz);
 			} else {
 				worker->loadEntity(node);
 			}
@@ -141,6 +133,24 @@ public:
 		Logger::log("Zakoñczono wczytywanie w " + to_string(time(0) - loadTime) + " s.");
 	}
 
+public:
+	static ObjectsLoader* getInstance() {
+		if (!instance) {
+			instance = new ObjectsLoader();
+		}
+		return instance;
+	}
+
+	void loadObjects(string path) {
+		worker = ThreadWorker::getInstance();
+		worker->setThreadsCount(3);
+		string* str = new string(path);
+		void* args = static_cast<void*>(str);
+		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) loadThread, (void*) args, 0, NULL);
+	}
+
 };
 ObjectsLoader* ObjectsLoader::instance = NULL;
+ThreadWorker* ObjectsLoader::worker;
+Map* ObjectsLoader::mapBuilder;
 #endif /* SRC_OBJECTS_LOADER_H_ */

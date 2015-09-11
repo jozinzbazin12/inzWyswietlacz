@@ -192,7 +192,6 @@ public:
 		while (currentCount) {
 			Sleep(10);
 		}
-		wglMakeCurrent(hdc, mainContext);
 	}
 
 	~ThreadWorker() {
