@@ -137,6 +137,7 @@ private:
 				Light::getInstance()->setSpecular(a, b, c, d);
 			}
 		}
+		Light::getInstance()->commit();
 		mapBuilder->createMap(stringValue, "mapy/tekstury/tex.png", "mapy/mtl/mtl.mtl");
 		Object::addObject(mapBuilder->mapObject);
 		Entity* mapObject = new Entity(mapBuilder->mapObject);
@@ -178,9 +179,6 @@ public:
 		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) loadEntityThread, (void*) args, 0, NULL);
 	}
 
-	static void setMap(Map* dupa) {
-		mapBuilder = dupa;
-	}
 	void loadMap(xml_node<>* node) {
 		wait();
 		void* args = static_cast<void*>(node);

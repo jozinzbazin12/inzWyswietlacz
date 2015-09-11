@@ -104,6 +104,7 @@ void resize(int width, int height) {
 }
 
 void drawObject(Entity *ob) {
+	glClearColor(1, 1, 1, 1);
 	GLfloat p1 = ob->px;
 	GLfloat p2 = ob->py;
 	GLfloat p3 = ob->pz;
@@ -227,7 +228,7 @@ void display(void) {
 		GLfloat p1 = posX;
 		GLfloat p2 = posY;
 		GLfloat p3 = posZ;
-		Entity *kutas = selectedEntity->parent;
+		Entity* kutas = selectedEntity->parent;
 		while (kutas) {
 			p1 += kutas->px;
 			p2 += kutas->py;
@@ -239,10 +240,13 @@ void display(void) {
 	glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
 
 	glDisable(GL_BLEND);
-	for (unsigned i = 0; i < Entity::solidObjectsToDisplay.size(); i++)
+	//glEnable(GL_COLOR_MATERIAL);
+	for (unsigned i = 0; i < Entity::solidObjectsToDisplay.size(); i++) {
 		if (Entity::solidObjectsToDisplay[i]) {
 			drawObject(Entity::solidObjectsToDisplay[i]);
 		}
+	}
+	//glDisable(GL_COLOR_MATERIAL);
 	glEnable(GL_BLEND);
 	for (unsigned i = 0; i < Entity::transparentObjectsToDisplay.size(); i++) {
 		if (Entity::transparentObjectsToDisplay[i]) {
@@ -292,7 +296,7 @@ void klawiaturka(unsigned char key, int x, int y) {
 		debug ^= true;
 		break;
 	case '=':
-		if (predkosc < 10)
+		if (predkosc < 30)
 			predkosc += 0.1;
 		break;
 
@@ -768,6 +772,7 @@ int main(int argc, char** args) {
 //TODO dorobienie dzieci
 //TODO wypisywanie hashu
 // TODO bufferdata zajmuje 7s z 19
+//TODO poprawic logi
 /*x86/zlib1.dll
  x86/freeglut.dll
  x86/glew32.dll

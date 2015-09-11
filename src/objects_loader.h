@@ -37,7 +37,6 @@ private:
 		string* path = static_cast<string*>(arg);
 		Logger::log("£adujê plik: " + *path, true);
 		string stringValue;
-		GLfloat a, b, c, d;
 		char* fileContent = fileToChar(*path);
 		delete path;
 		unsigned long loadTime = time(0);
@@ -55,50 +54,7 @@ private:
 		for (xml_node<> * node = root->first_node(); node; node = node->next_sibling()) {
 			stringValue = node->name();
 			if (stringValue == "Map") {
-				xml_node<>* settings = node->first_node();
-				stringValue = node->first_attribute("mapFile")->value();
-				mapBuilder = new Map();
-				ThreadWorker::setMap(mapBuilder);
-				a = stod(settings->first_node("lengthX")->value());
-				b = stod(settings->first_node("lengthY")->value());
-				c = stod(settings->first_node("lengthZ")->value());
-				mapBuilder->wymx = a;
-				mapBuilder->wymy = b;
-				mapBuilder->wymz = c;
-				xml_node<>* lightSettings = node->first_node("Light");
-				if (lightSettings) {
-					xml_node<>* type = lightSettings->first_node("Ambient");
-					if (type) {
-						a = stod(type->first_attribute("r")->value());
-						b = stod(type->first_attribute("g")->value());
-						c = stod(type->first_attribute("b")->value());
-						d = stod(type->first_attribute("a")->value());
-						Light::getInstance()->setAmbient(a, b, c, d);
-					}
-					type = lightSettings->first_node("Diffuse");
-					if (type) {
-						a = stod(type->first_attribute("r")->value());
-						b = stod(type->first_attribute("g")->value());
-						c = stod(type->first_attribute("b")->value());
-						d = stod(type->first_attribute("a")->value());
-						Light::getInstance()->setDiffuse(a, b, c, d);
-					}
-					type = lightSettings->first_node("Specular");
-					if (type) {
-						a = stod(type->first_attribute("r")->value());
-						b = stod(type->first_attribute("g")->value());
-						c = stod(type->first_attribute("b")->value());
-						d = stod(type->first_attribute("a")->value());
-						Light::getInstance()->setSpecular(a, b, c, d);
-					}
-				}
-				Light::getInstance()->commit();
-//				mapBuilder->createMap(stringValue, "mapy/tekstury/tex.png", "mapy/mtl/mtl.mtl");
-//				Object::addObject(mapBuilder->mapObject);
-//				Entity* mapObject = new Entity(mapBuilder->mapObject);
-//				Entity::addEntity(mapObject);
-//				mapObject->alwaysDisplay = true;
-//				mapObject->setScale(mapBuilder->stosunekx, mapBuilder->stosuneky, mapBuilder->stosunekz);
+				worker->loadMap(node);
 			} else {
 				worker->loadEntity(node);
 			}

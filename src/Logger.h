@@ -69,6 +69,7 @@ public:
 		}
 		outfile << output;
 		outfile.flush();
+		cout << output;
 	}
 	~Logger() {
 		outfile.close();
