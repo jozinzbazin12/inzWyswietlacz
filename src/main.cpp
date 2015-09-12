@@ -46,11 +46,12 @@ float modelview[16];
 bool debug = true;
 bool pressedRightButton = false;
 bool pressedLeftButton = false;
+bool pressedMiddleButton = false;
 GLfloat cx = 0;
 GLfloat cy = 0;
 GLfloat cx2 = 0, cy2 = 0, cz2 = 0;
-int myk = 0;
-int myk2 = 0;
+int motionCounter = 0;
+int motionCounter2 = 0;
 int cameraDistance = 5;
 double predkosc = 10;
 int frameCounter = 0;
@@ -183,9 +184,9 @@ void display(void) {
 		glDisable(GL_LIGHTING);
 		glColor3f(0, 0, 0);
 		glLoadIdentity();
-		GLfloat x = -2.32;
-		GLfloat y = 1.25;
-		GLfloat z = -2.55;
+		GLfloat x = -windowWidth / 560.5;
+		GLfloat y = windowHeight / 560.0;
+		GLfloat z = -2.52;
 		GLfloat dy = 0.05;
 		DrawString(x, y -= dy, z, "FPS: " + info.fps);
 		DrawString(x, y -= dy, z, "X: " + info.x1);
@@ -477,12 +478,12 @@ void klawiaturka(unsigned char key, int x, int y) {
 	glutPostRedisplay();
 }
 
-void mouseButton1(int x, int y) {
+void mouseMotion(int x, int y) {
 	int w, h;
 	w = glutGet( GLUT_WINDOW_WIDTH);
 	h = glutGet( GLUT_WINDOW_HEIGHT);
-	cx -= (h / 2 - y) / 20.0;
-	cy -= (w / 2 - x) / 20.0;
+	cx -= (h / 2 - y) / 10.0;
+	cy -= (w / 2 - x) / 10.0;
 	if (cx > 90) {
 		cx = 90;
 	}
@@ -490,34 +491,31 @@ void mouseButton1(int x, int y) {
 		cx = -90;
 	}
 	rotationEnabled = false;
-	myk++; //TODO
-	if (myk >= 3) {
+	motionCounter++;
+	if (motionCounter >= 2) {
 		glutWarpPointer(w / 2, h / 2);
-		myk = 0;
+		motionCounter = 0;
 	}
 }
 
-void mouseMotion(int x, int y) {
-	int w, h;
-	w = glutGet( GLUT_WINDOW_WIDTH);
-	h = glutGet( GLUT_WINDOW_HEIGHT);
+void mousePressedMotion(int x, int y) {
 	if (pressedLeftButton) {
-		cx2 -= (h / 2 - y) / 15.0;
-		cz2 -= (w / 2 - x) / 15.0;
+		cx2 -= (windowHeight / 2 - y) / 7.0;
+		cz2 -= (windowWidth / 2 - x) / 7.0;
 	}
 
 	if (pressedRightButton) {
-		cy2 -= (w / 2 - x) / 15.0;
+		cy2 -= (windowWidth / 2 - x) / 7.0;
 	}
-	myk2++;
+	motionCounter2++;
 	rotationEnabled = true;
-	if (myk2 >= 3) {
-		glutWarpPointer(w / 2, h / 2);
-		myk2 = 0;
+	if (motionCounter2 >= 2 && !pressedMiddleButton) {
+		glutWarpPointer(windowWidth / 2, windowHeight / 2);
+		motionCounter2 = 0;
 	}
 }
 
-void mouseButton2(int button, int state, int x, int y) {
+void mousePressed(int button, int state, int x, int y) {
 	if (state == GLUT_UP && button == GLUT_LEFT_BUTTON) {
 		pressedLeftButton = false;
 	}
@@ -529,6 +527,14 @@ void mouseButton2(int button, int state, int x, int y) {
 	}
 	if (state == GLUT_DOWN && button == GLUT_RIGHT_BUTTON) {
 		pressedRightButton = true;
+	}
+	if (state == GLUT_UP && button == GLUT_MIDDLE_BUTTON) {
+		pressedMiddleButton = false;
+		glutSetCursor(GLUT_CURSOR_NONE);
+	}
+	if (state == GLUT_DOWN && button == GLUT_MIDDLE_BUTTON) {
+		pressedMiddleButton = true;
+		glutSetCursor(GLUT_CURSOR_INHERIT);
 	}
 }
 
@@ -740,6 +746,7 @@ int main(int argc, char** args) {
 	glutInitWindowPosition(0, 0);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
 	glutCreateWindow("Ka³nter Strajk");
+	glutSetCursor(GLUT_CURSOR_NONE);
 	Logger::log("Inicjalizacja GLEW...");
 	glewExperimental = GL_TRUE;
 	ostringstream stream;
@@ -766,9 +773,9 @@ int main(int argc, char** args) {
 	glutReshapeFunc(resize);
 	glutDisplayFunc(display);
 	glutKeyboardFunc(klawiaturka);
-	glutPassiveMotionFunc(mouseButton1);
-	glutMotionFunc(mouseMotion);
-	glutMouseFunc(mouseButton2);
+	glutPassiveMotionFunc(mouseMotion);
+	glutMotionFunc(mousePressedMotion);
+	glutMouseFunc(mousePressed);
 	glutMouseWheelFunc(mouseWheel);
 	glutIdleFunc(idle);
 	if (SDL_Init(SDL_INIT_EVERYTHING) == -1) {
