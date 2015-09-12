@@ -12,12 +12,13 @@ class ThreadWorker {
 private:
 	static HANDLE threadsMutex;
 	static ThreadWorker* instance;
-	static int maxCount;
-	static int currentCount;
 	static HGLRC mainContext;
 	static HDC hdc;
-	static list<HGLRC> freeContexts;
 	static Map* mapBuilder;
+	static vector<HANDLE> threads;
+	static list<xml_node<>*> objects;
+	static int workingThreads;
+	static xml_node<>* mapObject;
 
 	ThreadWorker() {
 		threadsMutex = CreateMutex(NULL, FALSE, NULL);
@@ -26,35 +27,10 @@ private:
 		mainContext = wglGetCurrentContext();
 	}
 
-	static HGLRC startGlLife() {
-		WaitForSingleObject(threadsMutex, INFINITE);
-		HGLRC context = freeContexts.front();
-		freeContexts.pop_front();
-		ReleaseMutex(threadsMutex);
-		wglMakeCurrent(hdc, context);
-		return context;
-	}
-
-	static void endGlLife(HGLRC loaderContext) {
-		wglMakeCurrent(NULL, NULL);
-		WaitForSingleObject(threadsMutex, INFINITE);
-		currentCount--;
-		freeContexts.push_back(loaderContext);
-		ReleaseMutex(threadsMutex);
-	}
-
-	void wait() {
-		while (currentCount >= maxCount) {
-			Sleep(5);
-		}
-	}
-
-	static void loadEntityThread(void* arg) {
-		HGLRC context = startGlLife();
+	static void loadEntityThread(xml_node<>* node) {
 		GLfloat a, b, c, d;
 		string stringValue;
-		xml_node<>* node = static_cast<xml_node<>*>(arg);
-
+		Logger::log(node->value());
 		string objectName = node->first_attribute("objectFile")->value();
 		Object* object;
 		if (Object::isPresentObject(objectName)) {
@@ -92,15 +68,11 @@ private:
 		c = stod(settings->first_node("rotationZ")->value());
 		entity->setRotation(a, b, c);
 		Entity::addEntity(entity);
-
-		endGlLife(context);
 	}
 
-	static void loadMapThread(void* arg) {
-		HGLRC context = startGlLife();
+	static void loadMapThread(xml_node<>* node) {
 		GLfloat a, b, c, d;
 		string stringValue;
-		xml_node<>* node = static_cast<xml_node<>*>(arg);
 		xml_node<>* settings = node->first_node();
 		stringValue = node->first_attribute("mapFile")->value();
 		mapBuilder = new Map();
@@ -112,13 +84,14 @@ private:
 		mapBuilder->wymz = c;
 		xml_node<>* lightSettings = node->first_node("Light");
 		if (lightSettings) {
+			Light* light = Light::getInstance();
 			xml_node<>* type = lightSettings->first_node("Ambient");
 			if (type) {
 				a = stod(type->first_attribute("r")->value());
 				b = stod(type->first_attribute("g")->value());
 				c = stod(type->first_attribute("b")->value());
 				d = stod(type->first_attribute("a")->value());
-				Light::getInstance()->setAmbient(a, b, c, d);
+				light->setAmbient(a, b, c, d);
 			}
 			type = lightSettings->first_node("Diffuse");
 			if (type) {
@@ -126,7 +99,7 @@ private:
 				b = stod(type->first_attribute("g")->value());
 				c = stod(type->first_attribute("b")->value());
 				d = stod(type->first_attribute("a")->value());
-				Light::getInstance()->setDiffuse(a, b, c, d);
+				light->setDiffuse(a, b, c, d);
 			}
 			type = lightSettings->first_node("Specular");
 			if (type) {
@@ -134,20 +107,48 @@ private:
 				b = stod(type->first_attribute("g")->value());
 				c = stod(type->first_attribute("b")->value());
 				d = stod(type->first_attribute("a")->value());
-				Light::getInstance()->setSpecular(a, b, c, d);
+				light->setSpecular(a, b, c, d);
 			}
+			light->setReady(true);
 		}
-		Light::getInstance()->setReady(true);
+
 		mapBuilder->createMap(stringValue, "mapy/tekstury/tex.png", "mapy/mtl/mtl.mtl");
 		Object::addObject(mapBuilder->mapObject);
 		Entity* mapObject = new Entity(mapBuilder->mapObject);
 		Entity::addEntity(mapObject);
 		mapObject->alwaysDisplay = true;
 		mapObject->setScale(mapBuilder->stosunekx, mapBuilder->stosuneky, mapBuilder->stosunekz);
-		endGlLife(context);
 	}
+
 	static string objectKey(string name) {
 		return "object-" + name;
+	}
+
+	static void jobListener(void* arg) {
+		HGLRC context = static_cast<HGLRC>(arg);
+		wglMakeCurrent(hdc, context);
+		glewInit();
+		while (1) {
+			xml_node<>* n;
+			if (mapObject) {
+				WaitForSingleObject(threadsMutex, INFINITE);
+				n = mapObject;
+				mapObject = NULL;
+				workingThreads++;
+				ReleaseMutex(threadsMutex);
+				loadMapThread(n);
+			}
+			if (objects.size()) {
+				WaitForSingleObject(threadsMutex, INFINITE);
+				n = objects.back();
+				objects.pop_back();
+				workingThreads++;
+				ReleaseMutex(threadsMutex);
+				loadEntityThread(n);
+			}
+			workingThreads--;
+			Sleep(10);
+		}
 	}
 
 public:
@@ -162,33 +163,37 @@ public:
 		if (count < 1) {
 			count = 1;
 		}
-		this->maxCount = count;
 		for (int i = 0; i < count; i++) {
 			HGLRC loaderContext = wglCreateContext(hdc);
 			if (!wglShareLists(mainContext, loaderContext)) { // Order matters
 				Logger::log(Logger::ERR + "nie mo¿na wspó³dzielic display lists.");
 			}
-			freeContexts.push_front(loaderContext);
+			void* args = static_cast<void*>(loaderContext);
+			HANDLE thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) jobListener, (void*) args, 0, NULL);
+			threads.push_back(thread);
+			Logger::log("Startuje w¹tek " + to_string(GetThreadId(thread)));
 		}
 	}
 
 	void loadEntity(xml_node<>* node) {
-		wait();
-		void* args = static_cast<void*>(node);
-		currentCount++;
-		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) loadEntityThread, (void*) args, 0, NULL);
+		WaitForSingleObject(threadsMutex, INFINITE);
+		objects.push_front(node);
+		ReleaseMutex(threadsMutex);
 	}
 
 	void loadMap(xml_node<>* node) {
-		wait();
-		void* args = static_cast<void*>(node);
-		currentCount++;
-		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) loadMapThread, (void*) args, 0, NULL);
+		WaitForSingleObject(threadsMutex, INFINITE);
+		mapObject = node;
+		ReleaseMutex(threadsMutex);
 	}
 
 	void finish() {
-		while (currentCount) {
+		while (objects.size() || workingThreads || mapObject) {
 			Sleep(10);
+		}
+		for (unsigned i = 0; i < threads.size(); i++) {
+			Logger::log("Skoñczy³ siê w¹tek " + to_string(GetThreadId(threads[i])));
+			TerminateThread(threads[i], 0);
 		}
 	}
 
@@ -201,13 +206,13 @@ public:
 	}
 
 };
-
+xml_node<>* ThreadWorker::mapObject = NULL;
 Map* ThreadWorker::mapBuilder = NULL;
-int ThreadWorker::maxCount = 0;
-int ThreadWorker::currentCount = 0;
 ThreadWorker* ThreadWorker::instance = NULL;
 HANDLE ThreadWorker::threadsMutex;
 HDC ThreadWorker::hdc = NULL;
 HGLRC ThreadWorker::mainContext = NULL;
-list<HGLRC> ThreadWorker::freeContexts;
+vector<HANDLE> ThreadWorker::threads;
+list<xml_node<>*> ThreadWorker::objects;
+int ThreadWorker::workingThreads = 0;
 #endif /* SRC_THREAD_WORKER_H_ */

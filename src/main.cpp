@@ -161,7 +161,11 @@ void drawObject(Entity *ob) {
 		glBindBuffer(GL_ARRAY_BUFFER, Object::buff[object->buffer[1]]);
 		glNormalPointer(GL_FLOAT, 0, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		//Logger::log(ob->object->name);
+		Logger::log(ob->object->name);
+		Logger::log(to_string(Object::buff[object->buffer[0]]));
+		Logger::log(to_string(Object::buff[object->buffer[1]]));
+		Logger::log(to_string(Object::buff[object->buffer[2]]));
+		Logger::log("count "+to_string(object->vertexCount));
 		glDrawArrays(GL_TRIANGLES, 0, object->vertexCount);
 
 		if (mtl->tkdt) {
@@ -249,13 +253,11 @@ void display(void) {
 	glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
 
 	glDisable(GL_BLEND);
-	//glEnable(GL_COLOR_MATERIAL);
 	for (unsigned i = 0; i < Entity::solidObjectsToDisplay.size(); i++) {
 		if (Entity::solidObjectsToDisplay[i]) {
 			drawObject(Entity::solidObjectsToDisplay[i]);
 		}
 	}
-	//glDisable(GL_COLOR_MATERIAL);
 	glEnable(GL_BLEND);
 	for (unsigned i = 0; i < Entity::transparentObjectsToDisplay.size(); i++) {
 		if (Entity::transparentObjectsToDisplay[i]) {
@@ -421,7 +423,7 @@ void klawiaturka(unsigned char key, int x, int y) {
 
 	case '4':
 		if (selectedEntityPos > -1) {
-			selectedEntity = Entity::getEntity(--selectedEntityPos);
+			selectedEntity = Entity::getEntity(selectedEntityPos--);
 			posX = selectedEntity->px;
 			posY = selectedEntity->py;
 			posZ = selectedEntity->pz;
@@ -805,6 +807,7 @@ int main(int argc, char** args) {
 	hThread = (HANDLE) _beginthread(animate, 0, NULL);
 	hThread2 = (HANDLE) _beginthread(inform, 0, NULL);
 	hThread3 = (HANDLE) _beginthread(sortObjects, 0, NULL);
+	//Sleep(25000);
 	glutMainLoop();
 	return 0;
 }
