@@ -24,6 +24,10 @@ private:
 		return x;
 	}
 
+	string prepareString(string str) {
+		return "[" + name + "] - " + str;
+	}
+
 	void setLastMaterial(Subobject*& subObject, Material* mtl) {
 		if (subObject) {
 			subObject->mtl = mtl;
@@ -31,8 +35,7 @@ private:
 		}
 	}
 	void loadObject(string objectName, bool tag) {
-		Logger::log("");
-		Logger::log("Wczytujê obiekt: " + objectName, true);
+		Logger::log("Wczytujê obiekt: " + objectName);
 		long long unsigned fileSize;
 		string text;
 		ifstream file;
@@ -46,7 +49,7 @@ private:
 		file.seekg(0, ios::beg);
 		ostringstream stream;
 		stream << "Rozmiar pliku " << fileSize << "B";
-		Logger::log(stream.str());
+		Logger::log(prepareString(stream.str()));
 
 		vector<GLfloat> vertices;
 		vector<GLfloat> normals;
@@ -57,7 +60,7 @@ private:
 			file >> text;
 		}
 		file >> text;
-		//xd << this->nazwa << endl;
+
 		Material* tmpmtl = NULL;
 		MaterialLib* mtl = new MaterialLib(utnij(this->name) + "/" + text);
 		MaterialLib::materials.push_back(mtl);
@@ -145,10 +148,10 @@ private:
 		stream.str("");
 		Logger::log(Logger::LINE);
 		stream << "Wczytano " << subobjects.size() << " podobiektów";
-		Logger::log(stream.str());
+		Logger::log(prepareString(stream.str()));
 		stream.str("");
 		stream << "Utworzono " << vertexCount << " trojkatów";
-		Logger::log(stream.str());
+		Logger::log(prepareString(stream.str()));
 	}
 
 	Subobject* bindObject(vector<GLfloat> vertices, vector<GLfloat> normals, vector<GLfloat> textureCords, vector<GLfloat*> &faces,

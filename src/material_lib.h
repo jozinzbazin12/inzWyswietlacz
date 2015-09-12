@@ -10,6 +10,9 @@
 
 class MaterialLib {
 private:
+	string prepareString(string str) {
+		return "[" + path + "] " + str;
+	}
 	void loadMtl(string name) {
 		float tab[3];
 		float floatValue;
@@ -84,7 +87,7 @@ private:
 		mtl[material->name] = material;
 		ostringstream stream;
 		stream << "Utworzono " << mtl.size() << " materialow";
-		Logger::log(stream.str());
+		Logger::log(prepareString(stream.str()));
 	}
 
 public:
@@ -95,16 +98,16 @@ public:
 	Material* searchMaterial(string name) {
 		Material* material = mtl[name];
 		if (!material) {
-			Logger::log(Logger::ERR + "nie znaleziono materia³u: " + name);
+			Logger::log(prepareString(Logger::ERR + "nie znaleziono materia³u: " + name));
 			exit(0);
 		}
 		return material;
 	}
 
-	MaterialLib(string nazwa) {
-		Logger::log("-MTL Lib: " + nazwa);
-		path = nazwa;
-		loadMtl(nazwa);
+	MaterialLib(string path) {
+		Logger::log("MTL Lib: " + path);
+		this->path = path;
+		loadMtl(path);
 	}
 	~MaterialLib() {
 //	for (unsigned i = 0; i < mtl.size(); i++)

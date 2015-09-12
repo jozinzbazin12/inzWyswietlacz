@@ -30,7 +30,6 @@ private:
 	static void loadEntityThread(xml_node<>* node) {
 		GLfloat a, b, c, d;
 		string stringValue;
-		Logger::log(node->value());
 		string objectName = node->first_attribute("objectFile")->value();
 		Object* object;
 		if (Object::isPresentObject(objectName)) {

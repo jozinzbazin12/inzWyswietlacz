@@ -17,6 +17,11 @@ private:
 	GLenum format;
 	GLenum internalformat;
 	string extension;
+	string textureName;
+
+	string prepareString(string str) {
+		return "[" + textureName + "] " + str;
+	}
 
 	GLenum whichFormat() {
 		if (extension == ".png")
@@ -64,7 +69,6 @@ private:
 					color &= 0xFF000000;
 					color >>= 24;
 					if (color < 255) {
-						Logger::log("Przezroczysta       " + textureName);
 						return true;
 					}
 				}
@@ -75,7 +79,6 @@ private:
 
 public:
 	GLuint txtid;
-	string textureName;
 	bool transparent = false;
 
 	static unsigned getTexturesCount() {
@@ -103,24 +106,28 @@ public:
 		return txt;
 	}
 
-	Texture(string nazwa, string tex) {
-		Logger::log("--Tekstura: " + nazwa);
-		textureName = nazwa;
-		extension = nazwa.substr(nazwa.find_last_of("."), nazwa.length());
-		txt = IMG_Load(nazwa.c_str());
+	Texture(string path, string tex) {
+		Logger::log("Tekstura: " + path);
+		textureName = path;
+		extension = path.substr(path.find_last_of("."), path.length());
+		txt = IMG_Load(path.c_str());
 		if (extension == ".jpg" || extension == ".jpeg" || extension == ".jpe" || extension == ".jif" || extension == ".jfif"
-				|| extension == ".jfi")
+				|| extension == ".jfi") {
 			extension = ".jpg";
-		if (extension == ".bmp" || extension == ".dib")
+		}
+		if (extension == ".bmp" || extension == ".dib") {
 			extension = ".bmp";
-		if (extension == ".tif" || extension == ".tiff")
+		}
+		if (extension == ".tif" || extension == ".tiff") {
 			extension = "tif";
-		if (extension == ".tga" || extension == ".tpic")
+		}
+		if (extension == ".tga" || extension == ".tpic") {
 			extension = ".tga";
+		}
 
 		if (txt == NULL) {
 			ostringstream ss;
-			Logger::log(Logger::ERR + IMG_GetError());
+			Logger::log(prepareString(Logger::ERR + IMG_GetError()));
 			exit(0);
 		}
 		format = whichFormat();

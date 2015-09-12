@@ -802,7 +802,6 @@ int main(int argc, char** args) {
 	hThread = (HANDLE) _beginthread(animate, 0, NULL);
 	hThread2 = (HANDLE) _beginthread(inform, 0, NULL);
 	hThread3 = (HANDLE) _beginthread(sortObjects, 0, NULL);
-	//Sleep(25000);
 	glutMainLoop();
 	return 0;
 }
