@@ -99,7 +99,7 @@ public:
 
 	void loadObjects(string path) {
 		worker = ThreadWorker::getInstance();
-		worker->setThreadsCount(2);
+		worker->setThreadsCount(3);
 		string* str = new string(path);
 		void* args = static_cast<void*>(str);
 		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) loadThread, (void*) args, 0, NULL);

@@ -72,8 +72,8 @@ public:
 		return culler;
 	}
 
-	bool isInViewField(int i) {
-		if (Entity::getEntity(i)->alwaysDisplay)
+	bool isInViewField(Entity* e) {
+		if (e->alwaysDisplay)
 			return true;
 		if (selectedEntityPos == -1) {
 			px2 = posX;
@@ -92,10 +92,8 @@ public:
 			pz2 += selectedEntity->pz;
 
 		}
-		Entity::getEntity(i)->recalculate();
-		if (checkZ(Entity::getEntity(i)->realMin[2], Entity::getEntity(i)->realMax[2])
-				&& chechY(Entity::getEntity(i)->realMin[1], Entity::getEntity(i)->realMax[1])
-				&& checkX(Entity::getEntity(i)->realMin[0], Entity::getEntity(i)->realMax[0])) {
+		e->recalculate();
+		if (checkZ(e->realMin[2], e->realMax[2]) && chechY(e->realMin[1], e->realMax[1]) && checkX(e->realMin[0], e->realMax[0])) {
 			return true;
 		}
 		return false;

@@ -124,6 +124,13 @@ private:
 		return "object-" + name;
 	}
 
+	static void checkErrors() {
+		GLenum e;
+		while ((e = glGetError())) {
+			Logger::log(Logger::ERR + to_string(e));
+		}
+	}
+
 	static void jobListener(void* arg) {
 		HGLRC context = static_cast<HGLRC>(arg);
 		wglMakeCurrent(hdc, context);
@@ -137,6 +144,7 @@ private:
 				workingThreads++;
 				ReleaseMutex(threadsMutex);
 				loadMapThread(n);
+				decCount();
 			}
 			if (objects.size()) {
 				WaitForSingleObject(threadsMutex, INFINITE);
@@ -145,10 +153,17 @@ private:
 				workingThreads++;
 				ReleaseMutex(threadsMutex);
 				loadEntityThread(n);
+				decCount();
 			}
-			workingThreads--;
-			Sleep(10);
+			Sleep(5);
 		}
+	}
+
+	static void decCount() {
+		WaitForSingleObject(threadsMutex, INFINITE);
+		workingThreads--;
+		ReleaseMutex(threadsMutex);
+		checkErrors();
 	}
 
 public:
@@ -189,7 +204,7 @@ public:
 
 	void finish() {
 		while (objects.size() || workingThreads || mapObject) {
-			Sleep(10);
+			Sleep(50);
 		}
 		for (unsigned i = 0; i < threads.size(); i++) {
 			Logger::log("Skoñczy³ siê w¹tek " + to_string(GetThreadId(threads[i])));

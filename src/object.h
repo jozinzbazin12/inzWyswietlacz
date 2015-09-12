@@ -171,21 +171,18 @@ private:
 			}
 		}
 
-		unsigned bufferId = sendToBuffer(newNormals, newVertices, newTextureCords, faces.size());
-		Subobject* subObject = new Subobject(faces.size(), mtl, bufferId);
+		GLuint* buffers = sendToBuffer(newNormals, newVertices, newTextureCords, faces.size());
+		Subobject* subObject = new Subobject(faces.size(), mtl, buffers);
 		subobjects.push_back(subObject);
+		delete buffers;
 		faces.clear();
 		return subObject;
 	}
 
-	unsigned sendToBuffer(vector<GLfloat> normals, vector<GLfloat> vertices, vector<GLfloat> textureCords, int facesSize) {
-		GLuint buffers[3];
+	GLuint* sendToBuffer(vector<GLfloat> normals, vector<GLfloat> vertices, vector<GLfloat> textureCords, int facesSize) {
+		GLuint* buffers = new GLuint[3];
 		WaitForSingleObject(bufferMutex, INFINITE);
 		glGenBuffers(3, &buffers[0]);
-		unsigned size = buff.size();
-		buff.push_back(buffers[0]);
-		buff.push_back(buffers[1]);
-		buff.push_back(buffers[2]);
 		ReleaseMutex(bufferMutex);
 
 		glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
@@ -195,7 +192,7 @@ private:
 		glBindBuffer(GL_ARRAY_BUFFER, buffers[2]);
 		glBufferData(GL_ARRAY_BUFFER, facesSize * 2 * sizeof(GLfloat), &textureCords[0], GL_STATIC_READ);
 
-		return size;
+		return buffers;
 	}
 
 	void copyElements(GLfloat t[3], vector<GLfloat> w, int a) {
@@ -205,31 +202,40 @@ private:
 	}
 
 	void minimax(vector<GLfloat> vertices) {
-		for (int i = 0; i < 3; i++)
-			for (int j = 0; j < 3; j++)
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
 				min[i][j] = numeric_limits < GLfloat > ::infinity();
-		for (int i = 0; i < 3; i++)
-			for (int j = 0; j < 3; j++)
+			}
+		}
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
 				max[i][j] = -numeric_limits < GLfloat > ::infinity();
+			}
+		}
 		for (unsigned i = 0; i < vertices.size(); i += 3) {
-			if (vertices[i] > max[0][0])
+			if (vertices[i] > max[0][0]) {
 				copyElements(max[0], vertices, i);
-			if (vertices[i + 1] > max[1][1])
+			}
+			if (vertices[i + 1] > max[1][1]) {
 				copyElements(max[1], vertices, i);
-			if (vertices[i + 2] > max[2][2])
+			}
+			if (vertices[i + 2] > max[2][2]) {
 				copyElements(max[2], vertices, i);
-			if (vertices[i] < min[0][0])
+			}
+			if (vertices[i] < min[0][0]) {
 				copyElements(min[0], vertices, i);
-			if (vertices[i + 1] < min[1][1])
+			}
+			if (vertices[i + 1] < min[1][1]) {
 				copyElements(min[1], vertices, i);
-			if (vertices[i + 2] < min[2][2])
+			}
+			if (vertices[i + 2] < min[2][2]) {
 				copyElements(min[2], vertices, i);
+			}
 		}
 	}
 
 public:
 	vector<Subobject*> subobjects;
-	static vector<GLuint> buff;
 	string name;
 	GLfloat min[3][3];
 	GLfloat max[3][3];
@@ -245,7 +251,7 @@ public:
 
 	static Object* getObject(int pos) {
 		WaitForSingleObject(mutex, INFINITE);
-		Object* result=NULL;
+		Object* result = NULL;
 		if (objects.size()) {
 			result = objects[pos];
 		}
@@ -282,13 +288,13 @@ public:
 		loadObject(this->name, alwaysDisplay);
 	}
 	~Object() {
-		for (unsigned i = 0; i < subobjects.size(); i++)
+		for (unsigned i = 0; i < subobjects.size(); i++) {
 			delete subobjects[i];
+		}
 		delete mtl;
 	}
 };
 HANDLE Object::mutex = CreateMutex(NULL, FALSE, NULL);
 HANDLE Object::bufferMutex = CreateMutex(NULL, FALSE, NULL);
-vector<GLuint> Object::buff;
 vector<Object*> Object::objects;
 map<string, Object*> Object::objectsMap;

@@ -12,14 +12,16 @@ class Subobject {
 public:
 	long long unsigned vertexCount;
 	Material *mtl;
-	int buffer[3];
+	GLuint vertices;
+	GLuint texture;
+	GLuint normals;
 
-	Subobject(int vertexCount, Material* mtlNumber, int bufferNumber) {
+	Subobject(int vertexCount, Material* mtlNumber, GLuint* buffers) {
 		this->vertexCount = vertexCount;
 		this->mtl = mtlNumber;
-		this->buffer[0] = bufferNumber;
-		this->buffer[1] = bufferNumber + 1;
-		this->buffer[2] = bufferNumber + 2;
+		vertices = buffers[0];
+		normals = buffers[1];
+		texture = buffers[2];
 	}
 };
 

@@ -150,24 +150,18 @@ void drawObject(Entity *ob) {
 			//	glActiveTexture(GL_TEXTURE0);
 			//	glClientActiveTexture( GL_TEXTURE0 );
 			glEnable(GL_TEXTURE_2D);
-			glBindBuffer(GL_ARRAY_BUFFER, Object::buff[object->buffer[2]]);
+			glBindBuffer(GL_ARRAY_BUFFER, object->texture);
 			glTexCoordPointer(2, GL_FLOAT, 0, 0);
 			glBindTexture(GL_TEXTURE_2D, mtl->tkdt->txtid);
 			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		}
 
-		glBindBuffer(GL_ARRAY_BUFFER, Object::buff[object->buffer[0]]);
+		glBindBuffer(GL_ARRAY_BUFFER, object->vertices);
 		glVertexPointer(3, GL_FLOAT, 0, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, Object::buff[object->buffer[1]]);
+		glBindBuffer(GL_ARRAY_BUFFER, object->normals);
 		glNormalPointer(GL_FLOAT, 0, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		Logger::log(ob->object->name);
-		Logger::log(to_string(Object::buff[object->buffer[0]]));
-		Logger::log(to_string(Object::buff[object->buffer[1]]));
-		Logger::log(to_string(Object::buff[object->buffer[2]]));
-		Logger::log("count "+to_string(object->vertexCount));
 		glDrawArrays(GL_TRIANGLES, 0, object->vertexCount);
-
 		if (mtl->tkdt) {
 			glDisable(GL_TEXTURE_2D);
 			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -178,7 +172,7 @@ void drawObject(Entity *ob) {
 
 void display(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	if(light->ready){
+	if (light->ready) {
 		light->commit();
 		light->setReady(false);
 	}
@@ -657,17 +651,18 @@ void __cdecl inform(void *kutas) {
 	}
 }
 
-void __cdecl sortObjects(void *dupa) {
+void __cdecl sortObjects(void *arg) {
 	while (1) {
 		unsigned objectsCount = Entity::allEntitiesCount();
 		vector<Entity*> transparentObjects;
 		vector<Entity*> solidObjects;
 		for (unsigned i = 0; i < objectsCount; i++) {
-			if (culler->isInViewField(i)) {
-				if (Entity::getEntity(i)->object->transparent) {
-					transparentObjects.push_back(Entity::getEntity(i));
+			Entity* e = Entity::getEntity(i);
+			if (culler->isInViewField(e)) {
+				if (e->object->transparent) {
+					transparentObjects.push_back(e);
 				} else {
-					solidObjects.push_back(Entity::getEntity(i));
+					solidObjects.push_back(e);
 				}
 			}
 		}
