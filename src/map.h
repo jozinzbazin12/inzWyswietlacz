@@ -34,17 +34,25 @@ private:
 //		t1[2] = t1[2] < 0 ? t1[2] * -1 : t1[2];
 	}
 
-	void copyToModels(string mtl, string texture, string destTexture) {
-		ifstream src(mtl.c_str(), ios::binary);
-		ofstream dst("modele/0/0.mtl", ios::binary);
-		ifstream src2(texture.c_str(), ios::binary);
-		ofstream dst2("modele/0/" + destTexture, ios::binary);
-		dst << src.rdbuf();
-		dst2 << src2.rdbuf();
-		src.close();
-		dst.close();
-		src2.close();
-		dst2.close();
+	void copyMtlToModels() {
+		string destTextureName = "tex" + getFileExtension(texturePath);
+		ofstream mtlDst("modele/0/0.mtl", ios::binary);
+		ifstream texSrc(texturePath.c_str(), ios::binary);
+		ofstream texDst("modele/0/" + destTextureName, ios::binary);
+		ostringstream ss;
+		ss << "newmtl main" << endl;
+		ss << "Ka" << " " << mtl->ka[0] << " " << mtl->ka[1] << " " << mtl->ka[2] << endl;
+		ss << "Kd" << " " << mtl->kd[0] << " " << mtl->kd[1] << " " << mtl->kd[2] << endl;
+		ss << "Ks" << " " << mtl->ks[0] << " " << mtl->ks[1] << " " << mtl->ks[2] << endl;
+		ss << "Ns" << " " << mtl->ns << endl;
+		ss << "d" << " " << mtl->d << endl;
+		ss << "map_Kd" << " " << destTextureName << endl;
+		mtlDst << ss.str();
+		texDst << texSrc.rdbuf();
+		mtlDst.close();
+		texSrc.close();
+		texDst.close();
+		delete mtl;
 	}
 
 	void loadHeights(SDL_Surface* txt, fstream* dest = NULL) {
@@ -98,15 +106,17 @@ private:
 			if (lastSettingsFile.is_open()) {
 				string hash;
 				string hash2;
+				double texScale;
 				lastSettingsFile >> hash;
 				lastSettingsFile >> hash2;
 				lastSettingsFile >> map;
+				lastSettingsFile >> texScale;
 				lastSettingsFile >> mapX;
 				lastSettingsFile >> mapZ;
 
 				string mapHash = md5.digestFile(mapFile);
 				string mapImageHash = md5.digestFile(name.c_str());
-				if (map == name && hash == mapHash && hash2 == mapImageHash) {
+				if (map == name && hash == mapHash && hash2 == mapImageHash && texScale == scale) {
 					Logger::log("Jest zrobiona mapa, wczytuje...");
 					loadHeights(map);
 					stosunekx = (float) wymx / (float) mapX;
@@ -201,7 +211,10 @@ public:
 	long double stosuneky;
 	long double stosunekz;
 	int wymx, wymy, wymz;
+	double scale = 1;
+	string texturePath = "mapy/tekstury/tex.png";
 	Object* mapObject;
+	MapMaterial* mtl;
 
 	void setMapSize(double lengthX, double lengthY, double lengthZ) {
 		wymx = lengthX;
@@ -209,12 +222,13 @@ public:
 		wymz = lengthZ;
 	}
 
-	void createMap(string mapName, string textureName, string mtlName) {
+	void createMap(string mapName) {
 		if (tryLoadLastMap(mapName)) {
+			copyMtlToModels();
 			return;
 		}
 		deleteDirectory("modele/0/");
-		copyToModels(mtlName, textureName, "tex" + getFileExtension(textureName));
+		copyMtlToModels();
 		Logger::log("Nie ma mapy, probuje utworzyc\n");
 		SDL_Surface* txt = IMG_Load(mapName.c_str());
 		if (txt == NULL) {
@@ -257,11 +271,14 @@ public:
 				vectors[v++] = makeNormal(t4, t2, t1);
 			}
 		}
-		destObject << "vt 0 0" << endl;
-		destObject << "vt 0 2" << endl;
-		destObject << "vt 2 0" << endl;
-		destObject << "vt 2 2" << endl;
-		destObject << "usemtl cipa" << endl; //TODO
+		ostringstream ss;
+		const string VT = "vt ";
+		ss << VT << 0 << " " << 0 << endl;
+		ss << VT << 0 << " " << scale << endl;
+		ss << VT << scale << " " << 0 << endl;
+		ss << VT << scale << " " << scale << endl;
+		destObject << ss.str();
+		destObject << "usemtl main" << endl; //TODO
 		destObject << "s 1" << endl;
 
 		//vertex normals
@@ -307,10 +324,10 @@ public:
 				vetex2 = (i + 1) * txt->w + j;
 				normal = vertex;
 				normal2 = vetex2;
-				destObject << "f " << vertex << "/1/" << normal << " " << vertex + 1 << "/2/" << normal + 1 << " "
-						<< vetex2 << "/3/" << normal2 << endl;
-				destObject << "f " << vertex + 1 << "/2/" << normal + 1 << " " << vetex2 << "/3/" << normal2 << " "
-						<< vetex2 + 1 << "/4/" << normal2 + 1 << endl;
+				destObject << "f " << vertex << "/1/" << normal << " " << vertex + 1 << "/2/" << normal + 1 << " " << vetex2 << "/3/"
+						<< normal2 << endl;
+				destObject << "f " << vertex + 1 << "/2/" << normal + 1 << " " << vetex2 << "/3/" << normal2 << " " << vetex2 + 1 << "/4/"
+						<< normal2 + 1 << endl;
 			}
 		}
 		Logger::log("Utworzono mape");
@@ -319,6 +336,7 @@ public:
 		sprawdzacz2 << md5.digestFile(mapFile) << endl;
 		sprawdzacz2 << md5.digestFile(mapName.c_str()) << endl;
 		sprawdzacz2 << mapName << endl;
+		sprawdzacz2 << scale << endl;
 		sprawdzacz2 << txt->w << endl;
 		sprawdzacz2 << txt->h;
 		sprawdzacz2.close();
@@ -370,12 +388,10 @@ public:
 		else {
 			if (indexX + 1 > 0) {
 				if (indexZ + 1 < mapZ) {
-					suma = (heights[mapX - indexX - 1][indexZ + 1] - heights[mapX - indexX - 1][indexZ])
-							* (1 - valueX + indexX);
+					suma = (heights[mapX - indexX - 1][indexZ + 1] - heights[mapX - indexX - 1][indexZ]) * (1 - valueX + indexX);
 				}
 				if (indexZ + 1 < mapZ) {
-					suma2 = (heights[mapX - indexX - 1][indexZ + 1] - heights[mapX - indexX][indexZ + 1])
-							* (1 - valueZ + indexZ);
+					suma2 = (heights[mapX - indexX - 1][indexZ + 1] - heights[mapX - indexX][indexZ + 1]) * (1 - valueZ + indexZ);
 				}
 				return (heights[mapX - indexX - 1][indexZ + 1] - suma - suma2) * stosuneky + y;
 			}

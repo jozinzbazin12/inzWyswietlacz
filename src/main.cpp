@@ -80,6 +80,7 @@ Information info;
 #include "object.h"
 #include "entity.h"
 #include "animation.h"
+#include "map_material.h"
 #include "map.h"
 #include "frustum_culler.h"
 #include "light.h"

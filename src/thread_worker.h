@@ -72,7 +72,7 @@ private:
 	static void loadMapThread(xml_node<>* node) {
 		GLfloat a, b, c, d;
 		string stringValue;
-		xml_node<>* settings = node->first_node();
+		xml_node<>* settings = node->first_node("Settings");
 		stringValue = node->first_attribute("mapFile")->value();
 		mapBuilder = new Map();
 		a = stod(settings->first_node("lengthX")->value());
@@ -81,6 +81,39 @@ private:
 		mapBuilder->wymx = a;
 		mapBuilder->wymy = b;
 		mapBuilder->wymz = c;
+		xml_node<>* materialSettings = node->first_node("Material");
+		if (materialSettings) {
+			MapMaterial* mtl = new MapMaterial();
+			xml_node<>* textureSettings = materialSettings->first_node("Texture");
+			if (textureSettings) {
+				mapBuilder->texturePath = textureSettings->first_attribute("path")->value();
+				mapBuilder->scale = stod(textureSettings->first_attribute("scale")->value());
+			}
+			xml_node<>* mtlSetting = materialSettings->first_node("Ka");
+			if (mtlSetting) {
+				a = stod(mtlSetting->first_attribute("r")->value());
+				b = stod(mtlSetting->first_attribute("g")->value());
+				c = stod(mtlSetting->first_attribute("b")->value());
+				mtl->setKa(a, b, c);
+			}
+			mtlSetting = materialSettings->first_node("Kd");
+			if (mtlSetting) {
+				a = stod(mtlSetting->first_attribute("r")->value());
+				b = stod(mtlSetting->first_attribute("g")->value());
+				c = stod(mtlSetting->first_attribute("b")->value());
+				mtl->setKd(a, b, c);
+			}
+			mtlSetting = materialSettings->first_node("Ks");
+			if (mtlSetting) {
+				a = stod(mtlSetting->first_attribute("r")->value());
+				b = stod(mtlSetting->first_attribute("g")->value());
+				c = stod(mtlSetting->first_attribute("b")->value());
+				mtl->setKs(a, b, c);
+			}
+			mtl->d = stod(materialSettings->first_node("d")->value());
+			mtl->ns = stod(materialSettings->first_node("Ns")->value());
+			mapBuilder->mtl = mtl;
+		}
 		xml_node<>* lightSettings = node->first_node("Light");
 		if (lightSettings) {
 			Light* light = Light::getInstance();
@@ -111,7 +144,7 @@ private:
 			light->setReady(true);
 		}
 
-		mapBuilder->createMap(stringValue, "mapy/tekstury/tex.png", "mapy/mtl/mtl.mtl");
+		mapBuilder->createMap(stringValue);
 		Object::addObject(mapBuilder->mapObject);
 		Entity* mapObject = new Entity(mapBuilder->mapObject);
 		Entity::addEntity(mapObject);
