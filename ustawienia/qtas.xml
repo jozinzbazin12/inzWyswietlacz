@@ -11,6 +11,14 @@
             <Diffuse r="0.5" g="0.5" b="0.5" a="0.5"/>
             <Specular r="0.8" g="0.8" b="0.8" a="0.8"/>
         </Light>
+        <Material>
+            <Texture path="D:\Dropbox\Programy\EclipseCpp\Wyswietlacz\mapy\tekstury\tex.png" scale="2"/>
+            <Ka r="0.3" g="0.3" b="0.3"/>
+            <Kd r="0.4" g="0.6" b="0.4"/>
+            <Ks r="0.3" g="0.3" b="0.3"/>
+            <Ns>1</Ns>
+            <d>1</d>
+        </Material>
     </Map>
     <Object objectFile="D:/modele/gens/gens.obj">
         <Settings>
