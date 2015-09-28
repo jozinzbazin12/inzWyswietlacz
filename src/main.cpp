@@ -269,6 +269,9 @@ void klawiaturka(unsigned char key, int x, int y) {
 	Entity* e;
 	switch (key) {
 	case 27:
+		TerminateThread(hThread, 0);
+		TerminateThread(hThread2, 0);
+		TerminateThread(hThread3, 0);
 		exit(0);
 		break;
 

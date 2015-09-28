@@ -59,15 +59,15 @@ private:
 		int bpp = txt->format->BytesPerPixel;
 		unsigned pixel, r, g, b;
 
-		heights = new int*[txt->h];
-		for (int i = 0; i < txt->h; i++) {
-			heights[i] = new int[txt->w];
+		heights = new int*[mapX];
+		for (int i = 0; i < mapX; i++) {
+			heights[i] = new int[mapZ];
 		}
 
 		long double height;
 		long double max = -0xffff;
-		for (int i = 0; i < txt->h; i++) {
-			for (int j = 0; j < txt->w; j++) {
+		for (int i = 0; i < mapX; i++) {
+			for (int j = 0; j < mapZ; j++) {
 				pixel = ((Uint32*) txt->pixels)[i * (txt->pitch / sizeof(Uint32)) + j * bpp / 4];
 				r = pixel & 0x000000FF;
 				g = pixel & 0x0000FF00;
@@ -76,7 +76,7 @@ private:
 				b >>= 16;
 				height = ((r + b + g) / 3) - (double) 128;
 				if (dest) {
-					dest[0] << "v " << txt->h / 2 - i << " " << height << " " << j - txt->w / 2 << endl; //moze sie zjebac!
+					dest[0] << "v " << mapX / 2 - i << " " << height << " " << j - mapZ / 2 << endl; //moze sie zjebac!
 				}
 				if (max < height) {
 					max = height;
@@ -85,6 +85,7 @@ private:
 			}
 		}
 		stosuneky = (float) wymy / max;
+		stosuneky = stosuneky < 0 ? stosuneky * -1 : stosuneky;
 	}
 
 	void loadHeights(string map) {
@@ -95,6 +96,7 @@ private:
 
 //todo
 	bool tryLoadLastMap(string name) {
+		return false;
 		fstream file, lastSettingsFile;
 		string map;
 		file.open(mapFile);
@@ -235,10 +237,11 @@ public:
 			Logger::log(Logger::ERR + "nie uda³o siê otworzyc mapy");
 			exit(0);
 		}
-		stosunekx = (float) wymx / (float) txt->w;
-		stosunekz = (float) wymz / (float) txt->h;
-		mapX = txt->w;
-		mapZ = txt->h;
+		mapX = txt->h;
+		mapZ = txt->w;
+		stosunekx = (float) wymx / (float) mapX;
+		stosunekz = (float) wymz / (float) mapZ;
+
 		fstream destObject;
 		destObject.open("modele/0/0.obj", ios::out);
 		destObject << "mtllib 0.mtl\no kutas" << endl;
@@ -246,26 +249,26 @@ public:
 		loadHeights(txt, &destObject);
 
 		//face normals
-		float **vectors = new float*[(txt->w - 1) * (txt->h - 1) * 2];
+		float **vectors = new float*[(mapZ - 1) * (mapX - 1) * 2];
 		int v = 0;
 		float t1[3], t2[3], t3[3], t4[3];
-		for (int i = 0; i < txt->h - 1; i++) {
-			for (int j = 0; j < txt->w - 1; j++) {
-				t1[0] = txt->h / 2 - i;
+		for (int i = 0; i < mapX - 1; i++) {
+			for (int j = 0; j < mapZ - 1; j++) {
+				t1[0] = mapX / 2 - i;
 				t1[1] = heights[i][j];  //i,j
-				t1[2] = j - txt->w / 2;
+				t1[2] = j - mapZ / 2;
 
-				t2[0] = txt->h / 2 - i;
+				t2[0] = mapX / 2 - i;
 				t2[1] = heights[i][j + 1]; //i,j+1
-				t2[2] = j + 1 - txt->w / 2;
+				t2[2] = j + 1 - mapZ / 2;
 
-				t3[0] = txt->h / 2 - i - 1;
+				t3[0] = mapX / 2 - i - 1;
 				t3[1] = heights[i + 1][j]; //i+1,j
-				t3[2] = j - txt->w / 2;
+				t3[2] = j - mapZ / 2;
 
-				t4[0] = txt->h / 2 - i - 1;
+				t4[0] = mapX / 2 - i - 1;
 				t4[1] = heights[i + 1][j + 1]; //i+1,j+1
-				t4[2] = j + 1 - txt->w / 2;
+				t4[2] = j + 1 - mapZ / 2;
 
 				vectors[v++] = makeNormal(t1, t3, t2);
 				vectors[v++] = makeNormal(t4, t2, t1);
@@ -284,18 +287,18 @@ public:
 		//vertex normals
 		int vertex, vetex2;
 		float normals[3];
-		for (int i = 0; i < txt->h; i++) {
-			for (int j = 0; j < txt->w; j++) {
-				vertex = i * (txt->w - 1) * 2 + j * 2;
-				vetex2 = (i - 1) * (txt->w - 1) * 2 + j * 2;
+		for (int i = 0; i < mapX; i++) {
+			for (int j = 0; j < mapZ; j++) {
+				vertex = i * (mapZ - 1) * 2 + j * 2;
+				vetex2 = (i - 1) * (mapZ - 1) * 2 + j * 2;
 				normals[0] = 0;
 				normals[1] = 0;
 				normals[2] = 0;
-				if (j != txt->w - 1 && i != txt->h - 1) {
+				if (j != mapZ - 1 && i != mapX - 1) {
 					addVector(normals, vectors[vertex]);
 				}
 
-				if (j != 0 && i != txt->h - 1) {
+				if (j != 0 && i != mapX - 1) {
 					addVector(normals, vectors[vertex - 2]);
 					addVector(normals, vectors[vertex - 1]);
 				}
@@ -304,7 +307,7 @@ public:
 					addVector(normals, vectors[vetex2 - 1]);
 				}
 
-				if (j != txt->w - 1 && i != 0) {
+				if (j != mapZ - 1 && i != 0) {
 					addVector(normals, vectors[vetex2]);
 					addVector(normals, vectors[vetex2 + 1]);
 				}
@@ -318,10 +321,10 @@ public:
 		}
 		//faces
 		int normal, normal2;
-		for (int i = 0; i < txt->h - 1; i++) {
-			for (int j = 1; j < txt->w; j++) {
-				vertex = i * txt->w + j;
-				vetex2 = (i + 1) * txt->w + j;
+		for (int i = 0; i < mapX - 1; i++) {
+			for (int j = 1; j < mapZ; j++) {
+				vertex = i * mapZ + j;
+				vetex2 = (i + 1) * mapZ + j;
 				normal = vertex;
 				normal2 = vetex2;
 				destObject << "f " << vertex << "/1/" << normal << " " << vertex + 1 << "/2/" << normal + 1 << " " << vetex2 << "/3/"
@@ -337,8 +340,8 @@ public:
 		sprawdzacz2 << md5.digestFile(mapName.c_str()) << endl;
 		sprawdzacz2 << mapName << endl;
 		sprawdzacz2 << scale << endl;
-		sprawdzacz2 << txt->w << endl;
-		sprawdzacz2 << txt->h;
+		sprawdzacz2 << mapX << endl;
+		sprawdzacz2 << mapZ;
 		sprawdzacz2.close();
 		SDL_FreeSurface(txt);
 		for (int i = 0; i < v; i++) {
