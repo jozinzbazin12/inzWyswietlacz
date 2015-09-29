@@ -1294,4 +1294,144 @@
             <relative>true</relative>
         </Settings>
     </Object>
+    <Settings>
+        <Model minCount="30" maxCount="50" path="D:\modele\drzewo\drzewo3\drzewo3.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="0.0" maxY="0.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="1.0" maxX="5.0" minY="1.0" maxY="5.0" minZ="1.0" maxZ="5.0"/>
+            <Rotation minX="0.0" maxX="0.0" minY="-180.0" maxY="180.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <Model minCount="1" maxCount="2" path="D:/modele/kuce/celestia/celestia.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="0.0" maxY="0.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="1.0" maxX="2.0" minY="1.0" maxY="2.0" minZ="1.0" maxZ="2.0"/>
+            <Rotation minX="0.0" maxX="0.0" minY="-180.0" maxY="180.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <Model minCount="10" maxCount="30" path="D:/modele/portal/portal.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="0.0" maxY="0.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="1.0" maxX="2.0" minY="1.0" maxY="2.0" minZ="1.0" maxZ="2.0"/>
+            <Rotation minX="0.0" maxX="0.0" minY="-180.0" maxY="180.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <Model minCount="1" maxCount="2" path="D:/modele/kuce/rainbow/rainbow.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="0.0" maxY="0.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="1.0" maxX="2.0" minY="1.0" maxY="2.0" minZ="1.0" maxZ="2.0"/>
+            <Rotation minX="0.0" maxX="0.0" minY="-180.0" maxY="180.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <Model minCount="1" maxCount="2" path="D:/modele/renamon/renamon.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="0.0" maxY="0.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="1.0" maxX="2.0" minY="1.0" maxY="2.0" minZ="1.0" maxZ="2.0"/>
+            <Rotation minX="0.0" maxX="0.0" minY="-180.0" maxY="180.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <Model minCount="1" maxCount="2" path="D:/modele/kuce/derpy/derpy.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="0.0" maxY="0.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="1.0" maxX="2.0" minY="1.0" maxY="2.0" minZ="1.0" maxZ="2.0"/>
+            <Rotation minX="0.0" maxX="0.0" minY="-180.0" maxY="180.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <Model minCount="1" maxCount="5" path="D:/modele/most/most.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="0.0" maxY="0.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="1.0" maxX="2.0" minY="1.0" maxY="2.0" minZ="1.0" maxZ="2.0"/>
+            <Rotation minX="0.0" maxX="0.0" minY="-180.0" maxY="180.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <Model minCount="10" maxCount="30" path="D:/modele/gens/gens.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="0.0" maxY="0.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="1.0" maxX="2.0" minY="1.0" maxY="2.0" minZ="1.0" maxZ="2.0"/>
+            <Rotation minX="0.0" maxX="0.0" minY="-180.0" maxY="180.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <Model minCount="1" maxCount="2" path="D:/modele/krystal/krystal.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="0.0" maxY="0.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="1.0" maxX="2.0" minY="1.0" maxY="2.0" minZ="1.0" maxZ="2.0"/>
+            <Rotation minX="0.0" maxX="0.0" minY="-180.0" maxY="180.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <Model minCount="1" maxCount="2" path="D:/modele/kuce/lyra/lyra.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="0.0" maxY="0.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="1.0" maxX="2.0" minY="1.0" maxY="2.0" minZ="1.0" maxZ="2.0"/>
+            <Rotation minX="0.0" maxX="0.0" minY="-180.0" maxY="180.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <Model minCount="10" maxCount="30" path="D:/modele/superman/superman.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="0.0" maxY="0.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="1.0" maxX="2.0" minY="1.0" maxY="2.0" minZ="1.0" maxZ="2.0"/>
+            <Rotation minX="0.0" maxX="0.0" minY="-180.0" maxY="180.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <Model minCount="20" maxCount="30" path="D:\modele\drzewo\drzewo2\drzewo2.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="0.0" maxY="0.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="1.0" maxX="5.0" minY="1.0" maxY="5.0" minZ="1.0" maxZ="5.0"/>
+            <Rotation minX="0.0" maxX="0.0" minY="-180.0" maxY="180.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <Model minCount="1" maxCount="2" path="D:\modele\fox\fox.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="0.0" maxY="0.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="0.1" maxX="0.3" minY="0.1" maxY="0.3" minZ="0.1" maxZ="0.3"/>
+            <Rotation minX="0.0" maxX="0.0" minY="-180.0" maxY="180.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <Model minCount="1" maxCount="2" path="D:/modele/kuce/bonbon/bonbon.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="0.0" maxY="0.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="2.0" maxX="30.0" minY="2.0" maxY="30.0" minZ="2.0" maxZ="30.0"/>
+            <Rotation minX="0.0" maxX="0.0" minY="-180.0" maxY="180.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <Model minCount="1" maxCount="2" path="D:/modele/kuce/pinkie/pinkie.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="0.0" maxY="0.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="1.0" maxX="2.0" minY="1.0" maxY="2.0" minZ="1.0" maxZ="2.0"/>
+            <Rotation minX="0.0" maxX="0.0" minY="-180.0" maxY="180.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <Model minCount="1" maxCount="2" path="D:/modele/kuce/rarity/rarity.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="0.0" maxY="0.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="1.0" maxX="2.0" minY="1.0" maxY="2.0" minZ="1.0" maxZ="2.0"/>
+            <Rotation minX="0.0" maxX="0.0" minY="-180.0" maxY="180.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <Model minCount="1" maxCount="2" path="D:/modele/kuce/twilight/twilight.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="0.0" maxY="0.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="1.0" maxX="2.0" minY="1.0" maxY="2.0" minZ="1.0" maxZ="2.0"/>
+            <Rotation minX="0.0" maxX="0.0" minY="-180.0" maxY="180.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <Model minCount="1" maxCount="2" path="D:/modele/kuce/luna/luna.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="0.0" maxY="0.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="1.0" maxX="2.0" minY="1.0" maxY="2.0" minZ="1.0" maxZ="2.0"/>
+            <Rotation minX="0.0" maxX="0.0" minY="-180.0" maxY="180.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <Model minCount="10" maxCount="30" path="D:/modele/lincoln/lincoln.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="0.0" maxY="0.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="1.0" maxX="2.0" minY="1.0" maxY="2.0" minZ="1.0" maxZ="2.0"/>
+            <Rotation minX="0.0" maxX="0.0" minY="-180.0" maxY="180.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <Model minCount="1" maxCount="2" path="D:/modele/kuce/trixie/trixie.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="0.0" maxY="0.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="1.0" maxX="2.0" minY="1.0" maxY="2.0" minZ="1.0" maxZ="2.0"/>
+            <Rotation minX="0.0" maxX="0.0" minY="-180.0" maxY="180.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <Model minCount="1" maxCount="2" path="D:/modele/kuce/fluttershy/fluttershy.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="0.0" maxY="0.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="1.0" maxX="2.0" minY="1.0" maxY="2.0" minZ="1.0" maxZ="2.0"/>
+            <Rotation minX="0.0" maxX="0.0" minY="-180.0" maxY="180.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <Model minCount="1" maxCount="2" path="D:/modele/kuce/applejack/applejack.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="30.0" maxY="40.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="70.0" maxX="80.0" minY="70.0" maxY="80.0" minZ="70.0" maxZ="80.0"/>
+            <Rotation minX="130.0" maxX="140.0" minY="-180.0" maxY="180.0" minZ="170.0" maxZ="180.0"/>
+        </Model>
+        <Model minCount="10" maxCount="30" path="D:/modele/kamien/kamien.obj">
+            <Position relative="true" minX="-1000.0" maxX="1000.0" minY="0.0" maxY="0.0" minZ="-1000.0" maxZ="1000.0"/>
+            <Scale equal="true" minX="1.0" maxX="2.0" minY="1.0" maxY="2.0" minZ="1.0" maxZ="2.0"/>
+            <Rotation minX="0.0" maxX="0.0" minY="-180.0" maxY="180.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <Model minCount="1" maxCount="1" path="D:/modele/skydome/skydome.obj">
+            <Position relative="false" minX="0.0" maxX="0.0" minY="0.0" maxY="0.0" minZ="0.0" maxZ="0.0"/>
+            <Scale equal="true" minX="200.0" maxX="200.0" minY="200.0" maxY="200.0" minZ="200.0" maxZ="200.0"/>
+            <Rotation minX="0.0" maxX="0.0" minY="0.0" maxY="0.0" minZ="0.0" maxZ="0.0"/>
+        </Model>
+        <args>
+            <entry>
+                <key>minX</key>
+                <value>-1000.0</value>
+            </entry>
+            <entry>
+                <key>maxZ</key>
+                <value>1000.0</value>
+            </entry>
+            <entry>
+                <key>maxX</key>
+                <value>1000.0</value>
+            </entry>
+            <entry>
+                <key>minZ</key>
+                <value>-1000.0</value>
+            </entry>
+        </args>
+    </Settings>
 </Objects>

@@ -55,7 +55,7 @@ private:
 			stringValue = node->name();
 			if (stringValue == "Map") {
 				worker->loadMap(node);
-			} else {
+			} else if (stringValue == "Object"){
 				worker->loadEntity(node);
 			}
 		}

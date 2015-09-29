@@ -96,7 +96,6 @@ private:
 
 //todo
 	bool tryLoadLastMap(string name) {
-		return false;
 		fstream file, lastSettingsFile;
 		string map;
 		file.open(mapFile);
