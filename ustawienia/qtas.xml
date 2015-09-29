@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Objects>
-    <Map mapFile="D:\Dropbox\Programy\EclipseCpp\Wyswietlacz\mapy\mapy\mapa2.png">
+    <Map mapFile="D:\Dropbox\Programy\EclipseCpp\Wyswietlacz\maps\maps\mapa2.png">
         <Settings>
             <lengthX>2000.0</lengthX>
             <lengthY>200</lengthY>
@@ -12,7 +12,7 @@
             <Specular r="0.8" g="0.8" b="0.8" a="0.8"/>
         </Light>
         <Material>
-            <Texture path="D:\Dropbox\Programy\EclipseCpp\Wyswietlacz\mapy\tekstury\tex.png" scale="2"/>
+            <Texture path="D:\Dropbox\Programy\EclipseCpp\Wyswietlacz\maps\textures\tex.png" scale="2"/>
             <Ka r="0.3" g="0.3" b="0.3"/>
             <Kd r="0.4" g="0.6" b="0.4"/>
             <Ks r="0.3" g="0.3" b="0.3"/>

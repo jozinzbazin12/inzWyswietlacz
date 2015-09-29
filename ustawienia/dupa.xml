@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Objects>
-    <Map mapFile="D:\Dropbox\Programy\EclipseCpp\Wyswietlacz\mapy\mapy\mapa2.png">
+    <Map mapFile="D:\Dropbox\Programy\EclipseCpp\Wyswietlacz\maps\maps\mapa2.png">
         <Settings>
             <lengthX>2000.0</lengthX>
             <lengthY>4</lengthY>

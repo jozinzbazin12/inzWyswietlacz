@@ -12,7 +12,7 @@
             <Specular r="0.0" g="0.0" b="0.0" a="0.0"/>
         </Light>
          <Material>
-            <Texture path="D:\Dropbox\Programy\EclipseCpp\Wyswietlacz\mapy\tekstury\tex.png" scale="2"/>
+            <Texture path="D:\Dropbox\Programy\EclipseCpp\Wyswietlacz\maps\textures\tex.png" scale="2"/>
             <Ka r="0.3" g="0.3" b="0.3"/>
             <Kd r="0.4" g="0.6" b="0.4"/>
             <Ks r="0.3" g="0.3" b="0.3"/>

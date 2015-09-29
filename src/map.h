@@ -13,7 +13,7 @@ class Map {
 private:
 	static int **heights;
 	long long unsigned mapSize;
-	const char* mapFile = "modele/0/0.obj";
+	const char* mapFile = "models/0/0.obj";
 	MD5 md5;
 
 	void addVector(float* dest, float* v, int size = 3) {
@@ -36,9 +36,9 @@ private:
 
 	void copyMtlToModels() {
 		string destTextureName = "tex" + getFileExtension(texturePath);
-		ofstream mtlDst("modele/0/0.mtl", ios::binary);
+		ofstream mtlDst("models/0/0.mtl", ios::binary);
 		ifstream texSrc(texturePath.c_str(), ios::binary);
-		ofstream texDst("modele/0/" + destTextureName, ios::binary);
+		ofstream texDst("models/0/" + destTextureName, ios::binary);
 		ostringstream ss;
 		ss << "newmtl main" << endl;
 		ss << "Ka" << " " << mtl->ka[0] << " " << mtl->ka[1] << " " << mtl->ka[2] << endl;
@@ -103,7 +103,7 @@ private:
 			Logger::log("Nie ma mapy, probuje utworzyc");
 			return false;
 		} else {
-			lastSettingsFile.open("mapy/ostatnia.txt");
+			lastSettingsFile.open("maps/last.txt");
 			if (lastSettingsFile.is_open()) {
 				string hash;
 				string hash2;
@@ -213,7 +213,7 @@ public:
 	long double stosunekz;
 	int wymx, wymy, wymz;
 	double scale = 1;
-	string texturePath = "mapy/tekstury/tex.png";
+	string texturePath = "maps/textures/tex.png";
 	Object* mapObject;
 	MapMaterial* mtl;
 
@@ -228,7 +228,7 @@ public:
 			copyMtlToModels();
 			return;
 		}
-		deleteDirectory("modele/0/");
+		deleteDirectory("models/0/");
 		copyMtlToModels();
 		Logger::log("Nie ma mapy, probuje utworzyc\n");
 		SDL_Surface* txt = IMG_Load(mapName.c_str());
@@ -242,8 +242,8 @@ public:
 		stosunekz = (float) wymz / (float) mapZ;
 
 		fstream destObject;
-		destObject.open("modele/0/0.obj", ios::out);
-		destObject << "mtllib 0.mtl\no kutas" << endl;
+		destObject.open("models/0/0.obj", ios::out);
+		destObject << "mtllib 0.mtl\no map" << endl;
 
 		loadHeights(txt, &destObject);
 
@@ -334,7 +334,7 @@ public:
 		}
 		Logger::log("Utworzono mape");
 		fstream sprawdzacz2;
-		sprawdzacz2.open("mapy/ostatnia.txt", ios::out);
+		sprawdzacz2.open("maps/last.txt", ios::out);
 		sprawdzacz2 << md5.digestFile(mapFile) << endl;
 		sprawdzacz2 << md5.digestFile(mapName.c_str()) << endl;
 		sprawdzacz2 << mapName << endl;

@@ -4,7 +4,7 @@
 log.txt
 /Debug
 /animacje
-/mapy
-/modele
+/maps
+/models
 /Release
 *.exe

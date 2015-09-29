@@ -713,9 +713,9 @@ string otworz(string nazwa, string koniec) { //TODO
 	}
 
 	if (!tak)
-		nazwa2 = "modele/" + nazwa + "/" + nazwa + koniec;
+		nazwa2 = "models/" + nazwa + "/" + nazwa + koniec;
 	else {
-		string nazwa5 = "modele/" + nazwa3;
+		string nazwa5 = "models/" + nazwa3;
 		string nazwa4 = "";
 		for (unsigned i = tak + 1; i < nazwa.length(); i++)
 			nazwa4 += nazwa[i];
