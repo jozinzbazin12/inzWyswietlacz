@@ -238,6 +238,10 @@ public:
 		while (objects.size() || workingThreads || mapObject) {
 			Sleep(50);
 		}
+		terminate();
+	}
+
+	void terminate() {
 		for (unsigned i = 0; i < threads.size(); i++) {
 			Logger::log("Skoñczy³ siê w¹tek " + to_string(GetThreadId(threads[i])));
 			TerminateThread(threads[i], 0);

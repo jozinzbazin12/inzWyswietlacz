@@ -105,6 +105,10 @@ public:
 		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) loadThread, (void*) args, 0, NULL);
 	}
 
+	void terminate(){
+		worker->terminate();
+	}
+
 };
 ObjectsLoader* ObjectsLoader::instance = NULL;
 ThreadWorker* ObjectsLoader::worker;

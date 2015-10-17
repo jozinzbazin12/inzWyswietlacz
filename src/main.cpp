@@ -86,10 +86,12 @@ Information info;
 #include "light.h"
 #include "thread_worker.h"
 #include "objects_loader.h"
+#include "console.h"
 
 map<string, Texture*> Texture::textures;
 FrustumCuller* culler;
 Light* light = Light::getInstance();
+Console* console;
 
 void resize(int width, int height) {
 	const float ar = (float) width / (float) height / 2;
@@ -97,8 +99,8 @@ void resize(int width, int height) {
 	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glFrustum(-ar, ar, culler->bottom, culler->top, culler->neardist, culler->fardist);
 	culler->ar = ar;
+	culler->commit();
 	glMatrixMode(GL_MODELVIEW);
 	windowHeight = height;
 	windowWidth = width;
@@ -172,6 +174,47 @@ void drawObject(Entity *ob) {
 	glPopMatrix();
 }
 
+void displayDebug() {
+	glDisable(GL_LIGHTING);
+	glColor3f(0, 0, 0);
+	glLoadIdentity();
+	GLfloat x = -windowWidth / 560.5;
+	GLfloat y = windowHeight / 560.0;
+	GLfloat z = -2.52;
+	GLfloat dy = 0.05;
+	DrawString(x, y -= dy, z, "FPS: " + info.fps);
+	DrawString(x, y -= dy, z, "X: " + info.x1);
+	DrawString(x, y -= dy, z, "Y: " + info.y1);
+	DrawString(x, y -= dy, z, "Z: " + info.z1);
+	DrawString(x, y -= dy, z, "Speed: " + info.speed);
+
+	DrawString(x, y -= dy, z, "Ambient: " + info.amb);
+	DrawString(x, y -= dy, z, "Diffuse: " + info.diff);
+	DrawString(x, y -= dy, z, "Specular: " + info.spec);
+	DrawString(x, y -= dy, z, "Pos: " + info.pos);
+	DrawString(x, y -= dy, z, "Pos: " + info.poss);
+	DrawString(x, y -= dy, z, "Wszystkie obiekty: " + info.ileob + "   Wyswietlone obiekty: " + info.ileob2);
+	Object* o = Object::getObject(selectedObjectPos);
+	if (o) {
+		DrawString(x, y -= dy, z, "Obiekt: " + info.ob2 + "  " + o->name + "   sztuk: " + info.licznikob);
+	}
+	if (selectedEntityPos != -1) {
+		DrawString(x, y -= dy, z, "Zaznaczony obiekt: " + info.ob + "  " + selectedEntity->object->name);
+		if (Entity::getEntity(selectedEntityPos)->parent) {
+			DrawString(x, y -= dy, z, "Dziecko obiektu: " + selectedEntity->parent->object->name);
+		}
+	}
+	y -= dy * 4;
+	for (int i = 0; i < console->lineNumber - 1; i++) {
+		DrawString(x, y -= dy, z, console->lines[i]);
+	}
+	DrawString(x, y -= dy * 2, z, console->lines[console->lineNumber - 1]);
+	if (console->typing) {
+		DrawString(x + console->pointer / 30.8, y - 0.001, z, "_");
+	}
+	glEnable(GL_LIGHTING);
+	glColor3f(0.5, 0.5, 0.5);
+}
 void display(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	if (light->ready) {
@@ -182,37 +225,7 @@ void display(void) {
 		frameCounter = clock();
 	}
 	if (debug) {
-		glDisable(GL_LIGHTING);
-		glColor3f(0, 0, 0);
-		glLoadIdentity();
-		GLfloat x = -windowWidth / 560.5;
-		GLfloat y = windowHeight / 560.0;
-		GLfloat z = -2.52;
-		GLfloat dy = 0.05;
-		DrawString(x, y -= dy, z, "FPS: " + info.fps);
-		DrawString(x, y -= dy, z, "X: " + info.x1);
-		DrawString(x, y -= dy, z, "Y: " + info.y1);
-		DrawString(x, y -= dy, z, "Z: " + info.z1);
-		DrawString(x, y -= dy, z, "Speed: " + info.speed);
-
-		DrawString(x, y -= dy, z, "Ambient: " + info.amb);
-		DrawString(x, y -= dy, z, "Diffuse: " + info.diff);
-		DrawString(x, y -= dy, z, "Specular: " + info.spec);
-		DrawString(x, y -= dy, z, "Pos: " + info.pos);
-		DrawString(x, y -= dy, z, "Pos: " + info.poss);
-		DrawString(x, y -= dy, z, "Wszystkie obiekty: " + info.ileob + "   Wyswietlone obiekty: " + info.ileob2);
-		Object* o = Object::getObject(selectedObjectPos);
-		if (o) {
-			DrawString(x, y -= dy, z, "Obiekt: " + info.ob2 + "  " + o->name + "   sztuk: " + info.licznikob);
-		}
-		if (selectedEntityPos != -1) {
-			DrawString(x, y -= dy, z, "Zaznaczony obiekt: " + info.ob + "  " + selectedEntity->object->name);
-			if (Entity::getEntity(selectedEntityPos)->parent) {
-				DrawString(x, y -= dy, z, "Dziecko obiektu: " + selectedEntity->parent->object->name);
-			}
-		}
-		glEnable(GL_LIGHTING);
-		glColor3f(0.5, 0.5, 0.5);
+		displayDebug();
 	} else {
 		glColor3f(0.5, 0.5, 0.5);
 	}
@@ -265,218 +278,141 @@ void display(void) {
 	glutSwapBuffers();
 }
 
+void specialKeys(int key, int x, int y) {
+	if (console->typing && debug) {
+		console->typeSpecial(key);
+	}
+}
 void klawiaturka(unsigned char key, int x, int y) {
-	Entity* e;
-	switch (key) {
-	case 27:
-		TerminateThread(hThread, 0);
-		TerminateThread(hThread2, 0);
-		TerminateThread(hThread3, 0);
-		exit(0);
-		break;
+	if (console->typing && debug) {
+		console->type(key);
+	} else {
+		Entity* e;
+		switch (key) {
+		case '`':
+			console->typing = true;
+			break;
+		case 27:
+			TerminateThread(hThread, 0);
+			TerminateThread(hThread2, 0);
+			TerminateThread(hThread3, 0);
+			ObjectsLoader::getInstance()->terminate();
+			exit(0);
+			break;
 
-	case 'w':
-		posZ -= modelview[10] * predkosc;
-		posX -= modelview[2] * predkosc;
-		break;
+		case 'w':
+			posZ -= modelview[10] * predkosc;
+			posX -= modelview[2] * predkosc;
+			break;
 
-	case 's':
-		posZ += modelview[10] * predkosc;
-		posX += modelview[2] * predkosc;
-		break;
+		case 's':
+			posZ += modelview[10] * predkosc;
+			posX += modelview[2] * predkosc;
+			break;
 
-	case 'd':
-		posX += modelview[10] * predkosc;
-		posZ -= modelview[2] * predkosc;
-		break;
+		case 'd':
+			posX += modelview[10] * predkosc;
+			posZ -= modelview[2] * predkosc;
+			break;
 
-	case 'a':
-		posX -= modelview[10] * predkosc;
-		posZ += modelview[2] * predkosc;
-		break;
+		case 'a':
+			posX -= modelview[10] * predkosc;
+			posZ += modelview[2] * predkosc;
+			break;
 
-	case 'q':
-		posY += predkosc;
-		break;
+		case 'q':
+			posY += predkosc;
+			break;
 
-	case 'e':
-		posY -= predkosc;
-		break;
+		case 'e':
+			posY -= predkosc;
+			break;
 
-	case 'o':
-		debug ^= true;
-		break;
-	case '=':
-		if (predkosc < 30) {
-			predkosc += 0.1;
-		}
-		break;
+		case 'o':
+			debug ^= true;
+			break;
 
-	case '-':
-		if (predkosc > 0) {
-			predkosc -= 0.1;
-		}
-		break;
-
-	case '{':
-		if (ktoreswiatlo > 0) {
-			ktoreswiatlo--;
-		}
-		break;
-
-	case '}':
-		if (ktoreswiatlo < 3) {
-			ktoreswiatlo++;
-		}
-		break;
-
-	case '[':
-		if (ktorapos > 0) {
-			ktorapos--;
-		}
-		break;
-
-	case ']':
-		if (ktorapos < 3) {
-			ktorapos++;
-		}
-		break;
-
-	case 39:
-		switch (ktoreswiatlo) {
-		case 0:
-			if (light->ambient[ktorapos] < 1) {
-				light->ambient[ktorapos] += 0.1;
-				glLightfv(GL_LIGHT0, GL_AMBIENT, light->ambient);
+		case '8':
+			e = Entity::getEntity(selectedEntityPos);
+			e->sx += predkosc;
+			e->sy += predkosc;
+			e->sz += predkosc;
+			if (e->anim) {
+				e->anim->startSx += predkosc;
+				e->anim->startSy += predkosc;
+				e->anim->startSz += predkosc;
 			}
 			break;
-		case 1:
-			if (light->diffuse[ktorapos] < 1) {
-				light->diffuse[ktorapos] += 0.1;
-				glLightfv(GL_LIGHT0, GL_DIFFUSE, light->diffuse);
+
+		case '5':
+			e = Entity::getEntity(selectedEntityPos);
+			e->sx -= predkosc;
+			e->sy -= predkosc;
+			e->sz -= predkosc;
+			if (e->anim) {
+				e->anim->startSx -= predkosc;
+				e->anim->startSy -= predkosc;
+				e->anim->startSz -= predkosc;
 			}
 			break;
-		case 2:
-			if (light->specular[ktorapos] < 1) {
-				light->specular[ktorapos] += 0.1;
-				glLightfv(GL_LIGHT0, GL_SPECULAR, light->specular);
+
+		case '4':
+			if (selectedEntityPos > -1) {
+				selectedEntity = Entity::getEntity(selectedEntityPos--);
+				posX = selectedEntity->px;
+				posY = selectedEntity->py;
+				posZ = selectedEntity->pz;
+				cx2 = -selectedEntity->rx;
+				cy2 = -selectedEntity->ry;
 			}
 			break;
-		case 3:
-			light->position[ktorapos] += 0.1;
-			glLightfv(GL_LIGHT0, GL_POSITION, light->position);
-			break;
-		}
-		break;
 
-	case ';':
-		switch (ktoreswiatlo) {
-		case 0:
-			if (light->ambient[ktorapos] > 0) {
-				light->ambient[ktorapos] -= 0.1;
-				glLightfv(GL_LIGHT0, GL_AMBIENT, light->ambient);
+		case '6':
+			if (selectedEntityPos < (int) Entity::allEntitiesCount() - 1) {
+				selectedEntity = Entity::getEntity(++selectedEntityPos);
+				posX = selectedEntity->px;
+				posY = selectedEntity->py;
+				posZ = selectedEntity->pz;
+				cx2 = -selectedEntity->rx;
+				cy2 = -selectedEntity->ry;
 			}
 			break;
-		case 1:
-			if (light->diffuse[ktorapos] > 0) {
-				light->diffuse[ktorapos] -= 0.1;
-				glLightfv(GL_LIGHT0, GL_DIFFUSE, light->diffuse);
+
+		case '7':
+			if (selectedEntityPos != -1) {
+				delete Entity::getEntity(selectedEntityPos);
+				Entity::setEntity(Entity::getEntity(Entity::allEntitiesCount()), selectedEntityPos);
+				Entity::setEntity(NULL, Entity::allEntitiesCount());
+				selectedEntityPos = -1;
+				selectedEntity = NULL;
 			}
 			break;
-		case 2:
-			if (light->specular[ktorapos] > 0) {
-				light->specular[ktorapos] -= 0.1;
-				glLightfv(GL_LIGHT0, GL_SPECULAR, light->specular);
+
+		case '9':
+			Entity::addEntity(new Entity(Object::getObject(selectedObjectPos)));
+			if (selectedEntityPos != -1) {
+				//	Entity::allObjects[Entity::allObjects.size() - 1]->parent = Entity::getEntity(selectedEntityPos);
+			}
+			selectedEntityPos = Entity::allEntitiesCount() - 1;
+			selectedEntity = Entity::getEntity(selectedEntityPos);
+			break;
+
+		case '1':
+			if (selectedObjectPos > 0) {
+				selectedObjectPos--;
 			}
 			break;
-		case 3:
-			light->position[ktorapos] -= 0.1;
-			glLightfv(GL_LIGHT0, GL_POSITION, light->position);
+
+		case '3':
+			if (selectedObjectPos < Object::objectsCount() - 1) {
+				selectedObjectPos++;
+			}
+			break;
+
+		case '*':
+			zapisz();
 			break;
 		}
-		break;
-
-	case '8':
-		e = Entity::getEntity(selectedEntityPos);
-		e->sx += predkosc;
-		e->sy += predkosc;
-		e->sz += predkosc;
-		if (e->anim) {
-			e->anim->startSx += predkosc;
-			e->anim->startSy += predkosc;
-			e->anim->startSz += predkosc;
-		}
-		break;
-
-	case '5':
-		e = Entity::getEntity(selectedEntityPos);
-		e->sx -= predkosc;
-		e->sy -= predkosc;
-		e->sz -= predkosc;
-		if (e->anim) {
-			e->anim->startSx -= predkosc;
-			e->anim->startSy -= predkosc;
-			e->anim->startSz -= predkosc;
-		}
-		break;
-
-	case '4':
-		if (selectedEntityPos > -1) {
-			selectedEntity = Entity::getEntity(selectedEntityPos--);
-			posX = selectedEntity->px;
-			posY = selectedEntity->py;
-			posZ = selectedEntity->pz;
-			cx2 = -selectedEntity->rx;
-			cy2 = -selectedEntity->ry;
-		}
-		break;
-
-	case '6':
-		if (selectedEntityPos < (int) Entity::allEntitiesCount() - 1) {
-			selectedEntity = Entity::getEntity(++selectedEntityPos);
-			posX = selectedEntity->px;
-			posY = selectedEntity->py;
-			posZ = selectedEntity->pz;
-			cx2 = -selectedEntity->rx;
-			cy2 = -selectedEntity->ry;
-		}
-		break;
-
-	case '7':
-		if (selectedEntityPos != -1) {
-			delete Entity::getEntity(selectedEntityPos);
-			Entity::setEntity(Entity::getEntity(Entity::allEntitiesCount()), selectedEntityPos);
-			Entity::setEntity(NULL, Entity::allEntitiesCount());
-			selectedEntityPos = -1;
-			selectedEntity = NULL;
-		}
-		break;
-
-	case '9':
-		Entity::addEntity(new Entity(Object::getObject(selectedObjectPos)));
-		if (selectedEntityPos != -1) {
-			//	Entity::allObjects[Entity::allObjects.size() - 1]->parent = Entity::getEntity(selectedEntityPos);
-		}
-		selectedEntityPos = Entity::allEntitiesCount() - 1;
-		selectedEntity = Entity::getEntity(selectedEntityPos);
-		break;
-
-	case '1':
-		if (selectedObjectPos > 0) {
-			selectedObjectPos--;
-		}
-		break;
-
-	case '3':
-		if (selectedObjectPos < Object::objectsCount() - 1) {
-			selectedObjectPos++;
-		}
-		break;
-
-	case '*':
-		zapisz();
-		break;
-
 	}
 
 	glutPostRedisplay();
@@ -777,6 +713,7 @@ int main(int argc, char** args) {
 	glutReshapeFunc(resize);
 	glutDisplayFunc(display);
 	glutKeyboardFunc(klawiaturka);
+	glutSpecialFunc(specialKeys);
 	glutPassiveMotionFunc(mouseMotion);
 	glutMotionFunc(mousePressedMotion);
 	glutMouseFunc(mousePressed);
@@ -802,6 +739,7 @@ int main(int argc, char** args) {
 	glEnable(GL_COLOR_MATERIAL);
 	light->commit();
 	glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
+	console = new Console(10);
 	if (argc > 1) {
 		ObjectsLoader::getInstance()->loadObjects(args[1]);
 	} else {
@@ -823,6 +761,7 @@ int main(int argc, char** args) {
 //TODO wypisywanie hashu
 // TODO bufferdata zajmuje 7s z 19
 //TODO poprawic logi
+//TODO drzewa czworkowe, max 100k obiektow
 /*x86/zlib1.dll
  x86/freeglut.dll
  x86/glew32.dll

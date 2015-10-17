@@ -99,6 +99,9 @@ public:
 		return false;
 	}
 
+	void commit() {
+		glFrustum(-ar, ar, bottom, top, neardist, fardist);
+	}
 };
 FrustumCuller* FrustumCuller::culler = NULL;
 
