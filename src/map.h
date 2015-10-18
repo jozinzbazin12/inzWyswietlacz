@@ -76,12 +76,12 @@ private:
 				b >>= 16;
 				height = ((r + b + g) / 3) - (double) 128;
 				if (dest) {
-					dest[0] << "v " << mapX / 2 - i << " " << height << " " << j - mapZ / 2 << endl; //moze sie zjebac!
+					dest[0] << "v " << i - mapX / 2 << " " << height << " " << mapZ / 2 - j << endl; //moze sie zjebac!
 				}
 				if (max < height) {
 					max = height;
 				}
-				heights[i][j] = height;
+				heights[mapX - i - 1][mapZ - j - 1] = height;
 			}
 		}
 		stosuneky = (float) wymy / max;
