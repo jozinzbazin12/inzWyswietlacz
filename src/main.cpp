@@ -60,8 +60,6 @@ bool rotationEnabled = false;
 GLfloat posX = -5, posY = 5, posZ = 11;
 int windowHeight = 700, windowWidth = 1300;
 long long unsigned totalVerticesCount = 0;
-int ktoreswiatlo = 0;
-int ktorapos = 0;
 int selectedEntityPos = -1;
 int selectedObjectPos = 0;
 
@@ -261,17 +259,19 @@ void display(void) {
 	}
 	glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
 
+	unsigned size = Entity::solidObjectsToDisplay.size();
+	vector<Entity*> entities = Entity::solidObjectsToDisplay;
 	glDisable(GL_BLEND);
-	for (unsigned i = 0; i < Entity::solidObjectsToDisplay.size(); i++) {
-		if (Entity::solidObjectsToDisplay[i]) {
-			drawObject(Entity::solidObjectsToDisplay[i]);
-		}
+	for (unsigned i = 0; i < size; i++) {
+		drawObject(entities[i]);
+
 	}
+	size = Entity::transparentObjectsToDisplay.size();
+	entities = Entity::transparentObjectsToDisplay;
 	glEnable(GL_BLEND);
-	for (unsigned i = 0; i < Entity::transparentObjectsToDisplay.size(); i++) {
-		if (Entity::transparentObjectsToDisplay[i]) {
-			drawObject(Entity::transparentObjectsToDisplay[i]);
-		}
+	for (unsigned i = 0; i < size; i++) {
+		drawObject(entities[i]);
+
 	}
 
 //	for(int i=0; i<Entity::allEntitiesCount(); i++) drawObject(Entity::getEntity(i));
@@ -555,7 +555,7 @@ void __cdecl animate(void *arg) {
 
 void __cdecl inform(void *kutas) {
 	while (1) {
-		stringstream x1, y1, z1, fps, cameraSpeed, amb, diff, spec, pos, poss, ob, ob2, ileob, ileob2, licznikob;
+		stringstream x1, y1, z1, fps, cameraSpeed, amb, diff, spec, pos, ob, ob2, ileob, ileob2, licznikob;
 		x1 << posX;
 		y1 << posY;
 		z1 << posZ;
@@ -563,7 +563,6 @@ void __cdecl inform(void *kutas) {
 		diff << light->diffuse[0] << " " << light->diffuse[1] << " " << light->diffuse[2] << " " << light->diffuse[3];
 		spec << light->specular[0] << " " << light->specular[1] << " " << light->specular[2] << " " << light->specular[3];
 		pos << light->position[0] << " " << light->position[1] << " " << light->position[2] << " " << light->position[3];
-		poss << "Swiatlo: " << ktoreswiatlo << " Pozycja: " << ktorapos;
 		ob << selectedEntityPos;
 		ob2 << selectedObjectPos;
 		ileob << Entity::allEntitiesCount();
@@ -587,7 +586,6 @@ void __cdecl inform(void *kutas) {
 		info.diff = diff.str();
 		info.spec = spec.str();
 		info.pos = pos.str();
-		info.poss = poss.str();
 		info.ob = ob.str();
 		info.ob2 = ob2.str();
 		info.ileob = ileob.str();
