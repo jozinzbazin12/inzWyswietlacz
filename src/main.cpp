@@ -27,6 +27,7 @@ void DrawString(GLfloat x, GLfloat y, GLfloat z, string string);
 string otworz(string nazwa, string koniec);
 string utnij(string dupa);
 void zapisz();
+void end();
 string getFileExtension(string path);
 long long unsigned checkSize(string fileName);
 class Animation;
@@ -63,9 +64,9 @@ long long unsigned totalVerticesCount = 0;
 int selectedEntityPos = -1;
 int selectedObjectPos = 0;
 
-HANDLE hThread;
-HANDLE hThread2;
-HANDLE hThread3;
+HANDLE animateThread;
+HANDLE informThread;
+HANDLE sortThread;
 struct Information {
 	string x1, y1, z1, fps, speed, amb, diff, spec, pos, poss, ob, ob2, ileob, ileob2, licznikob;
 };
@@ -293,11 +294,7 @@ void klawiaturka(unsigned char key, int x, int y) {
 			console->typing = true;
 			break;
 		case 27:
-			TerminateThread(hThread, 0);
-			TerminateThread(hThread2, 0);
-			TerminateThread(hThread3, 0);
-			ObjectsLoader::getInstance()->terminate();
-			exit(0);
+			end();
 			break;
 
 		case 'w':
@@ -677,7 +674,16 @@ void checkOpenGLExtension(string roz) {
 	}
 }
 
+void end() {
+	TerminateThread(animateThread, 0);
+	TerminateThread(informThread, 0);
+	TerminateThread(sortThread, 0);
+	ObjectsLoader::getInstance()->terminate();
+	exit(0);
+}
+
 int main(int argc, char** args) {
+	atexit(end);
 	Logger::log("Tworzenie okna...");
 	glutInit(&argc, args);
 	glutInitWindowSize(windowWidth, windowHeight);
@@ -746,9 +752,9 @@ int main(int argc, char** args) {
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_NORMAL_ARRAY);
 	culler = FrustumCuller::getInstance();
-	hThread = (HANDLE) _beginthread(animate, 0, NULL);
-	hThread2 = (HANDLE) _beginthread(inform, 0, NULL);
-	hThread3 = (HANDLE) _beginthread(sortObjects, 0, NULL);
+	animateThread = (HANDLE) _beginthread(animate, 0, NULL);
+	informThread = (HANDLE) _beginthread(inform, 0, NULL);
+	sortThread = (HANDLE) _beginthread(sortObjects, 0, NULL);
 	glutMainLoop();
 	return 0;
 }

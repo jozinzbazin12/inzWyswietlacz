@@ -22,16 +22,22 @@ private:
 		}
 	}
 
+	void addVector2(float* dest, float* v, int size = 3) {
+			for (int i = 0; i < size; i++) {
+				dest[i] -= v[i];
+			}
+		}
+
 	void normalize(float *t1) {
+//				t1[0] = t1[0] < 0 ? t1[0] * -1 : t1[0];
+//				t1[1] = t1[1] < 0 ? t1[1] * -1 : t1[1];
+//				t1[2] = t1[2] < 0 ? t1[2] * -1 : t1[2];
 		float d = sqrt(t1[0] * t1[0] + t1[1] * t1[1] + t1[2] * t1[2]);
 		if (d != 0) {
 			t1[0] /= d;
 			t1[1] /= d;
 			t1[2] /= d;
 		}
-//		t1[0] = t1[0] < 0 ? t1[0] * -1 : t1[0];
-//		t1[1] = t1[1] < 0 ? t1[1] * -1 : t1[1];
-//		t1[2] = t1[2] < 0 ? t1[2] * -1 : t1[2];
 	}
 
 	void copyMtlToModels() {
@@ -96,6 +102,7 @@ private:
 
 //todo
 	bool tryLoadLastMap(string name) {
+		return false;
 		fstream file, lastSettingsFile;
 		string map;
 		file.open(mapFile);
@@ -209,8 +216,8 @@ private:
 public:
 	static int mapX, mapZ;
 	long double stosunekx;
-	long double stosuneky;
-	long double stosunekz;
+	long double stosuneky = 0;
+	long double stosunekz = 0;
 	int wymx, wymy, wymz;
 	double scale = 1;
 	string texturePath = "maps/textures/tex.png";
@@ -251,26 +258,26 @@ public:
 		float **vectors = new float*[(mapZ - 1) * (mapX - 1) * 2];
 		int v = 0;
 		float t1[3], t2[3], t3[3], t4[3];
-		for (int i = 0; i < mapX - 1; i++) {
-			for (int j = 0; j < mapZ - 1; j++) {
-				t1[0] = mapX / 2 - i;
-				t1[1] = heights[i][j];  //i,j
-				t1[2] = j - mapZ / 2;
+		for (int i = 1; i < mapX ; i++) {
+			for (int j = 1; j < mapZ ; j++) {
+				t1[0] = i - mapX / 2;
+				t1[1] = -heights[mapX - i - 1][mapZ - j - 1];  //i,j
+				t1[2] = mapZ / 2 - j;
 
-				t2[0] = mapX / 2 - i;
-				t2[1] = heights[i][j + 1]; //i,j+1
-				t2[2] = j + 1 - mapZ / 2;
+				t2[0] = i - mapX / 2;
+				t2[1] = -heights[mapX - i - 1][mapZ - j]; //i,j+1
+				t2[2] = mapZ / 2 - j - 1;
 
-				t3[0] = mapX / 2 - i - 1;
-				t3[1] = heights[i + 1][j]; //i+1,j
-				t3[2] = j - mapZ / 2;
+				t3[0] = i - mapX / 2 + 1;
+				t3[1] = -heights[mapX - i][mapZ - j - 1]; //i+1,j
+				t3[2] = mapZ / 2 - j;
 
-				t4[0] = mapX / 2 - i - 1;
-				t4[1] = heights[i + 1][j + 1]; //i+1,j+1
-				t4[2] = j + 1 - mapZ / 2;
+				t4[0] = i - mapX / 2 + 1;
+				t4[1] = -heights[mapX - i][mapZ - j]; //i+1,j+1
+				t4[2] = mapZ / 2 - j - 1;
 
-				vectors[v++] = makeNormal(t1, t3, t2);
-				vectors[v++] = makeNormal(t4, t2, t1);
+				vectors[v++] = makeNormal(t1, t2, t3);
+				vectors[v++] = makeNormal(t4, t2, t3);
 			}
 		}
 		ostringstream ss;
@@ -281,7 +288,7 @@ public:
 		ss << VT << scale << " " << scale << endl;
 		destObject << ss.str();
 		destObject << "usemtl main" << endl; //TODO
-		destObject << "s 1" << endl;
+		destObject << "s 0" << endl;
 
 		//vertex normals
 		int vertex, vetex2;
@@ -352,16 +359,21 @@ public:
 	}
 
 	float calculateHeight(float x, float y, float z) {
+		const int errorHeight = 1000;
 		int indexX, indexZ;
 		long double valueX, valueZ;
 		float suma = 0, suma2 = 0;
+		while (!stosunekx && !stosunekz) {
+			Sleep(20);
+		}
 		valueX = (long double) ((x) / stosunekx) + (long double) (mapX / 2);	//-1
 		valueZ = (long double) ((z) / stosunekz) + (long double) (mapZ / 2);		//0
 		indexX = (int) valueX;
 		indexZ = (int) valueZ;
 		if (indexX <= 0 || indexX >= mapX || indexZ <= 0 || indexZ >= mapZ) {
-			return 0;
+			return errorHeight;
 		}
+
 		if (valueX == indexX && valueZ == indexZ) {
 			return heights[mapX - indexX][indexZ] * stosuneky + y;
 		}
@@ -380,27 +392,27 @@ public:
 			if (indexX > 0) {
 				suma = (heights[mapX - indexX][indexZ] - heights[mapX - indexX][indexZ + 1]) * (valueZ - indexZ);
 			}
-			if (indexX + 1 > 0) {
+			if (indexX + 1 < mapX) {
 				suma2 = (heights[mapX - indexX][indexZ] - heights[mapX - indexX - 1][indexZ]) * (valueX - indexX);
 			}
 			return (heights[mapX - indexX][indexZ] - suma - suma2) * stosuneky + y;
 		}
 
 		// todo?
-		else {
-			if (indexX + 1 > 0) {
-				if (indexZ + 1 < mapZ) {
-					suma = (heights[mapX - indexX - 1][indexZ + 1] - heights[mapX - indexX - 1][indexZ]) * (1 - valueX + indexX);
-				}
-				if (indexZ + 1 < mapZ) {
-					suma2 = (heights[mapX - indexX - 1][indexZ + 1] - heights[mapX - indexX][indexZ + 1]) * (1 - valueZ + indexZ);
-				}
-				return (heights[mapX - indexX - 1][indexZ + 1] - suma - suma2) * stosuneky + y;
-			}
-			return -100;
-		}
+//		else {
+//			if (indexX + 1 > 0) {
+//				if (indexZ + 1 < mapZ) {
+//					suma = (heights[mapX - indexX - 1][indexZ + 1] - heights[mapX - indexX - 1][indexZ]) * (1 - valueX + indexX);
+//				}
+//				if (indexZ + 1 < mapZ) {
+//					suma2 = (heights[mapX - indexX - 1][indexZ + 1] - heights[mapX - indexX][indexZ + 1]) * (1 - valueZ + indexZ);
+//				}
+//				return (heights[mapX - indexX - 1][indexZ + 1] - suma - suma2) * stosuneky + y;
+//			}
+//			return -errorHeight;
+//		}
 
-		return 1000;
+		return errorHeight;
 		//return 0;
 	}
 
