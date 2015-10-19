@@ -16,22 +16,19 @@ private:
 	const char* mapFile = "models/0/0.obj";
 	MD5 md5;
 
+	void subtractVector(float* dest, float* v, int size = 3) {
+		for (int i = 0; i < size; i++) {
+			dest[i] -= v[i];
+		}
+	}
+
 	void addVector(float* dest, float* v, int size = 3) {
 		for (int i = 0; i < size; i++) {
 			dest[i] += v[i];
 		}
 	}
 
-	void addVector2(float* dest, float* v, int size = 3) {
-			for (int i = 0; i < size; i++) {
-				dest[i] -= v[i];
-			}
-		}
-
 	void normalize(float *t1) {
-//				t1[0] = t1[0] < 0 ? t1[0] * -1 : t1[0];
-//				t1[1] = t1[1] < 0 ? t1[1] * -1 : t1[1];
-//				t1[2] = t1[2] < 0 ? t1[2] * -1 : t1[2];
 		float d = sqrt(t1[0] * t1[0] + t1[1] * t1[1] + t1[2] * t1[2]);
 		if (d != 0) {
 			t1[0] /= d;
@@ -102,7 +99,6 @@ private:
 
 //todo
 	bool tryLoadLastMap(string name) {
-		return false;
 		fstream file, lastSettingsFile;
 		string map;
 		file.open(mapFile);
@@ -258,8 +254,8 @@ public:
 		float **vectors = new float*[(mapZ - 1) * (mapX - 1) * 2];
 		int v = 0;
 		float t1[3], t2[3], t3[3], t4[3];
-		for (int i = 1; i < mapX ; i++) {
-			for (int j = 1; j < mapZ ; j++) {
+		for (int i = 1; i < mapX; i++) {
+			for (int j = 1; j < mapZ; j++) {
 				t1[0] = i - mapX / 2;
 				t1[1] = -heights[mapX - i - 1][mapZ - j - 1];  //i,j
 				t1[2] = mapZ / 2 - j;
@@ -288,7 +284,7 @@ public:
 		ss << VT << scale << " " << scale << endl;
 		destObject << ss.str();
 		destObject << "usemtl main" << endl; //TODO
-		destObject << "s 0" << endl;
+		destObject << "s 1" << endl;
 
 		//vertex normals
 		int vertex, vetex2;
@@ -301,12 +297,12 @@ public:
 				normals[1] = 0;
 				normals[2] = 0;
 				if (j != mapZ - 1 && i != mapX - 1) {
-					addVector(normals, vectors[vertex]);
+					subtractVector(normals, vectors[vertex]);
 				}
 
 				if (j != 0 && i != mapX - 1) {
-					addVector(normals, vectors[vertex - 2]);
-					addVector(normals, vectors[vertex - 1]);
+					subtractVector(normals, vectors[vertex - 2]);
+					subtractVector(normals, vectors[vertex - 1]);
 				}
 
 				if (j != 0 && i != 0) {
@@ -314,13 +310,10 @@ public:
 				}
 
 				if (j != mapZ - 1 && i != 0) {
-					addVector(normals, vectors[vetex2]);
-					addVector(normals, vectors[vetex2 + 1]);
+					subtractVector(normals, vectors[vetex2]);
+					subtractVector(normals, vectors[vetex2 + 1]);
 				}
 				normalize(normals);
-				normals[0] = vectors[vertex > 1 && vertex < v ? vertex - 1 : 0][0];
-				normals[1] = vectors[vertex > 1 && vertex < v ? vertex - 1 : 0][1];
-				normals[2] = vectors[vertex > 1 && vertex < v ? vertex - 1 : 0][2];
 
 				destObject << "vn " << normals[0] << " " << normals[1] << " " << normals[2] << endl;
 			}
