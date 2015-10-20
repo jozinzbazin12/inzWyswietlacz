@@ -109,7 +109,7 @@ public:
 	Texture(string path, string tex) {
 		Logger::log("Tekstura: " + path);
 		textureName = path;
-		extension = path.substr(path.find_last_of("."), path.length());
+		extension = getFileExtension(path);
 		txt = IMG_Load(path.c_str());
 		if (extension == ".jpg" || extension == ".jpeg" || extension == ".jpe" || extension == ".jif" || extension == ".jfif"
 				|| extension == ".jfi") {

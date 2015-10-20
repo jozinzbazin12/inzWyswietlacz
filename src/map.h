@@ -12,6 +12,7 @@
 class Map {
 private:
 	static const int ERROR_HEIGHT = 1000;
+	const string MAP_NAME = "models/0/0.obj";
 	static int **heights;
 	long long unsigned mapSize;
 	const char* mapFile = "models/0/0.obj";
@@ -126,7 +127,7 @@ private:
 					loadHeights(map);
 					xRate = (float) xLength / (float) mapX;
 					zRate = (float) zLength / (float) mapZ;
-					mapObject = new Object("0", true);
+					mapObject = new Object(MAP_NAME, true);
 					file.close();
 					lastSettingsFile.close();
 					return true;
@@ -348,7 +349,7 @@ public:
 			delete[] vectors[i];
 		}
 		delete[] vectors;
-		mapObject = new Object("0", true);
+		mapObject = new Object(MAP_NAME, true);
 		destObject.close();
 	}
 
@@ -365,7 +366,7 @@ public:
 		indexX = (int) valueX;
 		indexZ = (int) valueZ;
 		actual = heights[mapX - indexX][indexZ];
-		if (indexX <= 0 || indexX >= mapX || indexZ <= 0 || indexZ >= mapZ) {
+		if (indexX < 0 || indexX > mapX || indexZ < 0 || indexZ > mapZ) {
 			return ERROR_HEIGHT;
 		}
 
@@ -373,12 +374,12 @@ public:
 			return actual * yRate + y;
 		}
 
-		if (valueX == indexX) {
+		if (valueX == indexX || indexX == mapX) {
 			height1 = (actual - heights[mapX - indexX][indexZ + 1]) * (valueZ - indexZ);
 			return (actual - height1) * yRate + y;
 		}
 
-		if (valueZ == indexZ) {
+		if (valueZ == indexZ || indexZ == mapZ) {
 			height1 = (actual - heights[mapX - indexX - 1][indexZ]) * (valueX - indexX);
 			return (actual - height1) * yRate + y;
 		}

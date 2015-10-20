@@ -11,7 +11,7 @@
 class MaterialLib {
 private:
 	string prepareString(string str) {
-		return "[" + path + "] " + str;
+		return "[" + mtlName + "] " + str;
 	}
 	void loadMtl(string name) {
 		float tab[3];
@@ -79,8 +79,8 @@ private:
 
 			if (text == "map_Kd") {
 				file >> text;
-				string textureName = utnij(path) + "/";
-				Texture* txt = Texture::getTexture(textureName + text, "map_Kd");
+				string textureName = getRealPath(text, path);
+				Texture* txt = Texture::getTexture(textureName, "map_Kd");
 				material->setMapKd(txt);
 			}
 		}
@@ -93,6 +93,7 @@ private:
 public:
 	static vector<MaterialLib*> materials;
 	map<string, Material*> mtl;
+	string mtlName;
 	string path;
 
 	Material* searchMaterial(string name) {
@@ -106,7 +107,8 @@ public:
 
 	MaterialLib(string path) {
 		Logger::log("MTL Lib: " + path);
-		this->path = path;
+		this->mtlName = path;
+		this->path = getPath(path);
 		loadMtl(path);
 	}
 	~MaterialLib() {

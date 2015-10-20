@@ -24,8 +24,8 @@ using namespace std;
 #include "logger.h"
 ////////////////////////////////////////////
 void DrawString(GLfloat x, GLfloat y, GLfloat z, string string);
-string otworz(string nazwa, string koniec);
-string utnij(string dupa);
+string getPath(string path);
+string getRealPath(string path, string actualPath);
 void zapisz();
 void end();
 string getFileExtension(string path);
@@ -614,45 +614,19 @@ void __cdecl sortObjects(void *arg) {
 	}
 }
 
-string utnij(string kutas) { //TODO
-	string dupa = "";
-	int a = -1;
-	for (int i = kutas.length() - 1; i >= 0; i--)
-		if (kutas[i] == '/' || kutas[i] == 92) {
-			a = i;
-			break;
-		}
-	if (a == -1)
-		return kutas;
-	for (int i = 0; i < a; i++)
-		dupa += kutas[i];
-	return dupa;
+string getRealPath(string path, string actualPath) {
+	if (path.find(":") == 1) {
+		return path;
+	} else {
+		return actualPath + path;
+	}
 }
 
-string otworz(string nazwa, string koniec) { //TODO
-	string nazwa2 = "";
-	string nazwa3 = "";
-	int tak = 0;
-	if (nazwa[1] == ':') {
-		return nazwa;
-	}
-	for (unsigned i = 0; i < nazwa.length(); i++) {
-		nazwa3 += nazwa[i];
-		if (nazwa[i] == '/' || nazwa[i] == 92)
-			tak = i;
-	}
-
-	if (!tak)
-		nazwa2 = "models/" + nazwa + "/" + nazwa + koniec;
-	else {
-		string nazwa5 = "models/" + nazwa3;
-		string nazwa4 = "";
-		for (unsigned i = tak + 1; i < nazwa.length(); i++)
-			nazwa4 += nazwa[i];
-		nazwa2 = nazwa5 + "/" + nazwa4 + koniec;
-
-	}
-	return nazwa2;;
+string getPath(string path) {
+	int index = path.find_last_of("/");
+	int index2 = path.find_last_of("\\");
+	index = max(index, index2);
+	return path.substr(0, index + 1);
 }
 
 string getFileExtension(string path) {
@@ -702,9 +676,9 @@ int main(int argc, char** args) {
 		Logger::log("GLEW OK");
 	}
 	if (!GLEW_VERSION_3_0)
-		Logger::log(Logger::ERR + "masz wersje " + (char *) glGetString( GL_VERSION) + " OpenGL zamiast 4.2.0 XD");
+		Logger::log(Logger::ERR + "masz wersje " + (char *) glGetString(GL_VERSION) + " OpenGL zamiast 4.2.0 XD");
 	else {
-		stream << "Wersja OpenGL: " << (char*) glGetString( GL_VERSION) << ", OK";
+		stream << "Wersja OpenGL: " << (char*) glGetString(GL_VERSION) << ", OK";
 		Logger::log(stream.str());
 		stream.str("");
 	}
@@ -765,6 +739,7 @@ int main(int argc, char** args) {
 // TODO bufferdata zajmuje 7s z 19
 //TODO poprawic logi
 //TODO drzewa czworkowe, max 100k obiektow
+// TODO ustawianie na krawedziach
 /*x86/zlib1.dll
  x86/freeglut.dll
  x86/glew32.dll

@@ -62,7 +62,7 @@ private:
 		file >> text;
 
 		Material* tmpmtl = NULL;
-		MaterialLib* mtl = new MaterialLib(utnij(this->name) + "/" + text);
+		MaterialLib* mtl = new MaterialLib(getRealPath(text, path));
 		MaterialLib::materials.push_back(mtl);
 		Subobject* lastSubobject = NULL;
 		while (!file.eof()) {
@@ -240,6 +240,7 @@ private:
 public:
 	vector<Subobject*> subobjects;
 	string name;
+	string path;
 	GLfloat min[3][3];
 	GLfloat max[3][3];
 	int counter = 0;
@@ -287,7 +288,8 @@ public:
 	}
 
 	Object(string name, bool alwaysDisplay = false) {
-		this->name = otworz(name, ".obj");
+		this->name = name;
+		this->path = getPath(name);
 		loadObject(this->name, alwaysDisplay);
 	}
 	~Object() {
