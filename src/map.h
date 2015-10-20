@@ -322,7 +322,7 @@ public:
 		}
 		//faces
 		int normal, normal2;
-		for (int i = 0; i < mapX - 1; i++) {
+		for (int i = 0; i < mapX - 2; i++) {
 			for (int j = 1; j < mapZ; j++) {
 				vertex = i * mapZ + j;
 				vetex2 = (i + 1) * mapZ + j;
