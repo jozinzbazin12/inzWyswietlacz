@@ -78,9 +78,9 @@ private:
 		a = stod(settings->first_node("lengthX")->value());
 		b = stod(settings->first_node("lengthY")->value());
 		c = stod(settings->first_node("lengthZ")->value());
-		mapBuilder->wymx = a;
+		mapBuilder->xLength = a;
 		mapBuilder->wymy = b;
-		mapBuilder->wymz = c;
+		mapBuilder->zLength = c;
 		xml_node<>* materialSettings = node->first_node("Material");
 		if (materialSettings) {
 			MapMaterial* mtl = new MapMaterial();
@@ -149,7 +149,7 @@ private:
 		Entity* mapObject = new Entity(mapBuilder->mapObject);
 		Entity::addEntity(mapObject);
 		mapObject->alwaysDisplay = true;
-		mapObject->setScale(mapBuilder->stosunekx, mapBuilder->stosuneky, mapBuilder->stosunekz);
+		mapObject->setScale(mapBuilder->xRate, mapBuilder->yRate, mapBuilder->zRate);
 	}
 
 	static string objectKey(string name) {

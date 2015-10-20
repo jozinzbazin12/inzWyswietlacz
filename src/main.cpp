@@ -68,7 +68,7 @@ HANDLE animateThread;
 HANDLE informThread;
 HANDLE sortThread;
 struct Information {
-	string x1, y1, z1, fps, speed, amb, diff, spec, pos, poss, ob, ob2, ileob, ileob2, licznikob;
+	string x1, y1, z1, fps, speed, amb, diff, spec, pos, ob, ob2, ileob, ileob2, licznikob;
 };
 Information info;
 
@@ -191,7 +191,6 @@ void displayDebug() {
 	DrawString(x, y -= dy, z, "Diffuse: " + info.diff);
 	DrawString(x, y -= dy, z, "Specular: " + info.spec);
 	DrawString(x, y -= dy, z, "Pos: " + info.pos);
-	DrawString(x, y -= dy, z, "Pos: " + info.poss);
 	DrawString(x, y -= dy, z, "Wszystkie obiekty: " + info.ileob + "   Wyswietlone obiekty: " + info.ileob2);
 	Object* o = Object::getObject(selectedObjectPos);
 	if (o) {

@@ -11,6 +11,7 @@
 
 class Map {
 private:
+	static const int ERROR_HEIGHT = 1000;
 	static int **heights;
 	long long unsigned mapSize;
 	const char* mapFile = "models/0/0.obj";
@@ -87,8 +88,8 @@ private:
 				heights[mapX - i - 1][mapZ - j - 1] = height;
 			}
 		}
-		stosuneky = (float) wymy / max;
-		stosuneky = stosuneky < 0 ? stosuneky * -1 : stosuneky;
+		yRate = (float) wymy / max;
+		yRate = yRate < 0 ? yRate * -1 : yRate;
 	}
 
 	void loadHeights(string map) {
@@ -123,8 +124,8 @@ private:
 				if (map == name && hash == mapHash && hash2 == mapImageHash && texScale == scale) {
 					Logger::log("Jest zrobiona mapa, wczytuje...");
 					loadHeights(map);
-					stosunekx = (float) wymx / (float) mapX;
-					stosunekz = (float) wymz / (float) mapZ;
+					xRate = (float) xLength / (float) mapX;
+					zRate = (float) zLength / (float) mapZ;
 					mapObject = new Object("0", true);
 					file.close();
 					lastSettingsFile.close();
@@ -211,19 +212,19 @@ private:
 
 public:
 	static int mapX, mapZ;
-	long double stosunekx;
-	long double stosuneky = 0;
-	long double stosunekz = 0;
-	int wymx, wymy, wymz;
+	long double xRate;
+	long double yRate = 0;
+	long double zRate = 0;
+	int xLength, wymy, zLength;
 	double scale = 1;
 	string texturePath = "maps/textures/tex.png";
 	Object* mapObject;
 	MapMaterial* mtl;
 
 	void setMapSize(double lengthX, double lengthY, double lengthZ) {
-		wymx = lengthX;
+		xLength = lengthX;
 		wymy = lengthY;
-		wymz = lengthZ;
+		zLength = lengthZ;
 	}
 
 	void createMap(string mapName) {
@@ -241,8 +242,8 @@ public:
 		}
 		mapX = txt->h;
 		mapZ = txt->w;
-		stosunekx = (float) wymx / (float) mapX;
-		stosunekz = (float) wymz / (float) mapZ;
+		xRate = (float) xLength / (float) mapX;
+		zRate = (float) zLength / (float) mapZ;
 
 		fstream destObject;
 		destObject.open("models/0/0.obj", ios::out);
@@ -333,15 +334,15 @@ public:
 			}
 		}
 		Logger::log("Utworzono mape");
-		fstream sprawdzacz2;
-		sprawdzacz2.open("maps/last.txt", ios::out);
-		sprawdzacz2 << md5.digestFile(mapFile) << endl;
-		sprawdzacz2 << md5.digestFile(mapName.c_str()) << endl;
-		sprawdzacz2 << mapName << endl;
-		sprawdzacz2 << scale << endl;
-		sprawdzacz2 << mapX << endl;
-		sprawdzacz2 << mapZ;
-		sprawdzacz2.close();
+		fstream mapInfo;
+		mapInfo.open("maps/last.txt", ios::out);
+		mapInfo << md5.digestFile(mapFile) << endl;
+		mapInfo << md5.digestFile(mapName.c_str()) << endl;
+		mapInfo << mapName << endl;
+		mapInfo << scale << endl;
+		mapInfo << mapX << endl;
+		mapInfo << mapZ;
+		mapInfo.close();
 		SDL_FreeSurface(txt);
 		for (int i = 0; i < v; i++) {
 			delete[] vectors[i];
@@ -352,61 +353,56 @@ public:
 	}
 
 	float calculateHeight(float x, float y, float z) {
-		const int errorHeight = 1000;
 		int indexX, indexZ;
 		long double valueX, valueZ;
-		float suma = 0, suma2 = 0;
-		while (!stosunekx && !stosunekz) {
+		double actual;
+		float height1 = 0, height2 = 0;
+		while (!xRate && !zRate) {
 			Sleep(20);
 		}
-		valueX = (long double) ((x) / stosunekx) + (long double) (mapX / 2);	//-1
-		valueZ = (long double) ((z) / stosunekz) + (long double) (mapZ / 2);		//0
+		valueX = (long double) (x / xRate) + (mapX / 2.0) + 1;	//-1
+		valueZ = (long double) (z / zRate) + (mapZ / 2.0) - 1;		//0
 		indexX = (int) valueX;
 		indexZ = (int) valueZ;
+		actual = heights[mapX - indexX][indexZ];
 		if (indexX <= 0 || indexX >= mapX || indexZ <= 0 || indexZ >= mapZ) {
-			return errorHeight;
+			return ERROR_HEIGHT;
 		}
 
 		if (valueX == indexX && valueZ == indexZ) {
-			return heights[mapX - indexX][indexZ] * stosuneky + y;
+			return actual * yRate + y;
 		}
 
 		if (valueX == indexX) {
-			suma = (heights[mapX - indexX][indexZ] - heights[mapX - indexX][indexZ + 1]) * (valueZ - indexZ);
-			return (heights[mapX - indexX][indexZ] - suma) * stosuneky + y;
+			height1 = (actual - heights[mapX - indexX][indexZ + 1]) * (valueZ - indexZ);
+			return (actual - height1) * yRate + y;
 		}
 
 		if (valueZ == indexZ) {
-			suma = (heights[mapX - indexX][indexZ] - heights[mapX - indexX - 1][indexZ]) * (valueX - indexX);
-			return (heights[mapX - indexX][indexZ] - suma) * stosuneky + y;
+			height1 = (actual - heights[mapX - indexX - 1][indexZ]) * (valueX - indexX);
+			return (actual - height1) * yRate + y;
 		}
 
 		if (valueZ - indexZ < 0.5 && valueX - indexX < 0.5) {
 			if (indexX > 0) {
-				suma = (heights[mapX - indexX][indexZ] - heights[mapX - indexX][indexZ + 1]) * (valueZ - indexZ);
+				height1 = (actual - heights[mapX - indexX][indexZ + 1]) * (valueZ - indexZ);
 			}
 			if (indexX + 1 < mapX) {
-				suma2 = (heights[mapX - indexX][indexZ] - heights[mapX - indexX - 1][indexZ]) * (valueX - indexX);
+				height2 = (actual - heights[mapX - indexX - 1][indexZ]) * (valueX - indexX);
 			}
-			return (heights[mapX - indexX][indexZ] - suma - suma2) * stosuneky + y;
+			return (actual - height1 - height2) * yRate + y;
 		}
 
-		// todo?
-//		else {
-//			if (indexX + 1 > 0) {
-//				if (indexZ + 1 < mapZ) {
-//					suma = (heights[mapX - indexX - 1][indexZ + 1] - heights[mapX - indexX - 1][indexZ]) * (1 - valueX + indexX);
-//				}
-//				if (indexZ + 1 < mapZ) {
-//					suma2 = (heights[mapX - indexX - 1][indexZ + 1] - heights[mapX - indexX][indexZ + 1]) * (1 - valueZ + indexZ);
-//				}
-//				return (heights[mapX - indexX - 1][indexZ + 1] - suma - suma2) * stosuneky + y;
-//			}
-//			return -errorHeight;
-//		}
+		else {
+			actual = heights[mapX - indexX - 1][indexZ + 1];
+			if (indexZ + 1 < mapZ) {
+				height1 = (actual - heights[mapX - indexX - 1][indexZ]) * (valueZ - indexZ);
+				height2 = (actual - heights[mapX - indexX][indexZ + 1]) * (valueX - indexX);
+			}
+			return (actual - height1 - height2) * yRate + y;
+		}
 
-		return errorHeight;
-		//return 0;
+		return ERROR_HEIGHT;
 	}
 
 };
