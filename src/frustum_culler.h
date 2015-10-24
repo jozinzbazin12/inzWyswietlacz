@@ -55,6 +55,10 @@ private:
 		return false;
 	}
 
+	double distance(double x1, double x2, double y1, double y2, double z1, double z2) {
+		return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2) + pow(z1 - z2, 2));
+	}
+
 	FrustumCuller() {
 	}
 
@@ -79,6 +83,9 @@ public:
 	bool isInViewField(Entity* e) {
 		if (e->alwaysDisplay) {
 			return true;
+		}
+		if ((e->sx + e->sy + e->sz) / 3 < distance(posX, e->px, posY, e->py, posZ, e->pz) / lod) {
+			return false;
 		}
 		if (selectedEntityPos == -1) {
 			px2 = posX;

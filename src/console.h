@@ -11,7 +11,7 @@
 #include <string>
 
 enum Command {
-	speed = 0, go = 1, light_ambient = 2, light_diffuse = 3, light_specular = 4, light_position = 5, position = 6, range = 7
+	speed = 0, go = 1, light_ambient = 2, light_diffuse = 3, light_specular = 4, light_position = 5, position = 6, range = 7, LOD = 8
 };
 
 class Console {
@@ -81,6 +81,11 @@ private:
 				FrustumCuller::getInstance()->commit();
 			}
 			break;
+		case LOD:
+			if (result.size() >= 2) {
+				lod = stod(result[1]);
+			}
+			break;
 		default:
 			nextLine();
 			lines[lineNumber - 2] = "Invalid command";
@@ -100,13 +105,14 @@ public:
 			lines[i] = "";
 		}
 		commands["speed"] = Command::speed;
-		commands["go"] = Command::go;
+		commands["goto"] = Command::go;
 		commands["light_ambient"] = Command::light_ambient;
 		commands["light_diffuse"] = Command::light_diffuse;
 		commands["light_specular"] = Command::light_specular;
 		commands["light_position"] = Command::light_position;
 		commands["position"] = Command::position;
 		commands["range"] = Command::range;
+		commands["lod"] = Command::LOD;
 	}
 
 	void type(char c) {

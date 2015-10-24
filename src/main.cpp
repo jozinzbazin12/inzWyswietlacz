@@ -57,6 +57,7 @@ int cameraDistance = 5;
 double predkosc = 10;
 int frameCounter = 0;
 int frames = 0;
+int lod = 150;
 bool rotationEnabled = false;
 GLfloat posX = -5, posY = 5, posZ = 11;
 int windowHeight = 700, windowWidth = 1300;
