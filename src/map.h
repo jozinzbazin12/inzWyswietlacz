@@ -216,7 +216,9 @@ public:
 	long double xRate;
 	long double yRate = 0;
 	long double zRate = 0;
-	int xLength, wymy, zLength;
+	double xLength = -1;
+	double wymy;
+	double zLength = -1;
 	double scale = 1;
 	string texturePath = "maps/textures/tex.png";
 	Object* mapObject;

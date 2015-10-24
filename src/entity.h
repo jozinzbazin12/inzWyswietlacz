@@ -60,8 +60,8 @@ private:
 		}
 	}
 public:
+	static TreeNode* objects;
 	Object *object;
-	Entity *parent;
 	GLfloat px, py, pz;
 	GLfloat sx, sy, sz;
 	GLfloat rx, ry, rz;
@@ -79,11 +79,7 @@ public:
 		return result;
 	}
 
-	static void addEntity(Entity* entity) {
-		WaitForSingleObject(mutex, INFINITE);
-		allObjects.push_back(entity);
-		ReleaseMutex(mutex);
-	}
+	static void addEntity(Entity* entity);
 
 	static int allEntitiesCount() {
 		return allObjects.size();
@@ -119,7 +115,6 @@ public:
 		this->sx = sx;
 		this->sy = sy;
 		this->sz = sz;
-
 	}
 
 	void setRotation(GLfloat rx, GLfloat ry, GLfloat rz) {
@@ -132,14 +127,17 @@ public:
 		Logger::log("Tworzê obiekt " + object->name);
 		alwaysDisplay = false;
 		anim = NULL;
-		parent = NULL;
 		this->object = object;
-		for (int i = 0; i < 3; i++)
-			for (int j = 0; j < 3; j++)
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
 				this->min[i][j] = object->min[i][j];
-		for (int i = 0; i < 3; i++)
-			for (int j = 0; j < 3; j++)
+			}
+		}
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
 				this->max[i][j] = object->max[i][j];
+			}
+		}
 		this->px = 0;
 		this->py = 0;
 		this->pz = 0;
@@ -154,11 +152,6 @@ public:
 
 	~Entity() {
 		Logger::log("Usuwam obiekt " + this->object->name, true);
-		for (unsigned i = 0; i < allObjects.size(); i++) {
-			if (allObjects[i]->parent == this) {
-				allObjects[i]->parent = parent;
-			}
-		}
 		for (unsigned i = 0; i < solidObjectsToDisplay.size(); i++) {
 			if (solidObjectsToDisplay[i] == this) {
 				solidObjectsToDisplay[i] = NULL;
@@ -176,5 +169,6 @@ HANDLE Entity::mutex = CreateMutex(NULL, FALSE, NULL);
 vector<Entity*> Entity::allObjects;
 vector<Entity*> Entity::solidObjectsToDisplay;
 vector<Entity*> Entity::transparentObjectsToDisplay;
+TreeNode* Entity::objects = NULL;
 
 #endif /* SRC_ENTITY_H_ */

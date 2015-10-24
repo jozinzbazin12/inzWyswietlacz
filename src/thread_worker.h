@@ -81,6 +81,7 @@ private:
 		mapBuilder->xLength = a;
 		mapBuilder->wymy = b;
 		mapBuilder->zLength = c;
+		Entity::objects = TreeNode::createRoot(a, c);
 		xml_node<>* materialSettings = node->first_node("Material");
 		if (materialSettings) {
 			MapMaterial* mtl = new MapMaterial();

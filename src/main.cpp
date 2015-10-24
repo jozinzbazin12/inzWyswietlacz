@@ -63,6 +63,8 @@ int windowHeight = 700, windowWidth = 1300;
 long long unsigned totalVerticesCount = 0;
 int selectedEntityPos = -1;
 int selectedObjectPos = 0;
+vector<Entity*> transparentObjects;
+vector<Entity*> solidObjects;
 
 HANDLE animateThread;
 HANDLE informThread;
@@ -72,6 +74,7 @@ struct Information {
 };
 Information info;
 
+class TreeNode;
 #include "texture.h"
 #include "material.h"
 #include "material_lib.h"
@@ -81,11 +84,28 @@ Information info;
 #include "animation.h"
 #include "map_material.h"
 #include "map.h"
-#include "frustum_culler.h"
 #include "light.h"
+#include "tree.h"
+#include "frustum_culler.h"
 #include "thread_worker.h"
 #include "objects_loader.h"
 #include "console.h"
+
+void TreeNode::addObject(Entity* e) {
+	TreeNode* node = getChild(e);
+	while (node->level <= node->LEVELS) {
+		node = node->getChild(e);
+	}
+	TreeLeaf* leaf = (TreeLeaf*) node;
+	leaf->addObject(e);
+}
+
+void Entity::addEntity(Entity* entity) {
+	WaitForSingleObject(mutex, INFINITE);
+	allObjects.push_back(entity);
+	objects->addObject(entity);
+	ReleaseMutex(mutex);
+}
 
 map<string, Texture*> Texture::textures;
 FrustumCuller* culler;
@@ -107,17 +127,9 @@ void resize(int width, int height) {
 
 void drawObject(Entity *ob) {
 	glClearColor(1, 1, 1, 1);
-	GLfloat p1 = ob->px;
+	GLfloat p1 = ob->px; //FIXME jakims cudem ni mo
 	GLfloat p2 = ob->py;
 	GLfloat p3 = ob->pz;
-	Entity *kutas = ob->parent;
-	while (kutas) {
-		//xd<<kutas<<endl;
-		p1 += kutas->px;
-		p2 += kutas->py;
-		p3 += kutas->pz;
-		kutas = kutas->parent;
-	}
 	glPushMatrix();
 	glTranslatef(p1, p2, p3);
 	glRotatef(ob->rx, 1, 0, 0);
@@ -198,9 +210,6 @@ void displayDebug() {
 	}
 	if (selectedEntityPos != -1) {
 		DrawString(x, y -= dy, z, "Zaznaczony obiekt: " + info.ob + "  " + selectedEntity->object->name);
-		if (Entity::getEntity(selectedEntityPos)->parent) {
-			DrawString(x, y -= dy, z, "Dziecko obiektu: " + selectedEntity->parent->object->name);
-		}
 	}
 	y -= dy * 4;
 	for (int i = 0; i < console->lineNumber - 1; i++) {
@@ -248,13 +257,6 @@ void display(void) {
 		GLfloat p1 = posX;
 		GLfloat p2 = posY;
 		GLfloat p3 = posZ;
-		Entity* kutas = selectedEntity->parent;
-		while (kutas) {
-			p1 += kutas->px;
-			p2 += kutas->py;
-			p3 += kutas->pz;
-			kutas = kutas->parent;
-		}
 		glTranslatef(-p1, -p2 - 5, -p3);
 	}
 	glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
@@ -271,7 +273,6 @@ void display(void) {
 	glEnable(GL_BLEND);
 	for (unsigned i = 0; i < size; i++) {
 		drawObject(entities[i]);
-
 	}
 
 //	for(int i=0; i<Entity::allEntitiesCount(); i++) drawObject(Entity::getEntity(i));
@@ -293,7 +294,7 @@ void klawiaturka(unsigned char key, int x, int y) {
 			console->typing = true;
 			break;
 		case 27:
-			end();
+			exit(0);
 			break;
 
 		case 'w':
@@ -591,13 +592,12 @@ void __cdecl inform(void *kutas) {
 	}
 }
 
-void __cdecl sortObjects(void *arg) {
-	while (1) {
-		unsigned objectsCount = Entity::allEntitiesCount();
-		vector<Entity*> transparentObjects;
-		vector<Entity*> solidObjects;
-		for (unsigned i = 0; i < objectsCount; i++) {
-			Entity* e = Entity::getEntity(i);
+void checkVisibility(TreeNode* n) {
+	if (n->level == n->LEVELS + 1) {
+		TreeLeaf* leaf = (TreeLeaf*) n;
+		vector<Entity*> vec = leaf->entities;
+		for (unsigned i = 0; i < vec.size(); i++) {
+			Entity* e = vec[i];
 			if (culler->isInViewField(e)) {
 				if (e->object->transparent) {
 					transparentObjects.push_back(e);
@@ -606,10 +606,37 @@ void __cdecl sortObjects(void *arg) {
 				}
 			}
 		}
+	} else {
+		for (int i = 0; i < 4; i++) {
+			TreeNode* node = n->children[i];
+			if (node && culler->isInViewField(node)) {
+				checkVisibility(node);
+			}
+		}
+	}
+}
 
-		sort(transparentObjects.begin(), transparentObjects.end(), Entity::compare);
-		Entity::transparentObjectsToDisplay = transparentObjects;
-		Entity::solidObjectsToDisplay = solidObjects;
+void __cdecl sortObjects(void *arg) {
+	while (1) {
+//		unsigned objectsCount = Entity::allEntitiesCount();
+//		for (unsigned i = 0; i < objectsCount; i++) {
+//			Entity* e = Entity::getEntity(i);
+//			if (culler->isInViewField(e)) {
+//				if (e->object->transparent) {
+//					transparentObjects.push_back(e);
+//				} else {
+//					solidObjects.push_back(e);
+//				}
+//			}
+//		}
+		transparentObjects.clear();
+		solidObjects.clear();
+		if (Entity::objects) {
+			checkVisibility(Entity::objects);
+			sort(transparentObjects.begin(), transparentObjects.end(), Entity::compare);
+			Entity::transparentObjectsToDisplay = transparentObjects;
+			Entity::solidObjectsToDisplay = solidObjects;
+		}
 		Sleep(100);
 	}
 }
@@ -675,9 +702,9 @@ int main(int argc, char** args) {
 	} else {
 		Logger::log("GLEW OK");
 	}
-	if (!GLEW_VERSION_3_0)
+	if (!GLEW_VERSION_3_0) {
 		Logger::log(Logger::ERR + "masz wersje " + (char *) glGetString(GL_VERSION) + " OpenGL zamiast 4.2.0 XD");
-	else {
+	} else {
 		stream << "Wersja OpenGL: " << (char*) glGetString(GL_VERSION) << ", OK";
 		Logger::log(stream.str());
 		stream.str("");
@@ -706,11 +733,14 @@ int main(int argc, char** args) {
 	glClearColor(1, 1, 1, 1);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
+	glDepthMask(true);
 	glEnable(GL_NORMALIZE);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glMatrixMode(GL_MODELVIEW);
 	glEnable(GL_BLEND);
+	glEnable(GL_ALPHA_TEST);
+	glAlphaFunc(GL_GREATER, 0.5);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT);
 	glEnable(GL_COLOR_MATERIAL);
@@ -740,6 +770,7 @@ int main(int argc, char** args) {
 //TODO poprawic logi
 //TODO drzewa czworkowe, max 100k obiektow
 // TODO ustawianie na krawedziach
+//todo w szybie wylaczyc z buffer
 /*x86/zlib1.dll
  x86/freeglut.dll
  x86/glew32.dll
