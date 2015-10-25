@@ -59,13 +59,9 @@ public:
 		return n;
 	}
 
-	double getLength(double* p1, double* p2) {
-		return sqrt(pow(p1[0] - p2[0], 2) + pow(p1[1] - p2[1], 2));
-	}
-
 	TreeNode* getChild(Entity* e) {
-		double midX = getLength(ne, se);
-		double midZ = getLength(ne, nw);
+		double midX = getLength2D(ne, se);
+		double midZ = getLength2D(ne, nw);
 		double x = e->px;
 		double z = e->pz;
 		if (x > midX && z > midZ) {
@@ -87,8 +83,8 @@ public:
 
 	TreeNode(TreeNode* node, short part) {
 		init();
-		double w = getLength(node->ne, node->nw) / 2;
-		double h = getLength(node->ne, node->se) / 2;
+		double w = getLength2D(node->ne, node->nw) / 2;
+		double h = getLength2D(node->ne, node->se) / 2;
 
 		if (part == NE) {
 			setPoint(ne, node->ne[0], node->ne[1]);

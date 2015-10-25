@@ -78,7 +78,7 @@ private:
 		case range:
 			if (result.size() >= 2) {
 				FrustumCuller::getInstance()->fardist = stod(result[1]);
-				FrustumCuller::getInstance()->commit();
+				FrustumCuller::getInstance()->update();
 			}
 			break;
 		case LOD:
@@ -121,6 +121,7 @@ public:
 		case 13:
 			parse();
 			nextLine();
+			typing = false;
 			break;
 		case 27:
 			typing = false;

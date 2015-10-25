@@ -1,6 +1,4 @@
 #define GLEW_STATIC
-#define _SECURE_SCL 0
-#define _HAS_ITERATOR_DEBUGGING 0
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <fstream>
@@ -27,6 +25,8 @@ void DrawString(GLfloat x, GLfloat y, GLfloat z, string string);
 string getPath(string path);
 string getRealPath(string path, string actualPath);
 void zapisz();
+double getLength2D(double* p1, double* p2);
+double getLength3D(double* p1, double* p2);
 void end();
 string getFileExtension(string path);
 long long unsigned checkSize(string fileName);
@@ -44,6 +44,7 @@ vector<Entity*> animatedObjects;
 Entity * selectedEntity;
 tagPOINT *mysz_pozycja;
 float modelview[16];
+double empty[3] = { 0, 0, 0 };
 bool debug = true;
 bool pressedRightButton = false;
 bool pressedLeftButton = false;
@@ -114,16 +115,7 @@ Light* light = Light::getInstance();
 Console* console;
 
 void resize(int width, int height) {
-	const float ar = (float) width / (float) height / 2;
-
-	glViewport(0, 0, width, height);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	culler->ar = ar;
-	culler->commit();
-	glMatrixMode(GL_MODELVIEW);
-	windowHeight = height;
-	windowWidth = width;
+	culler->commit(width, height);
 }
 
 void drawObject(Entity *ob) {
@@ -673,6 +665,14 @@ void checkOpenGLExtension(string roz) {
 	if (!glewIsSupported(roz.c_str())) {
 		Logger::log(Logger::ERR + "nieobslugiwane roszerzenie " + roz);
 	}
+}
+
+double getLength2D(double* p1, double* p2) {
+	return sqrt(pow(p1[0] - p2[0], 2) + pow(p1[1] - p2[1], 2));
+}
+
+double getLength3D(double* p1, double* p2) {
+	return sqrt(pow(p1[0] - p2[0], 2) + pow(p1[1] - p2[1], 2) + pow(p1[2] - p2[2], 2));
 }
 
 void end() {

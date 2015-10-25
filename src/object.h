@@ -143,7 +143,7 @@ private:
 
 		vertexCount /= 3;
 		totalVerticesCount += vertexCount;
-		minimax(vertices);
+		findFurthest(vertices);
 
 		stream.str("");
 		Logger::log(Logger::LINE);
@@ -198,51 +198,31 @@ private:
 		return buffers;
 	}
 
-	void copyElements(GLfloat t[3], vector<GLfloat> w, int a) {
-		t[0] = w[a];
-		t[1] = w[a + 1];
-		t[2] = w[a + 2];
-	}
-
-	void minimax(vector<GLfloat> vertices) {
-		for (int i = 0; i < 3; i++) {
-			for (int j = 0; j < 3; j++) {
-				min[i][j] = numeric_limits < GLfloat > ::infinity();
-			}
-		}
-		for (int i = 0; i < 3; i++) {
-			for (int j = 0; j < 3; j++) {
-				max[i][j] = -numeric_limits < GLfloat > ::infinity();
-			}
-		}
+	void findFurthest(vector<GLfloat> vertices) {
+		double actualRange = 0;
+		unsigned index = 0;
+		double temp[3];
 		for (unsigned i = 0; i < vertices.size(); i += 3) {
-			if (vertices[i] > max[0][0]) {
-				copyElements(max[0], vertices, i);
-			}
-			if (vertices[i + 1] > max[1][1]) {
-				copyElements(max[1], vertices, i);
-			}
-			if (vertices[i + 2] > max[2][2]) {
-				copyElements(max[2], vertices, i);
-			}
-			if (vertices[i] < min[0][0]) {
-				copyElements(min[0], vertices, i);
-			}
-			if (vertices[i + 1] < min[1][1]) {
-				copyElements(min[1], vertices, i);
-			}
-			if (vertices[i + 2] < min[2][2]) {
-				copyElements(min[2], vertices, i);
+			temp[0] = vertices[i];
+			temp[1] = vertices[i + 1];
+			temp[2] = vertices[i + 2];
+			double length = getLength3D(&temp[0], &empty[0]);
+			if (length > actualRange) {
+				actualRange = length;
+				index = i;
 			}
 		}
+		furthest[0] = vertices[index];
+		furthest[1] = vertices[index + 1];
+		furthest[2] = vertices[index + 2];
+
 	}
 
 public:
 	vector<Subobject*> subobjects;
 	string name;
 	string path;
-	GLfloat min[3][3];
-	GLfloat max[3][3];
+	GLfloat furthest[3];
 	int counter = 0;
 	bool transparent = false;
 

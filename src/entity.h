@@ -13,51 +13,16 @@ private:
 	static vector<Entity*> allObjects;
 	static HANDLE mutex;
 
-	void updateRotation() {
-		const float a = 0.01745329251;
-		if (ry)
-			for (int i = 0; i < 3; i++) {
-				realMin[i][2] = realMin[i][0] * cos(a * ry) - realMin[i][2] * sin(a * ry);
-				realMin[i][0] = realMin[i][0] * sin(a * ry) + realMin[i][2] * sin(a * ry);
-				realMax[i][2] = realMax[i][0] * cos(a * ry) - realMax[i][2] * sin(a * ry);
-				realMax[i][0] = realMax[i][0] * sin(a * ry) + realMin[i][2] * sin(a * ry);
-			}
-		if (rx)
-			for (int i = 0; i < 3; i++) {
-				realMin[i][1] = realMin[i][1] * cos(a * rx) - realMin[i][2] * sin(a * rx);
-				realMin[i][2] = realMin[i][1] * sin(a * rx) + realMin[i][2] * sin(a * rx);
-				realMax[i][1] = realMax[i][1] * cos(a * rx) - realMax[i][2] * sin(a * rx);
-				realMax[i][2] = realMax[i][1] * sin(a * rx) + realMin[i][2] * sin(a * rx);
-			}
-		if (rz)
-			for (int i = 0; i < 3; i++) {
-				realMin[i][0] = realMin[i][0] * cos(a * rz) - realMin[i][1] * sin(a * rz);
-				realMin[i][1] = realMin[i][0] * sin(a * rz) + realMin[i][1] * sin(a * rz);
-				realMax[i][0] = realMax[i][0] * cos(a * rz) - realMax[i][1] * sin(a * rz);
-				realMax[i][1] = realMax[i][0] * sin(a * rz) + realMax[i][1] * sin(a * rz);
-			}
-	}
-
-	void updatePosition() {
-		for (int i = 0; i < 3; i++) {
-			realMin[i][0] += px;
-			realMax[i][0] += px;
-			realMin[i][1] += py;
-			realMax[i][1] += py;
-			realMin[i][2] += pz;
-			realMax[i][2] += pz;
-		}
-	}
-
 	void updateScale() {
-		for (int i = 0; i < 3; i++) {
-			realMin[i][0] *= sx;
-			realMax[i][0] *= sx;
-			realMin[i][1] *= sy;
-			realMax[i][1] *= sy;
-			realMin[i][2] *= sz;
-			realMax[i][2] *= sz;
-		}
+		furthest[0] *= sx;
+		furthest[1] *= sy;
+		furthest[2] *= sz;
+	}
+
+	void copyFurthest() {
+		furthest[0] = object->furthest[0];
+		furthest[1] = object->furthest[1];
+		furthest[2] = object->furthest[2];
 	}
 public:
 	static TreeNode* objects;
@@ -65,8 +30,8 @@ public:
 	GLfloat px, py, pz;
 	GLfloat sx, sy, sz;
 	GLfloat rx, ry, rz;
-	GLfloat min[3][3], max[3][3];
-	GLfloat realMin[3][3], realMax[3][3];
+	double range;
+	double furthest[3];
 	Animation *anim;
 	bool alwaysDisplay;
 	static vector<Entity*> solidObjectsToDisplay;
@@ -95,15 +60,9 @@ public:
 	}
 
 	void recalculate() {
-		for (int i = 0; i < 3; i++) {
-			for (int j = 0; j < 3; j++) {
-				realMin[i][j] = min[i][j];
-				realMax[i][j] = max[i][j];
-			}
-		}
-		updateRotation();
+		copyFurthest();
 		updateScale();
-		updatePosition();
+		range = getLength3D(&furthest[0], &empty[0]);
 	}
 
 	void setPosition(GLfloat px, GLfloat py, GLfloat pz) {
@@ -129,16 +88,7 @@ public:
 		alwaysDisplay = false;
 		anim = NULL;
 		this->object = object;
-		for (int i = 0; i < 3; i++) {
-			for (int j = 0; j < 3; j++) {
-				this->min[i][j] = object->min[i][j];
-			}
-		}
-		for (int i = 0; i < 3; i++) {
-			for (int j = 0; j < 3; j++) {
-				this->max[i][j] = object->max[i][j];
-			}
-		}
+		copyFurthest();
 		this->px = 0;
 		this->py = 0;
 		this->pz = 0;
