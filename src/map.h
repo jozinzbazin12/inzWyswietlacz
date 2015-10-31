@@ -13,7 +13,6 @@ class Map {
 private:
 	static const int ERROR_HEIGHT = 1000;
 	const string MAP_NAME = "models/0/0.obj";
-	static int **heights;
 	long long unsigned mapSize;
 	const char* mapFile = "models/0/0.obj";
 	MD5 md5;
@@ -81,12 +80,12 @@ private:
 				b >>= 16;
 				height = ((r + b + g) / 3) - (double) 128;
 				if (dest) {
-					dest[0] << "v " << i - mapX / 2 << " " << height << " " << mapZ / 2 - j << endl; //moze sie zjebac!
+					*dest << "v " << mapZ / 2 - j << " " << height << " " << mapX / 2 - i << endl; //moze sie zjebac!
 				}
 				if (max < height) {
 					max = height;
 				}
-				heights[mapX - i - 1][mapZ - j - 1] = height;
+				heights[j][mapX - i - 1] = height;
 			}
 		}
 		yRate = (float) wymy / max;
@@ -101,6 +100,7 @@ private:
 
 //todo
 	bool tryLoadLastMap(string name) {
+		return false;
 		fstream file, lastSettingsFile;
 		string map;
 		file.open(mapFile);
@@ -212,6 +212,7 @@ private:
 	}
 
 public:
+	static int **heights;
 	static int mapX, mapZ;
 	long double xRate;
 	long double yRate = 0;
@@ -258,23 +259,32 @@ public:
 		float **vectors = new float*[(mapZ - 1) * (mapX - 1) * 2];
 		int v = 0;
 		float t1[3], t2[3], t3[3], t4[3];
-		for (int i = 1; i < mapX; i++) {
-			for (int j = 1; j < mapZ; j++) {
-				t1[0] = i - mapX / 2;
-				t1[1] = -heights[mapX - i - 1][mapZ - j - 1];  //i,j
-				t1[2] = mapZ / 2 - j;
+		for (int i = 0; i < mapX - 1; i++) {
+			for (int j = 0; j < mapZ - 1; j++) {
+				double x = mapX / 2 - i;
+				double z = mapZ / 2 - j;
+				double x2 = mapX / 2 - i - 1;
+				double z2 = mapZ / 2 - j - 1;
+				int hx = j;
+				int hz = mapX - i;
+				int hx2 = j + 1;
+				int hz2 = mapX - i - 1;
 
-				t2[0] = i - mapX / 2;
-				t2[1] = -heights[mapX - i - 1][mapZ - j]; //i,j+1
-				t2[2] = mapZ / 2 - j - 1;
+				t1[0] = x;
+				t1[1] = heights[hx][hz];  //i,j
+				t1[2] = z;
 
-				t3[0] = i - mapX / 2 + 1;
-				t3[1] = -heights[mapX - i][mapZ - j - 1]; //i+1,j
-				t3[2] = mapZ / 2 - j;
+				t2[0] = x;
+				t2[1] = heights[hx][hz2]; //i,j+1
+				t2[2] = z2;
 
-				t4[0] = i - mapX / 2 + 1;
-				t4[1] = -heights[mapX - i][mapZ - j]; //i+1,j+1
-				t4[2] = mapZ / 2 - j - 1;
+				t3[0] = x2;
+				t3[1] = heights[hx2][hz]; //i+1,j
+				t3[2] = z;
+
+				t4[0] = x2;
+				t4[1] = heights[hx2][hz2]; //i+1,j+1
+				t4[2] = z2;
 
 				vectors[v++] = makeNormal(t1, t2, t3);
 				vectors[v++] = makeNormal(t4, t2, t3);
@@ -301,16 +311,16 @@ public:
 				normals[1] = 0;
 				normals[2] = 0;
 				if (j != mapZ - 1 && i != mapX - 1) {
-					subtractVector(normals, vectors[vertex]);
+					addVector(normals, vectors[vertex]);
 				}
 
 				if (j != 0 && i != mapX - 1) {
-					subtractVector(normals, vectors[vertex - 2]);
-					subtractVector(normals, vectors[vertex - 1]);
+					addVector(normals, vectors[vertex - 2]);
+					addVector(normals, vectors[vertex - 1]);
 				}
 
 				if (j != 0 && i != 0) {
-					addVector(normals, vectors[vetex2 - 1]);
+					subtractVector(normals, vectors[vetex2 - 1]);
 				}
 
 				if (j != mapZ - 1 && i != 0) {
@@ -363,15 +373,16 @@ public:
 		while (!xRate && !zRate) {
 			Sleep(20);
 		}
-		valueX = (long double) (x / xRate) + (mapX / 2.0) + 1;	//-1
+		valueX = (long double) (x / xRate) + (mapX / 2.0);	//-1
 		valueZ = (long double) (z / zRate) + (mapZ / 2.0) - 1;		//0
 		indexX = (int) valueX;
 		indexZ = (int) valueZ;
-		actual = heights[mapX - indexX][indexZ];
-		if (indexX < 0 || indexX > mapX || indexZ < 0 || indexZ > mapZ) {
+
+		if (indexX <= 0 || indexX > mapX || indexZ < 0 || indexZ >= mapZ) {
 			return ERROR_HEIGHT;
 		}
 
+		actual = heights[mapX - indexX][indexZ];
 		if (valueX == indexX && valueZ == indexZ) {
 			return actual * yRate + y;
 		}
@@ -399,8 +410,8 @@ public:
 		else {
 			actual = heights[mapX - indexX - 1][indexZ + 1];
 			if (indexZ + 1 < mapZ) {
-				height1 = (actual - heights[mapX - indexX - 1][indexZ]) * (valueZ - indexZ);
-				height2 = (actual - heights[mapX - indexX][indexZ + 1]) * (valueX - indexX);
+				height1 = (actual - heights[mapX - indexX - 1][indexZ]) * (valueX - indexX);
+				height2 = (actual - heights[mapX - indexX][indexZ + 1]) * (valueZ - indexZ);
 			}
 			return (actual - height1 - height2) * yRate + y;
 		}
