@@ -316,7 +316,7 @@ public:
 
 				if (j != 0 && i != mapX - 1) {
 					addVector(normals, vectors[vertex - 2]);
-					addVector(normals, vectors[vertex - 1]);
+					subtractVector(normals, vectors[vertex - 1]);
 				}
 
 				if (j != 0 && i != 0) {
@@ -324,7 +324,7 @@ public:
 				}
 
 				if (j != mapZ - 1 && i != 0) {
-					subtractVector(normals, vectors[vetex2]);
+					addVector(normals, vectors[vetex2]);
 					subtractVector(normals, vectors[vetex2 + 1]);
 				}
 				normalize(normals);
