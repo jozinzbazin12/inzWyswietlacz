@@ -65,8 +65,8 @@ int windowHeight = 700, windowWidth = 1300;
 long long unsigned totalVerticesCount = 0;
 int selectedEntityPos = -1;
 int selectedObjectPos = 0;
-vector<Entity*> transparentObjects;
-vector<Entity*> solidObjects;
+list<Entity*> transparentObjects;
+list<Entity*> solidObjects;
 
 HANDLE animateThread;
 HANDLE informThread;
@@ -82,6 +82,7 @@ class TreeNode;
 #include "material_lib.h"
 #include "subobject.h"
 #include "object.h"
+#include "cullable.h"
 #include "entity.h"
 #include "animation.h"
 #include "map_material.h"
@@ -95,7 +96,7 @@ class TreeNode;
 
 void TreeNode::addObject(Entity* e) {
 	TreeNode* node = getChild(e);
-	while (node->level <= node->LEVELS) {
+	while (node->level < node->LEVELS) {
 		node = node->getChild(e);
 	}
 	TreeLeaf* leaf = (TreeLeaf*) node;
@@ -254,18 +255,16 @@ void display(void) {
 	}
 	glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
 
-	unsigned size = Entity::solidObjectsToDisplay.size();
-	vector<Entity*> entities = Entity::solidObjectsToDisplay;
+	list<Entity*> entities = Entity::solidObjectsToDisplay;
 	glDisable(GL_BLEND);
-	for (unsigned i = 0; i < size; i++) {
-		drawObject(entities[i]);
-
+	for (list<Entity*>::iterator i = entities.begin(); i != entities.end(); ++i) {
+		drawObject(*i);
 	}
-	size = Entity::transparentObjectsToDisplay.size();
+
 	entities = Entity::transparentObjectsToDisplay;
 	glEnable(GL_BLEND);
-	for (unsigned i = 0; i < size; i++) {
-		drawObject(entities[i]);
+	for (list<Entity*>::iterator i = entities.begin(); i != entities.end(); ++i) {
+		drawObject(*i);
 	}
 
 //	for(int i=0; i<Entity::allEntitiesCount(); i++) drawObject(Entity::getEntity(i));
@@ -586,7 +585,7 @@ void __cdecl inform(void *kutas) {
 }
 
 void checkVisibility(TreeNode* n) {
-	if (n->level == n->LEVELS + 1) {
+	if (n->level == n->LEVELS) {
 		TreeLeaf* leaf = (TreeLeaf*) n;
 		vector<Entity*> vec = leaf->entities;
 		for (unsigned i = 0; i < vec.size(); i++) {
@@ -611,26 +610,15 @@ void checkVisibility(TreeNode* n) {
 
 void __cdecl sortObjects(void *arg) {
 	while (1) {
-//		unsigned objectsCount = Entity::allEntitiesCount();
-//		for (unsigned i = 0; i < objectsCount; i++) {
-//			Entity* e = Entity::getEntity(i);
-//			if (culler->isInViewField(e)) {
-//				if (e->object->transparent) {
-//					transparentObjects.push_back(e);
-//				} else {
-//					solidObjects.push_back(e);
-//				}
-//			}
-//		}
 		transparentObjects.clear();
 		solidObjects.clear();
-		if (Entity::objects) {
+		if (Entity::objects && culler->isInViewField(Entity::objects)) {
 			checkVisibility(Entity::objects);
-			sort(transparentObjects.begin(), transparentObjects.end(), Entity::compare);
+			transparentObjects.sort(Entity::compare);
 			Entity::transparentObjectsToDisplay = transparentObjects;
 			Entity::solidObjectsToDisplay = solidObjects;
 		}
-		Sleep(100);
+		Sleep(50);
 	}
 }
 
@@ -657,7 +645,7 @@ string getFileExtension(string path) {
 void DrawString(GLfloat x, GLfloat y, GLfloat z, string string) {
 	glRasterPos3f(x, y, z);
 	for (unsigned i = 0; i < string.length(); i++) {
-		glutBitmapCharacter( GLUT_BITMAP_9_BY_15, (int) string[i]);
+		glutBitmapCharacter(GLUT_BITMAP_9_BY_15, (int) string[i]);
 	}
 }
 

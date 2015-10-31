@@ -13,14 +13,6 @@ private:
 	static FrustumCuller* culler;
 	static constexpr double RAD = 0.01745329251;
 
-	double* getPos(Entity* e) {
-		double* tab = new double[3];
-		tab[0] = e->px;
-		tab[1] = e->py;
-		tab[2] = e->pz;
-		return tab;
-	}
-
 	double caclulate(double tab[3], float md1, float md2, float md3) {
 		double v[3];
 		v[0] = px2 - tab[0];
@@ -30,8 +22,8 @@ private:
 		return md1 * v[0] + md2 * v[1] + md3 * v[2];
 	}
 
-	bool checkX(Entity* e) {
-		double* tab = getPos(e);
+	bool checkX(Cullable* e) {
+		double* tab = e->getPos();
 		double w = h * ar / (top - bottom);
 		pcx = caclulate(tab, modelview[0], modelview[4], modelview[8]);
 		if ((pcx >= -w && pcx <= w) || (pcx + e->range >= -w && pcx - e->range <= w)) {
@@ -40,8 +32,8 @@ private:
 		return false;
 	}
 
-	bool checkY(Entity* e) {
-		double* tab = getPos(e);
+	bool checkY(Cullable* e) {
+		double* tab = e->getPos();
 		h = pcz * tan;
 		double h2 = h / 2;
 		pcy = caclulate(tab, modelview[1], modelview[5], modelview[9]);
@@ -51,13 +43,19 @@ private:
 		return false;
 	}
 
-	bool checkZ(Entity* e) {
-		double* tab = getPos(e);
+	bool checkZ(Cullable* e) {
+		double* tab = e->getPos();
 		pcz = caclulate(tab, modelview[2], modelview[6], modelview[10]);
 		if ((pcz <= fardist && pcz >= neardist) || (pcz - e->range <= fardist && pcz - e->range >= neardist)) {
 			return true;
 		}
 		return false;
+	}
+
+	bool inSpehere(Cullable* e) {
+		double* tab = e->getPos();
+		double dist = distance(posX, tab[0], posY, tab[1], posZ, tab[2]);
+		return dist <= e->range;
 	}
 
 	double distance(double x1, double x2, double y1, double y2, double z1, double z2) {
@@ -86,12 +84,13 @@ public:
 	}
 
 	bool isInViewField(Entity* e) {
+		return true;
 		if (e->alwaysDisplay) {
 			return true;
 		}
-//		if ((e->sx + e->sy + e->sz) / 3 < distance(posX, e->px, posY, e->py, posZ, e->pz) / lod) {
-//			return false;
-//		}
+		if ((e->sx + e->sy + e->sz) / 3 < distance(posX, e->px, posY, e->py, posZ, e->pz) / lod) {
+			return false;
+		}
 		if (selectedEntityPos == -1) {
 			px2 = posX;
 			py2 = posY;
@@ -109,21 +108,14 @@ public:
 		}
 
 		e->recalculate();
-
-		if (checkZ(e) && checkY(e) && checkX(e)) {
-			return true;
-		}
-		return false;
+		return inSpehere(e) || (checkZ(e) && checkY(e) && checkX(e));
 	}
 
 	bool isInViewField(TreeNode* node) {
 		px2 = posX;
 		py2 = posY;
 		pz2 = posZ;
-//		if (checkZ(node->se[1], node->nw[1]) && checkX(node->ne[0], node->sw[0])) {
-//			return true;
-//		}
-		return true;
+		return inSpehere(node) ||(checkZ(node) && checkX(node));
 	}
 
 	void commit(int width, int height) {
@@ -141,8 +133,7 @@ public:
 		glFrustum(-ar, ar, bottom, top, neardist, fardist);
 		tan = (top - bottom) / neardist;
 	}
-}
-;
+};
 FrustumCuller* FrustumCuller::culler = NULL;
 
 #endif /* SRC_FRUSTUM_CULLER_H_ */

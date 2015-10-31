@@ -50,7 +50,7 @@ private:
 		if (stringValue == "false") {
 			entity->setPosition(a, b, c);
 		} else {
-			while (!mapBuilder) {
+			while (!mapBuilder || !mapBuilder->heights) {
 				Sleep(10);
 			}
 			d = mapBuilder->calculateHeight(a, b, c);

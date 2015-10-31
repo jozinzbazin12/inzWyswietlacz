@@ -8,7 +8,7 @@
 #ifndef SRC_TREE_H_
 #define SRC_TREE_H_
 
-class TreeNode {
+class TreeNode: public Cullable {
 private:
 	static const short NE = 0;
 	static const short NW = 1;
@@ -46,34 +46,43 @@ public:
 	double* se;
 	double* sw;
 
+	double* getPos() {
+		double* tab = new double[3];
+		tab[0] = mid[0];
+		tab[1] = posY;
+		tab[2] = mid[1];
+		return tab;
+	}
+
 	static TreeNode* createRoot(double width, double height) {
 		TreeNode* n = new TreeNode();
 		int w = width / 2;
 		int h = height / 2;
 		setPoint(n->mid, 0, 0);
-		setPoint(n->ne, -w, h);
-		setPoint(n->nw, w, h);
-		setPoint(n->se, -w, -h);
-		setPoint(n->sw, w, -h);
+		setPoint(n->ne, w, h);
+		setPoint(n->nw, -w, h);
+		setPoint(n->se, w, -h);
+		setPoint(n->sw, -w, -h);
+		n->range = getLength2D(n->ne, n->sw) / 2;
 		n->level = 0;
 		return n;
 	}
 
 	TreeNode* getChild(Entity* e) {
-		double midX = getLength2D(ne, se);
-		double midZ = getLength2D(ne, nw);
+		double midX = mid[0];
+		double midZ = mid[1];
 		double x = e->px;
 		double z = e->pz;
-		if (x > midX && z > midZ) {
+		if (x >= midX && z >= midZ) {
 			return getNode(NE);
 		}
-		if (x < midX && z > midZ) {
+		if (x <= midX && z > midZ) {
 			return getNode(NW);
 		}
-		if (x < midX && z < midZ) {
+		if (x > midX && z <= midZ) {
 			return getNode(SE);
 		}
-		if (x > midX && z < midZ) {
+		if (x <= midX && z < midZ) {
 			return getNode(SW);
 		}
 		return NULL;
@@ -83,35 +92,36 @@ public:
 
 	TreeNode(TreeNode* node, short part) {
 		init();
-		double w = getLength2D(node->ne, node->nw) / 2;
-		double h = getLength2D(node->ne, node->se) / 2;
+		double w = getLength2D(node->ne, node->nw) / 4;
+		double h = getLength2D(node->ne, node->se) / 4;
+		range = node->range / 2;
 
 		if (part == NE) {
-			setPoint(ne, node->ne[0], node->ne[1]);
-			setPoint(nw, node->nw[0] - w, node->nw[1]);
-			setPoint(se, node->se[0], node->se[1] - h);
-			setPoint(sw, node->sw[0] - w, node->sw[1] - h);
+			setPoint(mid, node->mid[0] + w, node->mid[1] + h);
 		}
 		if (part == NW) {
-			setPoint(ne, node->ne[0] + w, node->ne[1]);
-			setPoint(nw, node->nw[0], node->nw[1]);
-			setPoint(se, node->se[0] + w, node->se[1] - h);
-			setPoint(sw, node->sw[0], node->sw[1] - h);
+			setPoint(mid, node->mid[0] - w, node->mid[1] + h);
 		}
 		if (part == SE) {
-			setPoint(ne, node->ne[0], node->ne[1] - h);
-			setPoint(nw, node->nw[0] - w, node->nw[1] - h);
-			setPoint(se, node->se[0], node->se[1]);
-			setPoint(sw, node->sw[0] - w, node->sw[1]);
+			setPoint(mid, node->mid[0] + w, node->mid[1] - h);
 		}
 		if (part == SW) {
-			setPoint(ne, node->ne[0] + w, node->ne[1] - h);
-			setPoint(nw, node->nw[0], node->nw[1] - h);
-			setPoint(se, node->se[0] + w, node->se[1]);
-			setPoint(sw, node->sw[0], node->sw[1]);
+			setPoint(mid, node->mid[0] - w, node->mid[1] - h);
 		}
 
+		setPoint(ne, mid[0] + w, mid[1] + h);
+		setPoint(nw, mid[0] - w, mid[1] + h);
+		setPoint(se, mid[0] + w, mid[1] - h);
+		setPoint(sw, mid[0] - w, mid[1] - h);
+
 		level = node->level + 1;
+		ostringstream ss;
+		ss << "<Object objectFile=\"D:/modele/portal/portal.obj\">\n";
+		ss << "<Settings>";
+		ss << "<posX>" << mid[0] << "</posX><posZ>" << mid[1] << "</posZ>\n";
+		ss << "</Settings>\n";
+		ss << "</Object>\n";
+		Logger::dupa(ss.str());
 	}
 
 	TreeNode() {
@@ -126,15 +136,15 @@ public:
 		entities.push_back(e);
 	}
 
-	TreeLeaf() {
-		level = LEVELS + 1;
+	TreeLeaf(TreeNode* node, short part) :
+			TreeNode(node, part) {
 	}
 };
 
 TreeNode* TreeNode::getNode(int index) {
 	if (!children[index]) {
-		if (level == LEVELS) {
-			children[index] = new TreeLeaf();
+		if (level == LEVELS - 1) {
+			children[index] = new TreeLeaf(this, index);
 		} else {
 			children[index] = new TreeNode(this, index);
 		}

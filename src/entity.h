@@ -8,7 +8,7 @@
 #ifndef SRC_ENTITY_H_
 #define SRC_ENTITY_H_
 
-class Entity {
+class Entity: public Cullable {
 private:
 	static vector<Entity*> allObjects;
 	static HANDLE mutex;
@@ -30,12 +30,19 @@ public:
 	GLfloat px, py, pz;
 	GLfloat sx, sy, sz;
 	GLfloat rx, ry, rz;
-	double range;
 	double furthest[3];
 	Animation *anim;
 	bool alwaysDisplay;
-	static vector<Entity*> solidObjectsToDisplay;
-	static vector<Entity*> transparentObjectsToDisplay;
+	static list<Entity*> solidObjectsToDisplay;
+	static list<Entity*> transparentObjectsToDisplay;
+
+	double* getPos() {
+		double* tab = new double[3];
+		tab[0] = px;
+		tab[1] = py;
+		tab[2] = pz;
+		return tab;
+	}
 
 	static Entity* getEntity(int pos) {
 		WaitForSingleObject(mutex, INFINITE);
@@ -102,24 +109,13 @@ public:
 	}
 
 	~Entity() {
-		Logger::log("Usuwam obiekt " + this->object->name, true);
-		for (unsigned i = 0; i < solidObjectsToDisplay.size(); i++) {
-			if (solidObjectsToDisplay[i] == this) {
-				solidObjectsToDisplay[i] = NULL;
-			}
-		}
-		for (unsigned i = 0; i < transparentObjectsToDisplay.size(); i++) {
-			if (transparentObjectsToDisplay[i] == this) {
-				transparentObjectsToDisplay[i] = NULL;
-			}
-		}
 		object->counter--;
 	}
 };
 HANDLE Entity::mutex = CreateMutex(NULL, FALSE, NULL);
 vector<Entity*> Entity::allObjects;
-vector<Entity*> Entity::solidObjectsToDisplay;
-vector<Entity*> Entity::transparentObjectsToDisplay;
+list<Entity*> Entity::solidObjectsToDisplay;
+list<Entity*> Entity::transparentObjectsToDisplay;
 TreeNode* Entity::objects = NULL;
 
 #endif /* SRC_ENTITY_H_ */
