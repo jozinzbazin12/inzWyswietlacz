@@ -24,6 +24,7 @@ private:
 
 	bool checkX(Cullable* e) {
 		double* tab = e->getPos();
+		h = pcz * tan;
 		double w = h * ar / (top - bottom);
 		pcx = caclulate(tab, modelview[0], modelview[4], modelview[8]);
 		if ((pcx >= -w && pcx <= w) || (pcx + e->range >= -w && pcx - e->range <= w)) {
@@ -115,7 +116,7 @@ public:
 		px2 = posX;
 		py2 = posY;
 		pz2 = posZ;
-		return inSpehere(node) ||(checkZ(node) && checkX(node));
+		return inSpehere(node) || (checkZ(node) && checkX(node));
 	}
 
 	void commit(int width, int height) {

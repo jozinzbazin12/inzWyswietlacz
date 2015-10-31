@@ -92,9 +92,9 @@ public:
 
 	TreeNode(TreeNode* node, short part) {
 		init();
-		double w = getLength2D(node->ne, node->nw) / 4;
-		double h = getLength2D(node->ne, node->se) / 4;
-		range = node->range / 2;
+		double w = getLength2D(node->ne, node->nw) / 4.0;
+		double h = getLength2D(node->ne, node->se) / 4.0;
+		range = node->range / 2.0;
 
 		if (part == NE) {
 			setPoint(mid, node->mid[0] + w, node->mid[1] + h);
