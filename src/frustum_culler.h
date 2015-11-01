@@ -44,6 +44,16 @@ private:
 		return (pcz <= fardist && pcz >= neardist) || (pcz - e->range <= fardist && pcz - e->range >= neardist);
 	}
 
+	void select(Entity* e) {
+		pcx = caclulate(e->getPos(), modelview[0], modelview[4], modelview[8]);
+		pcy = caclulate(e->getPos(), modelview[1], modelview[5], modelview[9]);
+		pcz = caclulate(e->getPos(), modelview[2], modelview[6], modelview[10]);
+		double pcz2 = selected ? caclulate(selected->getPos(), modelview[2], modelview[6], modelview[10]) :INFINITE;
+		if (pcz < pcz2 && pcz > 0 && abs(pcy) <= e->range && abs(pcx) <= e->range) {
+			selected = e;
+		}
+	}
+
 	bool inSpehere(Cullable* e) {
 		double* tab = e->getPos();
 		double dist = distance(posX, tab[0], posY, tab[1], posZ, tab[2]);
@@ -67,6 +77,7 @@ public:
 	float pcx, pcy, pcz;
 	float h;
 	GLfloat px2, py2, pz2;
+	Entity* selected = NULL;
 
 	static FrustumCuller* getInstance() {
 		if (!culler) {
@@ -82,7 +93,7 @@ public:
 		if (e->range * (e->sx + e->sy + e->sz) / 3.0 < pow(distance(posX, e->px, posY, e->py, posZ, e->pz) / lod, 2)) {
 			return false;
 		}
-		if (selectedEntityPos == -1) {
+		if (!selectedEntity) {
 			px2 = posX;
 			py2 = posY;
 			pz2 = posZ;
@@ -98,7 +109,11 @@ public:
 			pz2 += selectedEntity->pz;
 		}
 
-		return inSpehere(e) || (checkZ(e) && checkY(e) && checkX(e));
+		if (inSpehere(e) || (checkZ(e) && checkY(e) && checkX(e))) {
+			select(e);
+			return true;
+		}
+		return false;
 	}
 
 	bool isInViewField(TreeNode* node) {
@@ -123,7 +138,8 @@ public:
 		glFrustum(-ar, ar, bottom, top, neardist, fardist);
 		tan = (top - bottom) / neardist;
 	}
-};
+}
+;
 FrustumCuller* FrustumCuller::culler = NULL;
 
 #endif /* SRC_FRUSTUM_CULLER_H_ */

@@ -130,13 +130,6 @@ public:
 		setPoint(sw, mid[0] - w, mid[1] - h);
 
 		level = node->level + 1;
-		ostringstream ss;
-		ss << "<Object objectFile=\"D:/modele/portal/portal.obj\">\n";
-		ss << "<Settings>";
-		ss << "<posX>" << mid[0] << "</posX><posZ>" << mid[1] << "</posZ>\n";
-		ss << "</Settings>\n";
-		ss << "</Object>\n";
-		Logger::dupa(ss.str());
 	}
 
 	TreeNode() {

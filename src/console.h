@@ -8,16 +8,29 @@
 #ifndef SRC_CONSOLE_H_
 #define SRC_CONSOLE_H_
 
-#include <string>
+
 
 enum Command {
-	speed = 0, go = 1, light_ambient = 2, light_diffuse = 3, light_specular = 4, light_position = 5, position = 6, range = 7, LOD = 8
+	speed = 0,
+	go = 1,
+	light_ambient = 2,
+	light_diffuse = 3,
+	light_specular = 4,
+	light_position = 5,
+	position = 6,
+	range = 7,
+	LOD = 8,
+	edit = 9,
+	end_edit = 10,
+	quit = 11
 };
 
 class Console {
 private:
 	int actualLine = 0;
+	int mainLine;
 	map<string, Command> commands;
+	const string LIGHT_ERROR = "Invalid light args";
 
 	void nextLine() {
 		for (int i = 1; i < lineNumber; i++) {
@@ -39,9 +52,13 @@ private:
 		vector < string > result = split(lines[lineNumber - 1]);
 		Command command = commands.find(result[0])->second;
 		switch (command) {
+		case quit:
+			exit(0);
 		case speed:
-			if (result.size() >= 2) {
+			if (result.size() == 2) {
 				predkosc = stod(result[1]);
+			} else if (result.size() == 1) {
+
 			}
 			break;
 		case go:
@@ -55,6 +72,8 @@ private:
 			if (result.size() >= 5) {
 				Light::getInstance()->setAmbient(stod(result[1]), stod(result[2]), stod(result[3]), stod(result[4]));
 				Light::getInstance()->commit();
+			} else {
+				type(LIGHT_ERROR);
 			}
 			break;
 		case light_diffuse:
@@ -86,6 +105,20 @@ private:
 				lod = stod(result[1]);
 			}
 			break;
+		case edit:
+			selectedEntity = FrustumCuller::getInstance()->selected;
+			if (!selectedEntity) {
+				type("Nothing selected");
+			} else {
+				type("Selected: " + selectedEntity->object->name);
+			}
+			break;
+		case end_edit:
+			if (!selectedEntity) {
+				type("Nothing selected");
+			}
+			selectedEntity = NULL;
+			break;
 		default:
 			nextLine();
 			lines[lineNumber - 2] = "Invalid command";
@@ -100,6 +133,7 @@ public:
 
 	Console(int lineNumber) {
 		this->lineNumber = lineNumber;
+		mainLine = lineNumber - 1;
 		lines = new string[lineNumber];
 		for (int i = 0; i < lineNumber; i++) {
 			lines[i] = "";
@@ -113,10 +147,17 @@ public:
 		commands["position"] = Command::position;
 		commands["range"] = Command::range;
 		commands["lod"] = Command::LOD;
+		commands["edit"] = Command::edit;
+		commands["end"] = Command::end_edit;
+		commands["quit"] = Command::quit;
+		commands["exit"] = Command::quit;
 	}
 
+	void type(string str) {
+		nextLine();
+		lines[mainLine] = str;
+	}
 	void type(char c) {
-		int mainLine = lineNumber - 1;
 		switch (c) {
 		case 13:
 			parse();

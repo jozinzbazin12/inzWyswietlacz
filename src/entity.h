@@ -10,7 +10,6 @@
 
 class Entity: public Cullable {
 private:
-	static vector<Entity*> allObjects;
 	static HANDLE mutex;
 
 	void updateScale() {
@@ -26,6 +25,7 @@ private:
 	}
 public:
 	static TreeNode* objects;
+	static unsigned long entitiesCount;
 	double furthest[3];
 	Object *object;
 	GLfloat px, py, pz;
@@ -44,22 +44,8 @@ public:
 		return tab;
 	}
 
-	static Entity* getEntity(int pos) {
-		WaitForSingleObject(mutex, INFINITE);
-		Entity* result = allObjects[pos];
-		ReleaseMutex(mutex);
-		return result;
-	}
-
 	static void addEntity(Entity* entity);
 
-	static int allEntitiesCount() {
-		return allObjects.size();
-	}
-
-	static void setEntity(Entity* e, int pos) {
-		allObjects[pos] = e;
-	}
 	static bool compare(Entity* e1, Entity* e2) {
 		int val = pow(posX - e1->px, 2) + pow(posY - e1->py, 2) + pow(posZ - e1->pz, 2);
 		int val2 = pow(posX - e2->px, 2) + pow(posY - e2->py, 2) + pow(posZ - e2->pz, 2);
@@ -94,6 +80,7 @@ public:
 	Entity(Object *object) {
 		Logger::log("Tworzê obiekt " + object->name);
 		alwaysDisplay = false;
+		entitiesCount++;
 		anim = NULL;
 		this->object = object;
 		copyFurthest();
@@ -112,10 +99,11 @@ public:
 
 	~Entity() {
 		object->counter--;
+		entitiesCount--;
 	}
 };
 HANDLE Entity::mutex = CreateMutex(NULL, FALSE, NULL);
-vector<Entity*> Entity::allObjects;
+unsigned long Entity::entitiesCount = 0;
 list<Entity*> Entity::solidObjectsToDisplay;
 list<Entity*> Entity::transparentObjectsToDisplay;
 TreeNode* Entity::objects = NULL;

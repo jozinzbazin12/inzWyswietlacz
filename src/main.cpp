@@ -41,7 +41,7 @@ class Texture;
 class Light;
 ////////////////////////////////////////////
 vector<Entity*> animatedObjects;
-Entity * selectedEntity;
+Entity * selectedEntity = NULL;
 tagPOINT *mysz_pozycja;
 float modelview[16];
 double empty[3] = { 0, 0, 0 };
@@ -63,7 +63,6 @@ bool rotationEnabled = false;
 GLfloat posX = -5, posY = 5, posZ = 11;
 int windowHeight = 700, windowWidth = 1300;
 long long unsigned totalVerticesCount = 0;
-int selectedEntityPos = -1;
 int selectedObjectPos = 0;
 list<Entity*> transparentObjects;
 list<Entity*> solidObjects;
@@ -93,10 +92,10 @@ class TreeNode;
 #include "thread_worker.h"
 #include "objects_loader.h"
 #include "console.h"
+#include "console_actions.h"
 
 void Entity::addEntity(Entity* entity) {
 	WaitForSingleObject(mutex, INFINITE);
-	allObjects.push_back(entity);
 	objects->addObject(entity);
 	ReleaseMutex(mutex);
 }
@@ -179,7 +178,7 @@ void displayDebug() {
 	if (o) {
 		DrawString(x, y -= dy, z, "Obiekt: " + info.ob2 + "  " + o->name + "   sztuk: " + info.licznikob);
 	}
-	if (selectedEntityPos != -1) {
+	if (selectedEntity) {
 		DrawString(x, y -= dy, z, "Zaznaczony obiekt: " + info.ob + "  " + selectedEntity->object->name);
 	}
 	y -= dy * 4;
@@ -208,13 +207,13 @@ void display(void) {
 		glColor3f(0.5, 0.5, 0.5);
 	}
 	glLoadIdentity();
-	if (selectedEntityPos > -1) {
+	if (selectedEntity) {
 		glTranslatef(0, 0, -cameraDistance); //obrot kamery
 	}
 	glRotatef(cx, 1, 0, 0);
 	glRotatef(cy, 0, 1, 0);
 
-	if (selectedEntityPos == -1) {
+	if (!selectedEntity) {
 		glTranslatef(-posX, -posY, -posZ);
 	} else {
 		if (rotationEnabled) {
@@ -257,14 +256,10 @@ void klawiaturka(unsigned char key, int x, int y) {
 	if (console->typing && debug) {
 		console->type(key);
 	} else {
-		Entity* e;
 		key = tolower(key);
 		switch (key) {
 		case '`':
 			console->typing = true;
-			break;
-		case 27:
-			exit(0);
 			break;
 
 		case 'w':
@@ -297,83 +292,6 @@ void klawiaturka(unsigned char key, int x, int y) {
 
 		case 'o':
 			debug ^= true;
-			break;
-
-		case '8':
-			e = Entity::getEntity(selectedEntityPos);
-			e->sx += predkosc;
-			e->sy += predkosc;
-			e->sz += predkosc;
-			if (e->anim) {
-				e->anim->startSx += predkosc;
-				e->anim->startSy += predkosc;
-				e->anim->startSz += predkosc;
-			}
-			break;
-
-		case '5':
-			e = Entity::getEntity(selectedEntityPos);
-			e->sx -= predkosc;
-			e->sy -= predkosc;
-			e->sz -= predkosc;
-			if (e->anim) {
-				e->anim->startSx -= predkosc;
-				e->anim->startSy -= predkosc;
-				e->anim->startSz -= predkosc;
-			}
-			break;
-
-		case '4':
-			if (selectedEntityPos > -1) {
-				selectedEntity = Entity::getEntity(selectedEntityPos--);
-				posX = selectedEntity->px;
-				posY = selectedEntity->py;
-				posZ = selectedEntity->pz;
-				cx2 = -selectedEntity->rx;
-				cy2 = -selectedEntity->ry;
-			}
-			break;
-
-		case '6':
-			if (selectedEntityPos < (int) Entity::allEntitiesCount() - 1) {
-				selectedEntity = Entity::getEntity(++selectedEntityPos);
-				posX = selectedEntity->px;
-				posY = selectedEntity->py;
-				posZ = selectedEntity->pz;
-				cx2 = -selectedEntity->rx;
-				cy2 = -selectedEntity->ry;
-			}
-			break;
-
-		case '7':
-			if (selectedEntityPos != -1) {
-				delete Entity::getEntity(selectedEntityPos);
-				Entity::setEntity(Entity::getEntity(Entity::allEntitiesCount()), selectedEntityPos);
-				Entity::setEntity(NULL, Entity::allEntitiesCount());
-				selectedEntityPos = -1;
-				selectedEntity = NULL;
-			}
-			break;
-
-		case '9':
-			Entity::addEntity(new Entity(Object::getObject(selectedObjectPos)));
-			if (selectedEntityPos != -1) {
-				//	Entity::allObjects[Entity::allObjects.size() - 1]->parent = Entity::getEntity(selectedEntityPos);
-			}
-			selectedEntityPos = Entity::allEntitiesCount() - 1;
-			selectedEntity = Entity::getEntity(selectedEntityPos);
-			break;
-
-		case '1':
-			if (selectedObjectPos > 0) {
-				selectedObjectPos--;
-			}
-			break;
-
-		case '3':
-			if (selectedObjectPos < Object::objectsCount() - 1) {
-				selectedObjectPos++;
-			}
 			break;
 
 		case '*':
@@ -476,7 +394,7 @@ long long unsigned checkSize(string fileName) {
 
 void __cdecl animate(void *arg) {
 	while (1) {
-		if (selectedEntityPos == -1) {
+		if (!selectedEntity) {
 			for (unsigned i = 0; i < animatedObjects.size(); i++) {
 				animatedObjects[i]->anim->animuj(animatedObjects[i]);
 			}
@@ -495,9 +413,9 @@ void __cdecl inform(void *kutas) {
 		diff << light->diffuse[0] << " " << light->diffuse[1] << " " << light->diffuse[2] << " " << light->diffuse[3];
 		spec << light->specular[0] << " " << light->specular[1] << " " << light->specular[2] << " " << light->specular[3];
 		pos << light->position[0] << " " << light->position[1] << " " << light->position[2] << " " << light->position[3];
-		ob << selectedEntityPos;
+		ob << selectedEntity;
 		ob2 << selectedObjectPos;
-		ileob << Entity::allEntitiesCount();
+		ileob << Entity::entitiesCount;
 		ileob2 << Entity::solidObjectsToDisplay.size() + Entity::transparentObjectsToDisplay.size();
 		Object* o = Object::getObject(selectedObjectPos);
 		if (o) {

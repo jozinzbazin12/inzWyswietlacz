@@ -56,10 +56,6 @@ private:
 public:
 	static string LINE;
 	static string ERR;
-	static void dupa(string t) {
-		outfile << t;
-		outfile.flush();
-	}
 	static void log(string text, bool newline = true, bool showTime = true) {
 		if (!logger) {
 			logger = new Logger();
@@ -71,9 +67,8 @@ public:
 		if (newline) {
 			output += "\n";
 		}
-//		outfile << output;
-//		outfile.flush();
-		cout << output;
+		outfile << output;
+		outfile.flush();
 	}
 	~Logger() {
 		outfile.close();

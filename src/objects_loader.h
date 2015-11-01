@@ -55,7 +55,7 @@ private:
 			stringValue = node->name();
 			if (stringValue == "Map") {
 				worker->loadMap(node);
-			} else if (stringValue == "Object"){
+			} else if (stringValue == "Object") {
 				worker->loadEntity(node);
 			}
 		}
@@ -68,7 +68,7 @@ private:
 		stream << "Utworzono " << totalVerticesCount << " trojkatow";
 		Logger::log(stream.str());
 		stream.str("");
-		stream << "Wczytanych obiektow: " << Object::objectsCount() << ", wyswietlonych obiektow:" << Entity::allEntitiesCount();
+		stream << "Wczytanych obiektow: " << Object::objectsCount() << ", wyswietlonych obiektow:" << Entity::entitiesCount;
 		Logger::log(stream.str());
 
 		int residentTexturesCount = 0;
@@ -105,7 +105,7 @@ public:
 		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) loadThread, (void*) args, 0, NULL);
 	}
 
-	void terminate(){
+	void terminate() {
 		worker->terminate();
 	}
 
