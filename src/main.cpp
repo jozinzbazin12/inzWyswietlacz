@@ -94,15 +94,6 @@ class TreeNode;
 #include "objects_loader.h"
 #include "console.h"
 
-void TreeNode::addObject(Entity* e) {
-	TreeNode* node = getChild(e);
-	while (node->level < node->LEVELS) {
-		node = node->getChild(e);
-	}
-	TreeLeaf* leaf = (TreeLeaf*) node;
-	leaf->addObject(e);
-}
-
 void Entity::addEntity(Entity* entity) {
 	WaitForSingleObject(mutex, INFINITE);
 	allObjects.push_back(entity);
@@ -142,22 +133,8 @@ void drawObject(Entity *ob) {
 		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mtl->kdt);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mtl->kst);
 		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, mtl->nst);
-		/*
-		 if(ob->ob->mtl->td[ob->ob->ktorymtl[j]])
-		 {
-		 glEnable(GL_TEXTURE1);
-		 glActiveTexture(GL_TEXTURE1);
-		 glClientActiveTexture( GL_TEXTURE1 );
-		 glEnable(GL_TEXTURE_2D);
-		 glBindBuffer(GL_ARRAY_BUFFER, ob->ob->ktorybuff[j][2]);
-		 glTexCoordPointer(2, GL_FLOAT, 0, 0);
-		 glBindTexture(GL_TEXTURE_2D, tekstura::txtid[ob->ob->mtl->tdt[ob->ob->ktorymtl[j]]]);
-		 glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		 }
-		 */
+
 		if (mtl->tkdt) {
-			//	glActiveTexture(GL_TEXTURE0);
-			//	glClientActiveTexture( GL_TEXTURE0 );
 			glEnable(GL_TEXTURE_2D);
 			glBindBuffer(GL_ARRAY_BUFFER, object->texture);
 			glTexCoordPointer(2, GL_FLOAT, 0, 0);
@@ -281,6 +258,7 @@ void klawiaturka(unsigned char key, int x, int y) {
 		console->type(key);
 	} else {
 		Entity* e;
+		key = tolower(key);
 		switch (key) {
 		case '`':
 			console->typing = true;
@@ -480,41 +458,6 @@ void idle(void) {
 }
 
 void zapisz() {
-//	fstream zapisywacz;
-//	zapisywacz.open("ustawienia/dupa.txt", ios::out);
-//	int j;
-//	for (int i = 0; i < ileobiektow; i++) {
-//		for (j = 0; j < ileobiektow2; j++)
-//			if (Entity::getEntity(i)->object == obiekty[j])
-//				break;
-//		zapisywacz << endl << "o " << j << endl;
-//		if (Entity::getEntity(i)->anim) {
-//			if (Entity::getEntity(i)->anim->startpx || Entity::getEntity(i)->anim->startpy
-//					|| Entity::getEntity(i)->anim->startpz)
-//				zapisywacz << "p " << Entity::getEntity(i)->anim->startpx << " "
-//						<< Entity::getEntity(i)->anim->startpy << " " << Entity::getEntity(i)->anim->startpz << endl;
-//			if (Entity::getEntity(i)->anim->startsx || Entity::getEntity(i)->anim->startsy
-//					|| Entity::getEntity(i)->anim->startsz)
-//				zapisywacz << "s " << Entity::getEntity(i)->anim->startsx << " "
-//						<< Entity::getEntity(i)->anim->startsy << " " << Entity::getEntity(i)->anim->startsz << endl;
-//			if (Entity::getEntity(i)->anim->startrx || Entity::getEntity(i)->anim->startry
-//					|| Entity::getEntity(i)->anim->startrz)
-//				zapisywacz << "r " << Entity::getEntity(i)->anim->startrx << " "
-//						<< Entity::getEntity(i)->anim->startry << " " << Entity::getEntity(i)->anim->startrz << endl;
-//			zapisywacz << "a" << Entity::getEntity(i)->anim->nazwa << endl;
-//		} else {
-//			if (Entity::getEntity(i)->px || Entity::getEntity(i)->py || Entity::getEntity(i)->pz)
-//				zapisywacz << "p " << Entity::getEntity(i)->px << " " << Entity::getEntity(i)->py << " "
-//						<< Entity::getEntity(i)->pz << endl;
-//			if (Entity::getEntity(i)->sx || Entity::getEntity(i)->sy || Entity::getEntity(i)->sz)
-//				zapisywacz << "s " << Entity::getEntity(i)->sx << " " << Entity::getEntity(i)->sy << " "
-//						<< Entity::getEntity(i)->sz << endl;
-//			if (Entity::getEntity(i)->rx || Entity::getEntity(i)->ry || Entity::getEntity(i)->rz)
-//				zapisywacz << "r " << Entity::getEntity(i)->rx << " " << Entity::getEntity(i)->ry << " "
-//						<< Entity::getEntity(i)->rz << endl;
-//		}
-//
-//	}
 }
 
 long long unsigned checkSize(string fileName) {
@@ -585,25 +528,21 @@ void __cdecl inform(void *kutas) {
 }
 
 void checkVisibility(TreeNode* n) {
-	if (n->level == n->LEVELS) {
-		TreeLeaf* leaf = (TreeLeaf*) n;
-		vector<Entity*> vec = leaf->entities;
-		for (unsigned i = 0; i < vec.size(); i++) {
-			Entity* e = vec[i];
-			if (culler->isInViewField(e)) {
-				if (e->object->transparent) {
-					transparentObjects.push_back(e);
-				} else {
-					solidObjects.push_back(e);
-				}
+	vector<Entity*> vec = n->entities;
+	for (unsigned i = 0; i < vec.size(); i++) {
+		Entity* e = vec[i];
+		if (culler->isInViewField(e)) {
+			if (e->object->transparent) {
+				transparentObjects.push_back(e);
+			} else {
+				solidObjects.push_back(e);
 			}
 		}
-	} else {
-		for (int i = 0; i < 4; i++) {
-			TreeNode* node = n->children[i];
-			if (node && culler->isInViewField(node)) {
-				checkVisibility(node);
-			}
+	}
+	for (int i = 0; i < 4; i++) {
+		TreeNode* node = n->children[i];
+		if (node && culler->isInViewField(node)) {
+			checkVisibility(node);
 		}
 	}
 }

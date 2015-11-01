@@ -148,9 +148,8 @@ private:
 		mapBuilder->createMap(stringValue);
 		Object::addObject(mapBuilder->mapObject);
 		Entity* mapObject = new Entity(mapBuilder->mapObject);
-		Entity::addEntity(mapObject);
-		mapObject->alwaysDisplay = true;
 		mapObject->setScale(mapBuilder->xRate, mapBuilder->yRate, mapBuilder->zRate);
+		Entity::addEntity(mapObject);
 	}
 
 	static string objectKey(string name) {

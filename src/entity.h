@@ -26,11 +26,11 @@ private:
 	}
 public:
 	static TreeNode* objects;
+	double furthest[3];
 	Object *object;
 	GLfloat px, py, pz;
 	GLfloat sx, sy, sz;
 	GLfloat rx, ry, rz;
-	double furthest[3];
 	Animation *anim;
 	bool alwaysDisplay;
 	static list<Entity*> solidObjectsToDisplay;
@@ -82,6 +82,7 @@ public:
 		this->sx = sx;
 		this->sy = sy;
 		this->sz = sz;
+		recalculate();
 	}
 
 	void setRotation(GLfloat rx, GLfloat ry, GLfloat rz) {
@@ -106,6 +107,7 @@ public:
 		this->ry = 0;
 		this->rz = 0;
 		object->counter++;
+		recalculate();
 	}
 
 	~Entity() {

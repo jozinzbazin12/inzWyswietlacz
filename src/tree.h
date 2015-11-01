@@ -35,12 +35,18 @@ private:
 		}
 	}
 
-	TreeNode* getNode(int index);
+	TreeNode* getNode(int index) {
+		if (!children[index]) {
+			children[index] = new TreeNode(this, index);
+		}
+		return children[index];
+	}
 
 public:
 	TreeNode** children;
 	static const short LEVELS = 3;
 	int level;
+	vector<Entity*> entities;
 	double* ne;
 	double* nw;
 	double* se;
@@ -49,7 +55,7 @@ public:
 	double* getPos() {
 		double* tab = new double[3];
 		tab[0] = mid[0];
-		tab[1] = posY;
+		tab[1] = 0;
 		tab[2] = mid[1];
 		return tab;
 	}
@@ -88,7 +94,16 @@ public:
 		return NULL;
 	}
 
-	void addObject(Entity* e);
+	void addObject(Entity* e) {
+		TreeNode* node = this;
+		if (e->object->name != "D:\\modele\\loopix\\weed_pack\\weed13\\weed13.obj") {
+			cout << endl;
+		}
+		while (node->level < node->LEVELS && e->range < node->range) {
+			node = node->getChild(e);
+		}
+		node->entities.push_back(e);
+	}
 
 	TreeNode(TreeNode* node, short part) {
 		init();
@@ -128,28 +143,4 @@ public:
 		init();
 	}
 };
-
-class TreeLeaf: public TreeNode {
-public:
-	vector<Entity*> entities;
-	void addObject(Entity* e) {
-		entities.push_back(e);
-	}
-
-	TreeLeaf(TreeNode* node, short part) :
-			TreeNode(node, part) {
-	}
-};
-
-TreeNode* TreeNode::getNode(int index) {
-	if (!children[index]) {
-		if (level == LEVELS - 1) {
-			children[index] = new TreeLeaf(this, index);
-		} else {
-			children[index] = new TreeNode(this, index);
-		}
-	}
-	return children[index];
-}
-
 #endif /* SRC_TREE_H_ */

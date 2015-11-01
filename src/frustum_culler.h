@@ -27,10 +27,7 @@ private:
 		h = pcz * tan;
 		double w = h * ar / (top - bottom);
 		pcx = caclulate(tab, modelview[0], modelview[4], modelview[8]);
-		if ((pcx >= -w && pcx <= w) || (pcx + e->range >= -w && pcx - e->range <= w)) {
-			return true;
-		}
-		return false;
+		return (pcx >= -w && pcx <= w) || (pcx + e->range >= -w && pcx - e->range <= w);
 	}
 
 	bool checkY(Cullable* e) {
@@ -38,19 +35,13 @@ private:
 		h = pcz * tan;
 		double h2 = h / 2;
 		pcy = caclulate(tab, modelview[1], modelview[5], modelview[9]);
-		if ((pcy >= -h2 && pcy <= h2) || (pcy + e->range >= -h2 && pcy - e->range <= h2)) {
-			return true;
-		}
-		return false;
+		return (pcy >= -h2 && pcy <= h2) || (pcy + e->range >= -h2 && pcy - e->range <= h2);
 	}
 
 	bool checkZ(Cullable* e) {
 		double* tab = e->getPos();
 		pcz = caclulate(tab, modelview[2], modelview[6], modelview[10]);
-		if ((pcz <= fardist && pcz >= neardist) || (pcz - e->range <= fardist && pcz - e->range >= neardist)) {
-			return true;
-		}
-		return false;
+		return (pcz <= fardist && pcz >= neardist) || (pcz - e->range <= fardist && pcz - e->range >= neardist);
 	}
 
 	bool inSpehere(Cullable* e) {
@@ -85,11 +76,10 @@ public:
 	}
 
 	bool isInViewField(Entity* e) {
-		return true;
 		if (e->alwaysDisplay) {
 			return true;
 		}
-		if ((e->sx + e->sy + e->sz) / 3 < distance(posX, e->px, posY, e->py, posZ, e->pz) / lod) {
+		if (e->range * (e->sx + e->sy + e->sz) / 3.0 < pow(distance(posX, e->px, posY, e->py, posZ, e->pz) / lod, 2)) {
 			return false;
 		}
 		if (selectedEntityPos == -1) {
@@ -108,7 +98,6 @@ public:
 			pz2 += selectedEntity->pz;
 		}
 
-		e->recalculate();
 		return inSpehere(e) || (checkZ(e) && checkY(e) && checkX(e));
 	}
 
