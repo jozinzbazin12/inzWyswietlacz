@@ -251,10 +251,7 @@ void display(void) {
 		selectedEntity->px = posX;
 		selectedEntity->py = posY;
 		selectedEntity->pz = posZ;
-		GLfloat p1 = posX;
-		GLfloat p2 = posY;
-		GLfloat p3 = posZ;
-		glTranslatef(-p1, -p2 - 5, -p3);
+		glTranslatef(-posX, -posY - 5, -posZ);
 	}
 	glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
 
@@ -440,7 +437,9 @@ void __cdecl inform(void *kutas) {
 		diff << light->diffuse[0] << " " << light->diffuse[1] << " " << light->diffuse[2] << " " << light->diffuse[3];
 		spec << light->specular[0] << " " << light->specular[1] << " " << light->specular[2] << " " << light->specular[3];
 		pos << light->position[0] << " " << light->position[1] << " " << light->position[2] << " " << light->position[3];
-		ob << selectedEntity->object->name;
+		if (selectedEntity) {
+			ob << selectedEntity->object->name;
+		}
 		ob2 << selectedObjectPos;
 		ileob << Entity::entitiesCount;
 		ileob2 << Entity::solidObjectsToDisplay.size() + Entity::transparentObjectsToDisplay.size();

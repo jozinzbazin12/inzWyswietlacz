@@ -8,7 +8,6 @@
 #ifndef SRC_CONSOLE_ACTIONS_H_
 #define SRC_CONSOLE_ACTIONS_H_
 
-
 class Action {
 protected:
 	unsigned short minArg = 0;
@@ -234,6 +233,9 @@ private:
 		if (!selectedEntity) {
 			c->type("Nothing selected");
 		} else {
+			posX = selectedEntity->px;
+			posY = selectedEntity->py;
+			posZ = selectedEntity->pz;
 			c->type("Selected: " + selectedEntity->object->name);
 		}
 	}
