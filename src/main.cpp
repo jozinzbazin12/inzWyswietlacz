@@ -41,7 +41,8 @@ class Texture;
 class Light;
 ////////////////////////////////////////////
 vector<Entity*> animatedObjects;
-Entity * selectedEntity = NULL;
+Entity* selectedEntity = NULL;
+Entity* deleted = NULL;
 tagPOINT *mysz_pozycja;
 float modelview[16];
 double empty[3] = { 0, 0, 0 };
@@ -71,7 +72,7 @@ HANDLE animateThread;
 HANDLE informThread;
 HANDLE sortThread;
 struct Information {
-	string x1, y1, z1, fps, speed, amb, diff, spec, pos, ob, ob2, ileob, ileob2, licznikob;
+	string x1, y1, z1, fps, speed, ob, ob2, ileob, ileob2, licznikob;
 };
 Information info;
 
@@ -99,6 +100,10 @@ void Entity::addEntity(Entity* entity) {
 	objects->addObject(entity);
 	ReleaseMutex(mutex);
 }
+void Entity::deleteFromTree() {
+	objects->deleteOb(this);
+	deleted = this;
+}
 
 void Console::init() {
 	commands["speed"] = new SpeedAction();
@@ -114,6 +119,10 @@ void Console::init() {
 	Action* exit = new ExitAction();
 	commands["quit"] = exit;
 	commands["exit"] = exit;
+	commands["scale"] = new ScaleEntityAction();
+	commands["rotate"] = new RotateEntityAction();
+	commands["new"] = new NewEntityAction();
+	commands["delete"] = new DeleteEntityAction();
 }
 
 void Console::parse() {
@@ -137,6 +146,10 @@ void resize(int width, int height) {
 }
 
 void drawObject(Entity *ob) {
+	if (ob == deleted) {
+		deleted = NULL;
+		return;
+	}
 	glClearColor(1, 1, 1, 1);
 	GLfloat p1 = ob->px; //FIXME jakims cudem ni mo
 	GLfloat p2 = ob->py;
@@ -196,10 +209,6 @@ void displayDebug() {
 	DrawString(x, y -= dy, z, "Z: " + info.z1);
 	DrawString(x, y -= dy, z, "Speed: " + info.speed);
 
-	DrawString(x, y -= dy, z, "Ambient: " + info.amb);
-	DrawString(x, y -= dy, z, "Diffuse: " + info.diff);
-	DrawString(x, y -= dy, z, "Specular: " + info.spec);
-	DrawString(x, y -= dy, z, "Pos: " + info.pos);
 	DrawString(x, y -= dy, z, "Wszystkie obiekty: " + info.ileob + "   Wyswietlone obiekty: " + info.ileob2);
 	Object* o = Object::getObject(selectedObjectPos);
 	if (o) {
@@ -259,6 +268,7 @@ void display(void) {
 	glDisable(GL_BLEND);
 	for (list<Entity*>::iterator i = entities.begin(); i != entities.end(); ++i) {
 		drawObject(*i);
+
 	}
 
 	entities = Entity::transparentObjectsToDisplay;
@@ -321,9 +331,20 @@ void klawiaturka(unsigned char key, int x, int y) {
 		case '*':
 			zapisz();
 			break;
+
+		case '1':
+			if (selectedObjectPos > 0) {
+				selectedObjectPos--;
+			}
+			break;
+
+		case '3':
+			if (selectedObjectPos < Object::objectsCount() - 1) {
+				selectedObjectPos++;
+			}
+			break;
 		}
 	}
-
 	glutPostRedisplay();
 }
 
@@ -429,14 +450,10 @@ void __cdecl animate(void *arg) {
 
 void __cdecl inform(void *kutas) {
 	while (1) {
-		stringstream x1, y1, z1, fps, cameraSpeed, amb, diff, spec, pos, ob, ob2, ileob, ileob2, licznikob;
+		stringstream x1, y1, z1, fps, cameraSpeed, ob, ob2, ileob, ileob2, licznikob;
 		x1 << posX;
 		y1 << posY;
 		z1 << posZ;
-		amb << light->ambient[0] << " " << light->ambient[1] << " " << light->ambient[2] << " " << light->ambient[3];
-		diff << light->diffuse[0] << " " << light->diffuse[1] << " " << light->diffuse[2] << " " << light->diffuse[3];
-		spec << light->specular[0] << " " << light->specular[1] << " " << light->specular[2] << " " << light->specular[3];
-		pos << light->position[0] << " " << light->position[1] << " " << light->position[2] << " " << light->position[3];
 		if (selectedEntity) {
 			ob << selectedEntity->object->name;
 		}
@@ -458,10 +475,6 @@ void __cdecl inform(void *kutas) {
 		info.y1 = y1.str();
 		info.z1 = z1.str();
 		info.speed = cameraSpeed.str();
-		info.amb = amb.str();
-		info.diff = diff.str();
-		info.spec = spec.str();
-		info.pos = pos.str();
 		info.ob = ob.str();
 		info.ob2 = ob2.str();
 		info.ileob = ileob.str();
@@ -475,7 +488,7 @@ void checkVisibility(TreeNode* n) {
 	vector<Entity*> vec = n->entities;
 	for (unsigned i = 0; i < vec.size(); i++) {
 		Entity* e = vec[i];
-		if (culler->isInViewField(e)) {
+		if (e != deleted && culler->isInViewField(e)) {
 			if (e->object->transparent) {
 				transparentObjects.push_back(e);
 			} else {
@@ -643,6 +656,7 @@ int main(int argc, char** args) {
 //TODO drzewa czworkowe, max 100k obiektow
 // TODO ustawianie na krawedziach
 //todo w szybie wylaczyc z buffer
+//todo poprawic wyswietlanie zwykle i przy edycji
 /*x86/zlib1.dll
  x86/freeglut.dll
  x86/glew32.dll

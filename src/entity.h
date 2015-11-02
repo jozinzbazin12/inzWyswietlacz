@@ -23,6 +23,8 @@ private:
 		furthest[1] = object->furthest[1];
 		furthest[2] = object->furthest[2];
 	}
+
+	void deleteFromTree();
 public:
 	static TreeNode* objects;
 	static unsigned long entitiesCount;
@@ -100,6 +102,7 @@ public:
 	~Entity() {
 		object->counter--;
 		entitiesCount--;
+		deleteFromTree();
 	}
 };
 HANDLE Entity::mutex = CreateMutex(NULL, FALSE, NULL);

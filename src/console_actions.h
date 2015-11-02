@@ -33,7 +33,7 @@ public:
 		int size = args.size() - 1;
 		if (size == 0) {
 			noArgAction(c, args);
-		} else if (size >= minArg && size <= maxArg && validateArgs(c, args)) {
+		} else if ((size == minArg || size == maxArg) && validateArgs(c, args)) {
 			okArgsAction(c, args);
 		} else {
 			invalidArgsAction(c, args);
@@ -91,15 +91,9 @@ private:
 		invalidArgsAction(c, args);
 	}
 	void okArgsAction(Console* c, vector<string> args) {
-		if (selectedEntity) {
-			selectedEntity->px = stod(args[1]);
-			selectedEntity->py = stod(args[2]);
-			selectedEntity->pz = stod(args[3]);
-		} else {
-			posX = stod(args[1]);
-			posY = stod(args[2]);
-			posZ = stod(args[3]);
-		}
+		posX = stod(args[1]);
+		posY = stod(args[2]);
+		posZ = stod(args[3]);
 	}
 public:
 	GotoAction() {
@@ -112,7 +106,7 @@ class LightAction: public Action {
 protected:
 	string arg(GLfloat* l) {
 		ostringstream os;
-		os << "R " << l[0] << "G " << l[1] << "B " << l[2] << "A " << l[3];
+		os << "R: " << l[0] << " G: " << l[1] << " B: " << l[2] << " A: " << l[3];
 		return os.str();
 	}
 	bool isCorrect(string arg) {
@@ -263,4 +257,94 @@ public:
 		maxArg = 0;
 	}
 };
+
+class ScaleEntityAction: public Action {
+private:
+	bool validateArgs(Console* c, vector<string> args) {
+		return selectedEntity != NULL;
+	}
+	void noArgAction(Console* c, vector<string> args) {
+		ostringstream os;
+		os << "X: " << selectedEntity->sx << " Y: " << selectedEntity->sy << " Z: " << selectedEntity->sz;
+		c->type(os.str());
+	}
+	void okArgsAction(Console* c, vector<string> args) {
+		selectedEntity->sx = stod(args[1]);
+		selectedEntity->sy = stod(args[2]);
+		selectedEntity->sz = stod(args[3]);
+	}
+public:
+	ScaleEntityAction() {
+		minArg = 0;
+		maxArg = 3;
+	}
+};
+
+class RotateEntityAction: public Action {
+private:
+	bool validateArgs(Console* c, vector<string> args) {
+		return selectedEntity != NULL;
+	}
+	void noArgAction(Console* c, vector<string> args) {
+		ostringstream os;
+		os << "X: " << selectedEntity->rx << " Y: " << selectedEntity->ry << " Z: " << selectedEntity->rz;
+		c->type(os.str());
+	}
+	void okArgsAction(Console* c, vector<string> args) {
+		selectedEntity->rx = stod(args[1]);
+		selectedEntity->ry = stod(args[2]);
+		selectedEntity->rz = stod(args[3]);
+	}
+public:
+	RotateEntityAction() {
+		minArg = 0;
+		maxArg = 3;
+	}
+};
+
+class DeleteEntityAction: public Action {
+private:
+	bool validateArgs(Console* c, vector<string> args) {
+		return selectedEntity != NULL;
+	}
+	void noArgAction(Console* c, vector<string> args) {
+		okArgsAction(c, args);
+	}
+	void okArgsAction(Console* c, vector<string> args) {
+		delete selectedEntity;
+		selectedEntity = NULL;
+		FrustumCuller::getInstance()->selected = NULL;
+		c->type("Entity deleted");
+	}
+
+public:
+	DeleteEntityAction() {
+		minArg = 0;
+		maxArg = 0;
+	}
+};
+
+class NewEntityAction: public Action {
+private:
+	void noArgAction(Console* c, vector<string> args) {
+		Entity* e = new Entity(Object::getObject(selectedObjectPos));
+		selectedEntity = e;
+		Entity::addEntity(e);
+		c->type("Entity created");
+	}
+
+	void okArgsAction(Console* c, vector<string> args) {
+		noArgAction(c, args);
+		posX = stod(args[1]);
+		posY = stod(args[2]);
+		posZ = stod(args[3]);
+	}
+
+public:
+	NewEntityAction() {
+		minArg = 0;
+		maxArg = 3;
+	}
+};
+
 #endif /* SRC_CONSOLE_ACTIONS_H_ */

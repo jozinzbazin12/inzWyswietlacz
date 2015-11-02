@@ -93,6 +93,22 @@ public:
 		}
 		return NULL;
 	}
+	void deleteOb(Entity* e) {
+		TreeNode* node = this;
+		if (e->object->name != "D:\\modele\\loopix\\weed_pack\\weed13\\weed13.obj") {
+			cout << endl;
+		}
+		while (node->level < node->LEVELS && e->range < node->range) {
+			node = node->getChild(e);
+		}
+
+		for (unsigned i = 0; i < entities.size(); i++) {
+			if (entities[i] == e) {
+				entities.erase(entities.begin() + i);
+				break;
+			}
+		}
+	}
 
 	void addObject(Entity* e) {
 		TreeNode* node = this;

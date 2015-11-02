@@ -48,7 +48,7 @@ private:
 		pcx = caclulate(e->getPos(), modelview[0], modelview[4], modelview[8]);
 		pcy = caclulate(e->getPos(), modelview[1], modelview[5], modelview[9]);
 		pcz = caclulate(e->getPos(), modelview[2], modelview[6], modelview[10]);
-		double pcz2 = selected ? caclulate(selected->getPos(), modelview[2], modelview[6], modelview[10]) :INFINITE;
+		double pcz2 = selected ? caclulate(selected->getPos(), modelview[2], modelview[6], modelview[10]) : INFINITE;
 		if (pcz < pcz2 && pcz > 0 && abs(pcy) <= e->range && abs(pcx) <= e->range) {
 			selected = e;
 		}
@@ -99,13 +99,13 @@ public:
 			pz2 = posZ;
 		} else {
 			pz2 = cameraDistance;
-			py2 = -pz2 * sin(-RAD * cx);
-			pz2 = pz2 * cos(-RAD * cx);
-			px2 = -pz2 * sin(RAD * cy);
-			pz2 = pz2 * cos(RAD * cy);
+			py2 = -pz2 * sin(RAD * cx);
+			pz2 = pz2 * cos(RAD * cx);
+			px2 = -pz2 * sin(-RAD * cy);
+			pz2 = pz2 * cos(-RAD * cy);
 
 			px2 += selectedEntity->px;
-			py2 += selectedEntity->py + 5;
+			py2 += selectedEntity->py + cameraDistance;
 			pz2 += selectedEntity->pz;
 		}
 
