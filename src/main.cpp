@@ -100,6 +100,33 @@ void Entity::addEntity(Entity* entity) {
 	ReleaseMutex(mutex);
 }
 
+void Console::init() {
+	commands["speed"] = new SpeedAction();
+	commands["goto"] = new GotoAction();
+	commands["light_ambient"] = new LightAmbientAction();
+	commands["light_diffuse"] = new LightDiffuseAction();
+	commands["light_specular"] = new LightSpecularAction();
+	commands["light_position"] = new LightPositionAction();
+	commands["range"] = new RangeAction();
+	commands["lod"] = new LODAction();
+	commands["edit"] = new EditEntityAction();
+	commands["end"] = new EndEditEntityAction();
+	Action* exit = new ExitAction();
+	commands["quit"] = exit;
+	commands["exit"] = exit;
+}
+
+void Console::parse() {
+	vector<string> result = split(lines[lineNumber - 1]);
+	Action* action = commands[result[0]];
+	if (action) {
+		action->execute(this, result);
+	} else {
+		nextLine();
+		lines[lineNumber - 2] = "Unknown command";
+	}
+}
+
 map<string, Texture*> Texture::textures;
 FrustumCuller* culler;
 Light* light = Light::getInstance();
@@ -413,7 +440,7 @@ void __cdecl inform(void *kutas) {
 		diff << light->diffuse[0] << " " << light->diffuse[1] << " " << light->diffuse[2] << " " << light->diffuse[3];
 		spec << light->specular[0] << " " << light->specular[1] << " " << light->specular[2] << " " << light->specular[3];
 		pos << light->position[0] << " " << light->position[1] << " " << light->position[2] << " " << light->position[3];
-		ob << selectedEntity;
+		ob << selectedEntity->object->name;
 		ob2 << selectedObjectPos;
 		ileob << Entity::entitiesCount;
 		ileob2 << Entity::solidObjectsToDisplay.size() + Entity::transparentObjectsToDisplay.size();

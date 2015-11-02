@@ -8,8 +8,6 @@
 #ifndef SRC_CONSOLE_H_
 #define SRC_CONSOLE_H_
 
-
-
 enum Command {
 	speed = 0,
 	go = 1,
@@ -17,19 +15,20 @@ enum Command {
 	light_diffuse = 3,
 	light_specular = 4,
 	light_position = 5,
-	position = 6,
-	range = 7,
-	LOD = 8,
-	edit = 9,
-	end_edit = 10,
-	quit = 11
+	range = 6,
+	LOD = 7,
+	edit = 8,
+	end_edit = 9,
+	quit = 10
 };
+
+class Action;
 
 class Console {
 private:
 	int actualLine = 0;
 	int mainLine;
-	map<string, Command> commands;
+	map<string, Action*> commands;
 	const string LIGHT_ERROR = "Invalid light args";
 
 	void nextLine() {
@@ -48,82 +47,9 @@ private:
 		return tokens;
 	}
 
-	void parse() {
-		vector < string > result = split(lines[lineNumber - 1]);
-		Command command = commands.find(result[0])->second;
-		switch (command) {
-		case quit:
-			exit(0);
-		case speed:
-			if (result.size() == 2) {
-				predkosc = stod(result[1]);
-			} else if (result.size() == 1) {
+	void parse();
 
-			}
-			break;
-		case go:
-			if (result.size() >= 4) {
-				posX = stod(result[1]);
-				posY = stod(result[2]);
-				posZ = stod(result[3]);
-			}
-			break;
-		case light_ambient:
-			if (result.size() >= 5) {
-				Light::getInstance()->setAmbient(stod(result[1]), stod(result[2]), stod(result[3]), stod(result[4]));
-				Light::getInstance()->commit();
-			} else {
-				type(LIGHT_ERROR);
-			}
-			break;
-		case light_diffuse:
-			if (result.size() >= 5) {
-				Light::getInstance()->setDiffuse(stod(result[1]), stod(result[2]), stod(result[3]), stod(result[4]));
-				Light::getInstance()->commit();
-			}
-			break;
-		case light_specular:
-			if (result.size() >= 5) {
-				Light::getInstance()->setSpecular(stod(result[1]), stod(result[2]), stod(result[3]), stod(result[4]));
-				Light::getInstance()->commit();
-			}
-			break;
-		case light_position:
-			if (result.size() >= 5) {
-				Light::getInstance()->setPosition(stod(result[1]), stod(result[2]), stod(result[3]), stod(result[4]));
-				Light::getInstance()->commit();
-			}
-			break;
-		case range:
-			if (result.size() >= 2) {
-				FrustumCuller::getInstance()->fardist = stod(result[1]);
-				FrustumCuller::getInstance()->update();
-			}
-			break;
-		case LOD:
-			if (result.size() >= 2) {
-				lod = stod(result[1]);
-			}
-			break;
-		case edit:
-			selectedEntity = FrustumCuller::getInstance()->selected;
-			if (!selectedEntity) {
-				type("Nothing selected");
-			} else {
-				type("Selected: " + selectedEntity->object->name);
-			}
-			break;
-		case end_edit:
-			if (!selectedEntity) {
-				type("Nothing selected");
-			}
-			selectedEntity = NULL;
-			break;
-		default:
-			nextLine();
-			lines[lineNumber - 2] = "Invalid command";
-		}
-	}
+	void init();
 
 public:
 	string* lines;
@@ -138,19 +64,7 @@ public:
 		for (int i = 0; i < lineNumber; i++) {
 			lines[i] = "";
 		}
-		commands["speed"] = Command::speed;
-		commands["goto"] = Command::go;
-		commands["light_ambient"] = Command::light_ambient;
-		commands["light_diffuse"] = Command::light_diffuse;
-		commands["light_specular"] = Command::light_specular;
-		commands["light_position"] = Command::light_position;
-		commands["position"] = Command::position;
-		commands["range"] = Command::range;
-		commands["lod"] = Command::LOD;
-		commands["edit"] = Command::edit;
-		commands["end"] = Command::end_edit;
-		commands["quit"] = Command::quit;
-		commands["exit"] = Command::quit;
+		init();
 	}
 
 	void type(string str) {
