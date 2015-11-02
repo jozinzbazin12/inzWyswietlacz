@@ -77,6 +77,6 @@ public:
 Logger* Logger::logger = NULL;
 ofstream Logger::outfile("log.txt", ios::out);
 string Logger::LINE = "=========================";
-string Logger::ERR = "Stwierdzam b³¹d, bo ";
+string Logger::ERR = "ERROR: ";
 
 #endif /* SRC_TEKSTURA_H_ */

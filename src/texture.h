@@ -107,7 +107,7 @@ public:
 	}
 
 	Texture(string path, string tex) {
-		Logger::log("Tekstura: " + path);
+		Logger::log("Texture: " + path);
 		textureName = path;
 		extension = getFileExtension(path);
 		txt = IMG_Load(path.c_str());

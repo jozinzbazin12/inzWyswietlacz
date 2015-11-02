@@ -21,7 +21,7 @@ private:
 
 		file.open(name.c_str());
 		if (!file.is_open()) {
-			Logger::log(Logger::ERR + "brak mtllib");
+			Logger::log(Logger::ERR + "no mtllib");
 			exit(0);
 		}
 
@@ -86,7 +86,7 @@ private:
 		}
 		mtl[material->name] = material;
 		ostringstream stream;
-		stream << "Utworzono " << mtl.size() << " materialow";
+		stream << "Created " << mtl.size() << " materials";
 		Logger::log(prepareString(stream.str()));
 	}
 
@@ -99,7 +99,7 @@ public:
 	Material* searchMaterial(string name) {
 		Material* material = mtl[name];
 		if (!material) {
-			Logger::log(prepareString(Logger::ERR + "nie znaleziono materia³u: " + name));
+			Logger::log(prepareString(Logger::ERR + "material not found: " + name));
 			exit(0);
 		}
 		return material;

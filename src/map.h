@@ -104,7 +104,7 @@ private:
 		string map;
 		file.open(mapFile);
 		if (!file.is_open()) {
-			Logger::log("Nie ma mapy, probuje utworzyc");
+			Logger::log("No map found, creating...");
 			return false;
 		} else {
 			lastSettingsFile.open("maps/last.txt");
@@ -122,7 +122,7 @@ private:
 				string mapHash = md5.digestFile(mapFile);
 				string mapImageHash = md5.digestFile(name.c_str());
 				if (map == name && hash == mapHash && hash2 == mapImageHash && texScale == scale) {
-					Logger::log("Jest zrobiona mapa, wczytuje...");
+					Logger::log("Loading last map...");
 					loadHeights(map);
 					xRate = (float) xLength / (float) mapX;
 					zRate = (float) zLength / (float) mapZ;
@@ -237,10 +237,10 @@ public:
 		}
 		deleteDirectory("models/0/");
 		copyMtlToModels();
-		Logger::log("Nie ma mapy, probuje utworzyc\n");
+		Logger::log("No map found, creating\n");
 		SDL_Surface* txt = IMG_Load(mapName.c_str());
 		if (txt == NULL) {
-			Logger::log(Logger::ERR + "nie uda³o siê otworzyc mapy");
+			Logger::log(Logger::ERR + "creating map failed");
 			exit(0);
 		}
 		mapX = txt->h;

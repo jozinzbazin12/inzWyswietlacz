@@ -20,7 +20,7 @@ private:
 	static char* fileToChar(string nazwa_pliku) {
 		ifstream plik(nazwa_pliku, ios::binary);
 		if (!plik.is_open() || plik.bad()) {
-			Logger::log(Logger::ERR + "brak pliku z obiektami");
+			Logger::log(Logger::ERR + "no objects file");
 			exit(-1);
 		}
 
@@ -35,7 +35,7 @@ private:
 
 	static void loadThread(void *arg) {
 		string* path = static_cast<string*>(arg);
-		Logger::log("£adujê plik: " + *path, true);
+		Logger::log("Loading file: " + *path, true);
 		string stringValue;
 		char* fileContent = fileToChar(*path);
 		delete path;
@@ -65,10 +65,10 @@ private:
 
 		ostringstream stream;
 		Logger::log(Logger::LINE);
-		stream << "Utworzono " << totalVerticesCount << " trojkatow";
+		stream << "Created " << totalVerticesCount << " triangles";
 		Logger::log(stream.str());
 		stream.str("");
-		stream << "Wczytanych obiektow: " << Object::objectsCount() << ", wyswietlonych obiektow:" << Entity::entitiesCount;
+		stream << "Loaded objects: " << Object::objectsCount() << ", created entities: " << Entity::entitiesCount;
 		Logger::log(stream.str());
 
 		int residentTexturesCount = 0;
@@ -84,9 +84,9 @@ private:
 		delete[] residentArray;
 
 		stream.str("");
-		stream << "Tekstur: " << texturesCount << ", rezydentne: " << residentTexturesCount << endl;
+		stream << "Textures: " << texturesCount << ", resident: " << residentTexturesCount << endl;
 		Logger::log(stream.str());
-		Logger::log("Zakoñczono wczytywanie w " + to_string(time(0) - loadTime) + " s.");
+		Logger::log("Loading finished in " + to_string(time(0) - loadTime) + " s.");
 	}
 
 public:

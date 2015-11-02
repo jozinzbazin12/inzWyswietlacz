@@ -35,20 +35,20 @@ private:
 		}
 	}
 	void loadObject(string objectName, bool tag) {
-		Logger::log("Wczytujê obiekt: " + objectName);
+		Logger::log("Loading object: " + objectName);
 		long long unsigned fileSize;
 		string text;
 		ifstream file;
 		file.open(objectName.c_str(), ios::binary);
 		if (!file.is_open()) {
-			Logger::log(Logger::ERR + "brak .obj");
+			Logger::log(Logger::ERR + "no .obj");
 			exit(0);
 		}
 		file.seekg(0, ios::end);
 		fileSize = file.tellg();
 		file.seekg(0, ios::beg);
 		ostringstream stream;
-		stream << "Rozmiar pliku " << fileSize << "B";
+		stream << "File size " << fileSize << "B";
 		Logger::log(prepareString(stream.str()));
 
 		vector<GLfloat> vertices;
@@ -147,10 +147,10 @@ private:
 
 		stream.str("");
 		Logger::log(Logger::LINE);
-		stream << "Wczytano " << subobjects.size() << " podobiektów";
+		stream << "Loaded " << subobjects.size() << " subobjects";
 		Logger::log(prepareString(stream.str()));
 		stream.str("");
-		stream << "Utworzono " << vertexCount << " trojkatów";
+		stream << "Created " << vertexCount << " triangles";
 		Logger::log(prepareString(stream.str()));
 	}
 

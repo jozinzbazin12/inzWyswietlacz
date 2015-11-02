@@ -209,13 +209,13 @@ void displayDebug() {
 	DrawString(x, y -= dy, z, "Z: " + info.z1);
 	DrawString(x, y -= dy, z, "Speed: " + info.speed);
 
-	DrawString(x, y -= dy, z, "Wszystkie obiekty: " + info.ileob + "   Wyswietlone obiekty: " + info.ileob2);
+	DrawString(x, y -= dy, z, "All entities: " + info.ileob + "   Displayed entities: " + info.ileob2);
 	Object* o = Object::getObject(selectedObjectPos);
 	if (o) {
-		DrawString(x, y -= dy, z, "Obiekt: " + info.ob2 + "  " + o->name + "   sztuk: " + info.licznikob);
+		DrawString(x, y -= dy, z, "Object: " + info.ob2 + "  " + o->name + "   pieces: " + info.licznikob);
 	}
 	if (selectedEntity) {
-		DrawString(x, y -= dy, z, "Zaznaczony obiekt: " + info.ob + "  " + selectedEntity->object->name);
+		DrawString(x, y -= dy, z, "Selected object: " + info.ob);
 	}
 	y -= dy * 4;
 	for (int i = 0; i < console->lineNumber - 1; i++) {
@@ -547,7 +547,7 @@ void DrawString(GLfloat x, GLfloat y, GLfloat z, string string) {
 
 void checkOpenGLExtension(string roz) {
 	if (!glewIsSupported(roz.c_str())) {
-		Logger::log(Logger::ERR + "nieobslugiwane roszerzenie " + roz);
+		Logger::log(Logger::ERR + "unhandled extension " + roz);
 	}
 }
 
@@ -569,14 +569,14 @@ void end() {
 
 int main(int argc, char** args) {
 	atexit(end);
-	Logger::log("Tworzenie okna...");
+	Logger::log("Creating window...");
 	glutInit(&argc, args);
 	glutInitWindowSize(windowWidth, windowHeight);
 	glutInitWindowPosition(0, 0);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
-	glutCreateWindow("Ka³nter Strajk");
+	glutCreateWindow("Wyœwietlacz");
 	glutSetCursor(GLUT_CURSOR_NONE);
-	Logger::log("Inicjalizacja GLEW...");
+	Logger::log("GLEW init...");
 	glewExperimental = GL_TRUE;
 	ostringstream stream;
 	GLenum err = glewInit();
@@ -588,7 +588,7 @@ int main(int argc, char** args) {
 		Logger::log("GLEW OK");
 	}
 	if (!GLEW_VERSION_3_0) {
-		Logger::log(Logger::ERR + "masz wersje " + (char *) glGetString(GL_VERSION) + " OpenGL zamiast 4.2.0 XD");
+		Logger::log(Logger::ERR + "OpenGL version " + (char *) glGetString(GL_VERSION) + "against 4.2.0");
 	} else {
 		stream << "Wersja OpenGL: " << (char*) glGetString(GL_VERSION) << ", OK";
 		Logger::log(stream.str());
@@ -609,7 +609,7 @@ int main(int argc, char** args) {
 	glutMouseWheelFunc(mouseWheel);
 	glutIdleFunc(idle);
 	if (SDL_Init(SDL_INIT_EVERYTHING) == -1) {
-		Logger::log(Logger::ERR + "inicjalizacja SDL");
+		Logger::log(Logger::ERR + "SDL init");
 		exit(0);
 	}
 	Logger::log("SDL OK");

@@ -213,12 +213,12 @@ public:
 		for (int i = 0; i < count; i++) {
 			HGLRC loaderContext = wglCreateContext(hdc);
 			if (!wglShareLists(mainContext, loaderContext)) { // Order matters
-				Logger::log(Logger::ERR + "nie mo¿na wspó³dzielic display lists.");
+				Logger::log(Logger::ERR + "cannot share display lists.");
 			}
 			void* args = static_cast<void*>(loaderContext);
 			HANDLE thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) jobListener, (void*) args, 0, NULL);
 			threads.push_back(thread);
-			Logger::log("Startuje w¹tek " + to_string(GetThreadId(thread)));
+			Logger::log("Starting thread " + to_string(GetThreadId(thread)));
 		}
 	}
 
@@ -243,7 +243,7 @@ public:
 
 	void terminate() {
 		for (unsigned i = 0; i < threads.size(); i++) {
-			Logger::log("Skoñczy³ siê w¹tek " + to_string(GetThreadId(threads[i])));
+			Logger::log("Thread finished: " + to_string(GetThreadId(threads[i])));
 			TerminateThread(threads[i], 0);
 		}
 	}

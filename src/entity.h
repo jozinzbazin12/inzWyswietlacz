@@ -80,7 +80,7 @@ public:
 	}
 
 	Entity(Object *object) {
-		Logger::log("Tworzê obiekt " + object->name);
+		Logger::log("Creating entity: " + object->name);
 		alwaysDisplay = false;
 		entitiesCount++;
 		anim = NULL;
