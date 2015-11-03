@@ -95,7 +95,8 @@ public:
 	}
 	void deleteOb(Entity* e) {
 		TreeNode* node = this;
-		while (node->level < node->LEVELS && e->range < node->range) {
+		while (node->level < node->LEVELS && e->range < node->range
+				&& getLength2D(e->px, node->mid[0], e->pz, node->mid[1]) + e->range < node->range) {
 			node = node->getChild(e);
 		}
 

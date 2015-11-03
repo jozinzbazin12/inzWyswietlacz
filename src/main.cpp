@@ -26,6 +26,7 @@ string getPath(string path);
 string getRealPath(string path, string actualPath);
 void zapisz();
 double getLength2D(double* p1, double* p2);
+double getLength2D(double x1, double y1, double x2, double y2);
 double getLength3D(double* p1, double* p2);
 void end();
 string getFileExtension(string path);
@@ -549,6 +550,10 @@ void checkOpenGLExtension(string roz) {
 	if (!glewIsSupported(roz.c_str())) {
 		Logger::log(Logger::ERR + "unhandled extension " + roz);
 	}
+}
+
+double getLength2D(double x1, double y1, double x2, double y2) {
+	return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
 }
 
 double getLength2D(double* p1, double* p2) {
