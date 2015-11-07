@@ -73,7 +73,7 @@ HANDLE animateThread;
 HANDLE informThread;
 HANDLE sortThread;
 struct Information {
-	string x1, y1, z1, fps, speed, ob, ob2, ileob, ileob2, licznikob;
+	string x, y, z, fps, speed, selectedObject, objectName, allEntities, displayedEntities, objectsCount;
 };
 Information info;
 
@@ -205,18 +205,18 @@ void displayDebug() {
 	GLfloat z = -2.52;
 	GLfloat dy = 0.05;
 	DrawString(x, y -= dy, z, "FPS: " + info.fps);
-	DrawString(x, y -= dy, z, "X: " + info.x1);
-	DrawString(x, y -= dy, z, "Y: " + info.y1);
-	DrawString(x, y -= dy, z, "Z: " + info.z1);
+	DrawString(x, y -= dy, z, "X: " + info.x);
+	DrawString(x, y -= dy, z, "Y: " + info.y);
+	DrawString(x, y -= dy, z, "Z: " + info.z);
 	DrawString(x, y -= dy, z, "Speed: " + info.speed);
 
-	DrawString(x, y -= dy, z, "All entities: " + info.ileob + "   Displayed entities: " + info.ileob2);
+	DrawString(x, y -= dy, z, "All entities: " + info.allEntities + "   Displayed entities: " + info.displayedEntities);
 	Object* o = Object::getObject(selectedObjectPos);
 	if (o) {
-		DrawString(x, y -= dy, z, "Object: " + info.ob2 + "  " + o->name + "   pieces: " + info.licznikob);
+		DrawString(x, y -= dy, z, "Object: " + info.objectName + "  " + o->name + "   pieces: " + info.objectsCount);
 	}
 	if (selectedEntity) {
-		DrawString(x, y -= dy, z, "Selected object: " + info.ob);
+		DrawString(x, y -= dy, z, "Selected object: " + info.selectedObject);
 	}
 	y -= dy * 4;
 	for (int i = 0; i < console->lineNumber - 1; i++) {
@@ -269,7 +269,6 @@ void display(void) {
 	glDisable(GL_BLEND);
 	for (list<Entity*>::iterator i = entities.begin(); i != entities.end(); ++i) {
 		drawObject(*i);
-
 	}
 
 	entities = Entity::transparentObjectsToDisplay;
@@ -327,10 +326,6 @@ void klawiaturka(unsigned char key, int x, int y) {
 
 		case 'o':
 			debug ^= true;
-			break;
-
-		case '*':
-			zapisz();
 			break;
 
 		case '1':
@@ -421,9 +416,6 @@ void idle(void) {
 	glutPostRedisplay();
 }
 
-void zapisz() {
-}
-
 long long unsigned checkSize(string fileName) {
 	long long unsigned size;
 	ifstream stream;
@@ -449,21 +441,21 @@ void __cdecl animate(void *arg) {
 	}
 }
 
-void __cdecl inform(void *kutas) {
+void __cdecl inform(void *arg) {
 	while (1) {
-		stringstream x1, y1, z1, fps, cameraSpeed, ob, ob2, ileob, ileob2, licznikob;
-		x1 << posX;
-		y1 << posY;
-		z1 << posZ;
+		stringstream xs, ys, zs, fps, cameraSpeed, selectedObjectS, selectedObjectPosS, entitiesCountS, displayedEntitiesS, objectsCountS;
+		xs << posX;
+		ys << posY;
+		zs << posZ;
 		if (selectedEntity) {
-			ob << selectedEntity->object->name;
+			selectedObjectS << selectedEntity->object->name;
 		}
-		ob2 << selectedObjectPos;
-		ileob << Entity::entitiesCount;
-		ileob2 << Entity::solidObjectsToDisplay.size() + Entity::transparentObjectsToDisplay.size();
+		selectedObjectPosS << selectedObjectPos;
+		entitiesCountS << Entity::entitiesCount;
+		displayedEntitiesS << Entity::solidObjectsToDisplay.size() + Entity::transparentObjectsToDisplay.size();
 		Object* o = Object::getObject(selectedObjectPos);
 		if (o) {
-			licznikob << o->counter;
+			objectsCountS << o->counter;
 		}
 		cameraSpeed << predkosc;
 		if (clock() - frameCounter >= CLOCKS_PER_SEC) {
@@ -472,16 +464,26 @@ void __cdecl inform(void *kutas) {
 			frames = 0;
 		}
 
-		info.x1 = x1.str();
-		info.y1 = y1.str();
-		info.z1 = z1.str();
+		info.x = xs.str();
+		info.y = ys.str();
+		info.z = zs.str();
 		info.speed = cameraSpeed.str();
-		info.ob = ob.str();
-		info.ob2 = ob2.str();
-		info.ileob = ileob.str();
-		info.ileob2 = ileob2.str();
-		info.licznikob = licznikob.str();
+		info.selectedObject = selectedObjectS.str();
+		info.objectName = selectedObjectPosS.str();
+		info.allEntities = entitiesCountS.str();
+		info.displayedEntities = displayedEntitiesS.str();
+		info.objectsCount = objectsCountS.str();
 		Sleep(100);
+	}
+}
+
+void addEntityIfVisible(Entity* e) {
+	if (e != deleted && culler->isInViewField(e)) {
+		if (e->object->transparent) {
+			transparentObjects.push_back(e);
+		} else {
+			solidObjects.push_back(e);
+		}
 	}
 }
 
@@ -489,13 +491,7 @@ void checkVisibility(TreeNode* n) {
 	vector<Entity*> vec = n->entities;
 	for (unsigned i = 0; i < vec.size(); i++) {
 		Entity* e = vec[i];
-		if (e != deleted && culler->isInViewField(e)) {
-			if (e->object->transparent) {
-				transparentObjects.push_back(e);
-			} else {
-				solidObjects.push_back(e);
-			}
-		}
+		addEntityIfVisible(e);
 	}
 	for (int i = 0; i < 4; i++) {
 		TreeNode* node = n->children[i];
@@ -509,6 +505,9 @@ void __cdecl sortObjects(void *arg) {
 	while (1) {
 		transparentObjects.clear();
 		solidObjects.clear();
+		for (list<Entity*>::iterator it = Entity::movingObjects.begin(); it != Entity::movingObjects.end(); ++it) {
+			addEntityIfVisible(*it);
+		}
 		if (Entity::objects && culler->isInViewField(Entity::objects)) {
 			checkVisibility(Entity::objects);
 			transparentObjects.sort(Entity::compare);

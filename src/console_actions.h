@@ -231,6 +231,8 @@ private:
 			posY = selectedEntity->py;
 			posZ = selectedEntity->pz;
 			c->type("Selected: " + selectedEntity->object->name);
+			Entity::objects->deleteOb(selectedEntity);
+			Entity::movingObjects.push_back(selectedEntity);
 		}
 	}
 public:
@@ -249,6 +251,8 @@ private:
 		if (!selectedEntity) {
 			c->type("Nothing selected");
 		}
+		Entity::movingObjects.remove(selectedEntity);
+		Entity::addEntity(selectedEntity);
 		selectedEntity = NULL;
 	}
 public:
@@ -329,7 +333,7 @@ private:
 	void noArgAction(Console* c, vector<string> args) {
 		Entity* e = new Entity(Object::getObject(selectedObjectPos));
 		selectedEntity = e;
-		Entity::addEntity(e);
+		Entity::movingObjects.push_back(e);
 		c->type("Entity created");
 	}
 

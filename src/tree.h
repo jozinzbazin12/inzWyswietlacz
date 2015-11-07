@@ -42,6 +42,11 @@ private:
 		return children[index];
 	}
 
+	bool shouldBeInNextNode(TreeNode* node, Entity* e) {
+		return node->level < node->LEVELS && e->range < node->range
+				&& getLength2D(e->px, node->mid[0], e->pz, node->mid[1]) + e->range < node->range;
+	}
+
 public:
 	TreeNode** children;
 	static const short LEVELS = 3;
@@ -69,7 +74,7 @@ public:
 		setPoint(n->nw, -w, h);
 		setPoint(n->se, w, -h);
 		setPoint(n->sw, -w, -h);
-		n->range = getLength2D(n->ne, n->sw) / 2;
+		n->range = getLength2D(n->ne, n->mid);
 		n->level = 0;
 		return n;
 	}
@@ -93,10 +98,10 @@ public:
 		}
 		return NULL;
 	}
+
 	void deleteOb(Entity* e) {
 		TreeNode* node = this;
-		while (node->level < node->LEVELS && e->range < node->range
-				&& getLength2D(e->px, node->mid[0], e->pz, node->mid[1]) + e->range < node->range) {
+		while (shouldBeInNextNode(node, e)) {
 			node = node->getChild(e);
 		}
 
@@ -110,7 +115,7 @@ public:
 
 	void addObject(Entity* e) {
 		TreeNode* node = this;
-		while (node->level < node->LEVELS && e->range < node->range) {
+		while (shouldBeInNextNode(node, e)) {
 			node = node->getChild(e);
 		}
 		node->entities.push_back(e);

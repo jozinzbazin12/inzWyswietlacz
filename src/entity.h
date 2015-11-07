@@ -37,6 +37,7 @@ public:
 	bool alwaysDisplay;
 	static list<Entity*> solidObjectsToDisplay;
 	static list<Entity*> transparentObjectsToDisplay;
+	static list<Entity*> movingObjects;
 
 	double* getPos() {
 		double* tab = new double[3];
@@ -109,6 +110,7 @@ HANDLE Entity::mutex = CreateMutex(NULL, FALSE, NULL);
 unsigned long Entity::entitiesCount = 0;
 list<Entity*> Entity::solidObjectsToDisplay;
 list<Entity*> Entity::transparentObjectsToDisplay;
+list<Entity*> Entity::movingObjects;
 TreeNode* Entity::objects = NULL;
 
 #endif /* SRC_ENTITY_H_ */

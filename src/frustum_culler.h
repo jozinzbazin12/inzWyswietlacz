@@ -11,7 +11,7 @@
 class FrustumCuller {
 private:
 	static FrustumCuller* culler;
-	static constexpr double RAD = 0.01745329251;
+	static constexpr long double RAD = 0.01745329251994329576923690768489;
 
 	double caclulate(double tab[3], float md1, float md2, float md3) {
 		double v[3];
@@ -98,14 +98,25 @@ public:
 			py2 = posY;
 			pz2 = posZ;
 		} else {
-			pz2 = cameraDistance;
-			py2 = -pz2 * sin(RAD * cx);
-			pz2 = pz2 * cos(RAD * cx);
-			px2 = -pz2 * sin(-RAD * cy);
-			pz2 = pz2 * cos(-RAD * cy);
+			px2 = 0;
+			py2 = 0;
+			pz2 = -cameraDistance;
+			double tmpx = 0;
+			double tmpy = 0;
+			double tmpz = 0;
+
+			tmpy = py2 * cos(RAD * cx) - pz2 * sin(RAD * cx);
+			tmpz = py2 * sin(RAD * cx) + pz2 * cos(RAD * cx);
+			py2 = tmpy;
+			pz2 = tmpz;
+
+			tmpx = pz2 * sin(RAD * cy) + px2 * cos(RAD * cy);
+			tmpz = pz2 * cos(RAD * cy) - px2 * sin(RAD * cy);
+			px2 = tmpx;
+			pz2 = tmpz;
 
 			px2 += selectedEntity->px;
-			py2 += selectedEntity->py + cameraDistance;
+			py2 += selectedEntity->py + 5;
 			pz2 += selectedEntity->pz;
 		}
 

@@ -124,8 +124,7 @@ private:
 				if (map == name && hash == mapHash && hash2 == mapImageHash && texScale == scale) {
 					Logger::log("Loading last map...");
 					loadHeights(map);
-					xRate = (float) xLength / (float) mapX;
-					zRate = (float) zLength / (float) mapZ;
+					calculateRate();
 					mapObject = new Object(MAP_NAME, true);
 					file.close();
 					lastSettingsFile.close();
@@ -210,6 +209,11 @@ private:
 		return 0;
 	}
 
+	void calculateRate() {
+		xRate = xLength / (mapX - 1);
+		zRate = zLength / (mapZ - 1);
+	}
+
 public:
 	static int **heights;
 	static int mapX, mapZ;
@@ -245,8 +249,7 @@ public:
 		}
 		mapX = txt->h;
 		mapZ = txt->w;
-		xRate = (float) xLength / (float) mapX;
-		zRate = (float) zLength / (float) mapZ;
+		calculateRate();
 
 		fstream destObject;
 		destObject.open("models/0/0.obj", ios::out);
