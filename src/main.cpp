@@ -41,7 +41,6 @@ class FrustumCuller;
 class Texture;
 class Light;
 ////////////////////////////////////////////
-vector<Entity*> animatedObjects;
 Entity* selectedEntity = NULL;
 Entity* deleted = NULL;
 tagPOINT *mysz_pozycja;
@@ -69,11 +68,11 @@ int selectedObjectPos = 0;
 list<Entity*> transparentObjects;
 list<Entity*> solidObjects;
 
-HANDLE animateThread;
 HANDLE informThread;
 HANDLE sortThread;
+HANDLE listsMutex;
 struct Information {
-	string x, y, z, fps, speed, selectedObject, objectName, allEntities, displayedEntities, objectsCount;
+	string x, y, z, fps, speed, selectedObject, allEntities, displayedEntities, objectsCount;
 };
 Information info;
 
@@ -85,7 +84,6 @@ class TreeNode;
 #include "object.h"
 #include "cullable.h"
 #include "entity.h"
-#include "animation.h"
 #include "map_material.h"
 #include "map.h"
 #include "light.h"
@@ -137,7 +135,6 @@ void Console::parse() {
 	}
 }
 
-map<string, Texture*> Texture::textures;
 FrustumCuller* culler;
 Light* light = Light::getInstance();
 Console* console;
@@ -213,7 +210,7 @@ void displayDebug() {
 	DrawString(x, y -= dy, z, "All entities: " + info.allEntities + "   Displayed entities: " + info.displayedEntities);
 	Object* o = Object::getObject(selectedObjectPos);
 	if (o) {
-		DrawString(x, y -= dy, z, "Object: " + info.objectName + "  " + o->name + "   pieces: " + info.objectsCount);
+		DrawString(x, y -= dy, z, "Object: " + o->name + "   pieces: " + info.objectsCount);
 	}
 	if (selectedEntity) {
 		DrawString(x, y -= dy, z, "Selected object: " + info.selectedObject);
@@ -229,6 +226,7 @@ void displayDebug() {
 	glEnable(GL_LIGHTING);
 	glColor3f(0.5, 0.5, 0.5);
 }
+
 void display(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	if (light->ready) {
@@ -265,13 +263,17 @@ void display(void) {
 	}
 	glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
 
+	WaitForSingleObject(listsMutex, INFINITE);
 	list<Entity*> entities = Entity::solidObjectsToDisplay;
+	ReleaseMutex(listsMutex);
 	glDisable(GL_BLEND);
 	for (list<Entity*>::iterator i = entities.begin(); i != entities.end(); ++i) {
 		drawObject(*i);
 	}
 
-	entities = Entity::transparentObjectsToDisplay;
+	WaitForSingleObject(listsMutex, INFINITE);
+	entities = Entity::transparentObjectsToDisplay; //FIXME dodac mutex?
+	ReleaseMutex(listsMutex);
 	glEnable(GL_BLEND);
 	for (list<Entity*>::iterator i = entities.begin(); i != entities.end(); ++i) {
 		drawObject(*i);
@@ -286,6 +288,7 @@ void specialKeys(int key, int x, int y) {
 		console->typeSpecial(key);
 	}
 }
+
 void klawiaturka(unsigned char key, int x, int y) {
 	if (console->typing && debug) {
 		console->type(key);
@@ -430,29 +433,19 @@ long long unsigned checkSize(string fileName) {
 
 }
 
-void __cdecl animate(void *arg) {
-	while (1) {
-		if (!selectedEntity) {
-			for (unsigned i = 0; i < animatedObjects.size(); i++) {
-				animatedObjects[i]->anim->animuj(animatedObjects[i]);
-			}
-		}
-		Sleep(15);
-	}
-}
-
 void __cdecl inform(void *arg) {
 	while (1) {
-		stringstream xs, ys, zs, fps, cameraSpeed, selectedObjectS, selectedObjectPosS, entitiesCountS, displayedEntitiesS, objectsCountS;
+		stringstream xs, ys, zs, fps, cameraSpeed, selectedObjectS, entitiesCountS, displayedEntitiesS, objectsCountS;
 		xs << posX;
 		ys << posY;
 		zs << posZ;
 		if (selectedEntity) {
 			selectedObjectS << selectedEntity->object->name;
 		}
-		selectedObjectPosS << selectedObjectPos;
 		entitiesCountS << Entity::entitiesCount;
+		WaitForSingleObject(listsMutex, INFINITE);
 		displayedEntitiesS << Entity::solidObjectsToDisplay.size() + Entity::transparentObjectsToDisplay.size();
+		ReleaseMutex(listsMutex);
 		Object* o = Object::getObject(selectedObjectPos);
 		if (o) {
 			objectsCountS << o->counter;
@@ -469,7 +462,6 @@ void __cdecl inform(void *arg) {
 		info.z = zs.str();
 		info.speed = cameraSpeed.str();
 		info.selectedObject = selectedObjectS.str();
-		info.objectName = selectedObjectPosS.str();
 		info.allEntities = entitiesCountS.str();
 		info.displayedEntities = displayedEntitiesS.str();
 		info.objectsCount = objectsCountS.str();
@@ -510,9 +502,11 @@ void __cdecl sortObjects(void *arg) {
 		}
 		if (Entity::objects && culler->isInViewField(Entity::objects)) {
 			checkVisibility(Entity::objects);
+			WaitForSingleObject(listsMutex, INFINITE);
 			transparentObjects.sort(Entity::compare);
 			Entity::transparentObjectsToDisplay = transparentObjects;
 			Entity::solidObjectsToDisplay = solidObjects;
+			ReleaseMutex(listsMutex);
 		}
 		Sleep(50);
 	}
@@ -564,15 +558,14 @@ double getLength3D(double* p1, double* p2) {
 }
 
 void end() {
-	TerminateThread(animateThread, 0);
 	TerminateThread(informThread, 0);
 	TerminateThread(sortThread, 0);
 	ObjectsLoader::getInstance()->terminate();
-	exit(0);
 }
 
 int main(int argc, char** args) {
 	atexit(end);
+	listsMutex = CreateMutexA(NULL, false, NULL);
 	Logger::log("Creating window...");
 	glutInit(&argc, args);
 	glutInitWindowSize(windowWidth, windowHeight);
@@ -639,12 +632,12 @@ int main(int argc, char** args) {
 	if (argc > 1) {
 		ObjectsLoader::getInstance()->loadObjects(args[1]);
 	} else {
-		ObjectsLoader::getInstance()->loadObjects("ustawienia/qtas.xml");
+		Logger::log(Logger::ERR + ", no arguments");
+		exit(0);
 	}
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_NORMAL_ARRAY);
 	culler = FrustumCuller::getInstance();
-	animateThread = (HANDLE) _beginthread(animate, 0, NULL);
 	informThread = (HANDLE) _beginthread(inform, 0, NULL);
 	sortThread = (HANDLE) _beginthread(sortObjects, 0, NULL);
 	glutMainLoop();

@@ -33,7 +33,6 @@ public:
 	GLfloat px, py, pz;
 	GLfloat sx, sy, sz;
 	GLfloat rx, ry, rz;
-	Animation *anim;
 	bool alwaysDisplay;
 	static list<Entity*> solidObjectsToDisplay;
 	static list<Entity*> transparentObjectsToDisplay;
@@ -84,7 +83,6 @@ public:
 		Logger::log("Creating entity: " + object->name);
 		alwaysDisplay = false;
 		entitiesCount++;
-		anim = NULL;
 		this->object = object;
 		copyFurthest();
 		this->px = 0;

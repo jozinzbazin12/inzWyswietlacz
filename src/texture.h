@@ -90,7 +90,10 @@ public:
 		map<string, Texture*>::iterator iter;
 		unsigned i = 0;
 		for (iter = textures.begin(); iter != textures.end(); ++iter) {
-			tab[i++] = iter->second->txtid;
+			Texture* t = iter->second;
+			if (t) {
+				tab[i++] = t->txtid;
+			}
 		}
 		return tab;
 	}
@@ -174,10 +177,10 @@ public:
 		GLclampf a = 1.0f;
 		glPrioritizeTextures(1, &txtid, &a);
 		SDL_FreeSurface(txt);
-
 	}
 
 };
 HANDLE Texture::mutex = CreateMutex(NULL, FALSE, NULL);
 GLfloat Texture::filter[4] = { 0.2f, 0.2f, 0.2f, 0.2f };
+map<string, Texture*> Texture::textures;
 #endif /* SRC_TEXTURE_H_ */

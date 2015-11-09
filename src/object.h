@@ -34,6 +34,7 @@ private:
 			subObject = NULL;
 		}
 	}
+
 	void loadObject(string objectName, bool tag) {
 		Logger::log("Loading object: " + objectName);
 		long long unsigned fileSize;
@@ -63,7 +64,6 @@ private:
 
 		Material* tmpmtl = NULL;
 		MaterialLib* mtl = new MaterialLib(getRealPath(text, path));
-		MaterialLib::materials.push_back(mtl);
 		Subobject* lastSubobject = NULL;
 		while (!file.eof()) {
 			file >> text;
@@ -95,7 +95,6 @@ private:
 			}
 
 			if (text == "v") {
-
 				file >> text;
 				vertices.push_back(atof(text.c_str()));
 				file >> text;
@@ -236,7 +235,7 @@ public:
 	static Object* getObject(int pos) {
 		WaitForSingleObject(mutex, INFINITE);
 		Object* result = NULL;
-		if (objects.size()) {
+		if (pos < (int) objects.size()) {
 			result = objects[pos];
 		}
 		ReleaseMutex(mutex);

@@ -73,7 +73,7 @@ private:
 		okArgsAction(c, args);
 	}
 	void okArgsAction(Console* c, vector<string> args) {
-		exit(0);
+		_Exit(0);
 	}
 public:
 	ExitAction() {

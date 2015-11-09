@@ -13,24 +13,25 @@ private:
 	static ObjectsLoader* instance;
 	static ThreadWorker* worker;
 	static Map* mapBuilder;
+	HANDLE thread;
 	ObjectsLoader() {
 
 	}
 
-	static char* fileToChar(string nazwa_pliku) {
-		ifstream plik(nazwa_pliku, ios::binary);
-		if (!plik.is_open() || plik.bad()) {
-			Logger::log(Logger::ERR + "no objects file");
-			exit(-1);
+	static char* fileToChar(string fileName) {
+		ifstream file(fileName, ios::binary);
+		if (!file.is_open() || file.bad()) {
+			Logger::log(Logger::ERR + "file with scene not found");
+			_Exit(0);
 		}
 
-		filebuf * pbuf = plik.rdbuf();
-		long wielkosc_pliku = pbuf->pubseekoff(0, ios::end, ios::in);
-		pbuf->pubseekpos(0, plik.in);
-		char * wyjscie = new char[wielkosc_pliku + 1];
-		pbuf->sgetn(wyjscie, wielkosc_pliku);
-		wyjscie[wielkosc_pliku] = 0;
-		return wyjscie;
+		filebuf * pbuf = file.rdbuf();
+		long fileSize = pbuf->pubseekoff(0, ios::end, ios::in);
+		pbuf->pubseekpos(0, file.in);
+		char * result = new char[fileSize + 1];
+		pbuf->sgetn(result, fileSize);
+		result[fileSize] = 0;
+		return result;
 	}
 
 	static void loadThread(void *arg) {
@@ -102,10 +103,11 @@ public:
 		worker->setThreadsCount(2);
 		string* str = new string(path);
 		void* args = static_cast<void*>(str);
-		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) loadThread, (void*) args, 0, NULL);
+		thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) (loadThread), (void*) (args), 0, NULL);
 	}
 
 	void terminate() {
+		TerminateThread(thread, 0);
 		worker->terminate();
 	}
 

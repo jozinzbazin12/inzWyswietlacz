@@ -18,7 +18,7 @@ private:
 		v[0] = px2 - tab[0];
 		v[1] = py2 - tab[1];
 		v[2] = pz2 - tab[2];
-		delete[] tab;
+		delete tab;
 		return md1 * v[0] + md2 * v[1] + md3 * v[2];
 	}
 

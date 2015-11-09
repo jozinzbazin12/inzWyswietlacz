@@ -10,6 +10,7 @@
 
 class MaterialLib {
 private:
+	static HANDLE mutex;
 	string prepareString(string str) {
 		return "[" + mtlName + "] " + str;
 	}
@@ -110,11 +111,11 @@ public:
 		this->mtlName = path;
 		this->path = getPath(path);
 		loadMtl(path);
-	}
-	~MaterialLib() {
-//	for (unsigned i = 0; i < mtl.size(); i++)
-//		delete mtl[i];
+		WaitForSingleObject(mutex, INFINITE);
+		materials.push_back(this);
+		ReleaseMutex(mutex);
 	}
 };
 vector<MaterialLib*> MaterialLib::materials;
+HANDLE MaterialLib::mutex = CreateMutex(NULL, false, NULL);
 #endif /* SRC_MATERIAL_LIB_H_ */

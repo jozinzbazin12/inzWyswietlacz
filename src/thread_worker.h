@@ -16,9 +16,9 @@ private:
 	static HDC hdc;
 	static Map* mapBuilder;
 	static vector<HANDLE> threads;
-	static list<xml_node<>*> objects;
+	static list<xml_node<>*> objectNodes;
 	static int workingThreads;
-	static xml_node<>* mapObject;
+	static xml_node<>* mapNode;
 
 	ThreadWorker() {
 		threadsMutex = CreateMutex(NULL, FALSE, NULL);
@@ -169,19 +169,19 @@ private:
 		glewInit();
 		while (1) {
 			xml_node<>* n;
-			if (mapObject) {
+			if (mapNode) {
 				WaitForSingleObject(threadsMutex, INFINITE);
-				n = mapObject;
-				mapObject = NULL;
+				n = mapNode;
+				mapNode = NULL;
 				workingThreads++;
 				ReleaseMutex(threadsMutex);
 				loadMapThread(n);
 				decCount();
 			}
-			if (objects.size()) {
+			if (objectNodes.size()) {
 				WaitForSingleObject(threadsMutex, INFINITE);
-				n = objects.back();
-				objects.pop_back();
+				n = objectNodes.back();
+				objectNodes.pop_back();
 				workingThreads++;
 				ReleaseMutex(threadsMutex);
 				loadEntityThread(n);
@@ -194,8 +194,8 @@ private:
 	static void decCount() {
 		WaitForSingleObject(threadsMutex, INFINITE);
 		workingThreads--;
-		ReleaseMutex(threadsMutex);
 		checkErrors();
+		ReleaseMutex(threadsMutex);
 	}
 
 public:
@@ -224,18 +224,18 @@ public:
 
 	void loadEntity(xml_node<>* node) {
 		WaitForSingleObject(threadsMutex, INFINITE);
-		objects.push_front(node);
+		objectNodes.push_front(node);
 		ReleaseMutex(threadsMutex);
 	}
 
 	void loadMap(xml_node<>* node) {
 		WaitForSingleObject(threadsMutex, INFINITE);
-		mapObject = node;
+		mapNode = node;
 		ReleaseMutex(threadsMutex);
 	}
 
 	void finish() {
-		while (objects.size() || workingThreads || mapObject) {
+		while (objectNodes.size() || workingThreads || mapNode) {
 			Sleep(50);
 		}
 		terminate();
@@ -257,13 +257,13 @@ public:
 	}
 
 };
-xml_node<>* ThreadWorker::mapObject = NULL;
+xml_node<>* ThreadWorker::mapNode = NULL;
 Map* ThreadWorker::mapBuilder = NULL;
 ThreadWorker* ThreadWorker::instance = NULL;
 HANDLE ThreadWorker::threadsMutex;
 HDC ThreadWorker::hdc = NULL;
 HGLRC ThreadWorker::mainContext = NULL;
 vector<HANDLE> ThreadWorker::threads;
-list<xml_node<>*> ThreadWorker::objects;
+list<xml_node<>*> ThreadWorker::objectNodes;
 int ThreadWorker::workingThreads = 0;
 #endif /* SRC_THREAD_WORKER_H_ */
