@@ -480,11 +480,11 @@ void addEntityIfVisible(Entity* e) {
 }
 
 void checkVisibility(TreeNode* n) {
-	vector<Entity*> vec = n->entities;
-	for (unsigned i = 0; i < vec.size(); i++) {
-		Entity* e = vec[i];
+	for (unsigned i = 0; i < n->getSize(); i++) {
+		Entity* e = n->getEntity(i);
 		addEntityIfVisible(e);
 	}
+
 	for (int i = 0; i < 4; i++) {
 		TreeNode* node = n->children[i];
 		if (node && culler->isInViewField(node)) {
@@ -654,6 +654,7 @@ int main(int argc, char** args) {
 // TODO ustawianie na krawedziach
 //todo w szybie wylaczyc z buffer
 //todo poprawic wyswietlanie zwykle i przy edycji
+//todo stl_tree.h:1638
 /*x86/zlib1.dll
  x86/freeglut.dll
  x86/glew32.dll

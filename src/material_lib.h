@@ -111,7 +111,7 @@ public:
 		this->mtlName = path;
 		this->path = getPath(path);
 		loadMtl(path);
-		WaitForSingleObject(mutex, INFINITE);
+		WaitForSingleObject(mutex, 1000);
 		materials.push_back(this);
 		ReleaseMutex(mutex);
 	}

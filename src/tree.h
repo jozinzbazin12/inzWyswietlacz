@@ -14,9 +14,11 @@ private:
 	static const short NW = 1;
 	static const short SE = 2;
 	static const short SW = 3;
-
+	static HANDLE entitiesMutex;
+	static HANDLE nodesMutex;
 	static TreeNode* root;
 	double* mid;
+	vector<Entity*> entities;
 
 	static void setPoint(double* tab, int x, int z) {
 		tab[0] = x;
@@ -37,7 +39,9 @@ private:
 
 	TreeNode* getNode(int index) {
 		if (!children[index]) {
+			WaitForSingleObject(nodesMutex, INFINITE);
 			children[index] = new TreeNode(this, index);
+			ReleaseMutex(nodesMutex);
 		}
 		return children[index];
 	}
@@ -51,11 +55,22 @@ public:
 	TreeNode** children;
 	static const short LEVELS = 3;
 	int level;
-	vector<Entity*> entities;
 	double* ne;
 	double* nw;
 	double* se;
 	double* sw;
+
+	unsigned getSize() {
+		return entities.size();
+	}
+
+	Entity* getEntity(unsigned pos) {
+		Entity* e = NULL;
+		WaitForSingleObject(entitiesMutex, INFINITE);
+		e = entities[pos];
+		ReleaseMutex(entitiesMutex);
+		return e;
+	}
 
 	double* getPos() {
 		double* tab = new double[3];
@@ -107,7 +122,9 @@ public:
 
 		for (unsigned i = 0; i < entities.size(); i++) {
 			if (entities[i] == e) {
+				WaitForSingleObject(entitiesMutex, INFINITE);
 				entities.erase(entities.begin() + i);
+				ReleaseMutex(entitiesMutex);
 				break;
 			}
 		}
@@ -118,7 +135,9 @@ public:
 		while (shouldBeInNextNode(node, e)) {
 			node = node->getChild(e);
 		}
+		WaitForSingleObject(entitiesMutex, INFINITE);
 		node->entities.push_back(e);
+		ReleaseMutex(entitiesMutex);
 	}
 
 	TreeNode(TreeNode* node, short part) {
@@ -152,4 +171,7 @@ public:
 		init();
 	}
 };
+HANDLE TreeNode::entitiesMutex = CreateMutexA(NULL, false, NULL);
+HANDLE TreeNode::nodesMutex = CreateMutexA(NULL, false, NULL);
+
 #endif /* SRC_TREE_H_ */

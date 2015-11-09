@@ -70,6 +70,9 @@ private:
 	}
 
 	static void loadMapThread(xml_node<>* node) {
+		if (!node) {
+			return;
+		}
 		GLfloat a, b, c, d;
 		string stringValue;
 		xml_node<>* settings = node->first_node("Settings");
