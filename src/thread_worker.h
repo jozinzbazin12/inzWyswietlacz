@@ -252,7 +252,6 @@ public:
 	}
 
 	~ThreadWorker() {
-		CloseHandle(threadsMutex);
 		instance = NULL;
 //		for (list<HGLRC>::iterator it = freeContexts.begin(); it != freeContexts.end(); ++it) {
 //			wglDeleteContext(*it);

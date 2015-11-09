@@ -97,9 +97,12 @@ public:
 		}
 		return tab;
 	}
+
 	static Texture* getTexture(string name, string type) {
 		string key = name + "_" + type;
+		WaitForSingleObject(mutex, INFINITE);
 		Texture* txt = textures[key];
+		ReleaseMutex(mutex);
 		if (!txt) {
 			WaitForSingleObject(mutex, INFINITE);
 			txt = new Texture(name, type);
@@ -128,7 +131,7 @@ public:
 			extension = ".tga";
 		}
 
-		if (txt == NULL) {
+		if (!txt) {
 			ostringstream ss;
 			Logger::log(prepareString(Logger::ERR + IMG_GetError()));
 			exit(0);
