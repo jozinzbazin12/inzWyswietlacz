@@ -56,7 +56,7 @@ GLfloat cx2 = 0, cy2 = 0, cz2 = 0;
 int motionCounter = 0;
 int motionCounter2 = 0;
 int cameraDistance = 5;
-double predkosc = 10;
+double cameraSpeed = 10;
 int frameCounter = 0;
 int frames = 0;
 int lod = 150;
@@ -300,31 +300,31 @@ void klawiaturka(unsigned char key, int x, int y) {
 			break;
 
 		case 'w':
-			posZ -= modelview[10] * predkosc;
-			posX -= modelview[2] * predkosc;
+			posZ -= modelview[10] * cameraSpeed;
+			posX -= modelview[2] * cameraSpeed;
 			break;
 
 		case 's':
-			posZ += modelview[10] * predkosc;
-			posX += modelview[2] * predkosc;
+			posZ += modelview[10] * cameraSpeed;
+			posX += modelview[2] * cameraSpeed;
 			break;
 
 		case 'd':
-			posX += modelview[10] * predkosc;
-			posZ -= modelview[2] * predkosc;
+			posX += modelview[10] * cameraSpeed;
+			posZ -= modelview[2] * cameraSpeed;
 			break;
 
 		case 'a':
-			posX -= modelview[10] * predkosc;
-			posZ += modelview[2] * predkosc;
+			posX -= modelview[10] * cameraSpeed;
+			posZ += modelview[2] * cameraSpeed;
 			break;
 
 		case 'q':
-			posY += predkosc;
+			posY += cameraSpeed;
 			break;
 
 		case 'e':
-			posY -= predkosc;
+			posY -= cameraSpeed;
 			break;
 
 		case 'o':
@@ -409,9 +409,9 @@ void mousePressed(int button, int state, int x, int y) {
 
 void mouseWheel(int button, int dir, int x, int y) {
 	if (dir > 0) {
-		cameraDistance -= predkosc;
+		cameraDistance -= cameraSpeed;
 	} else {
-		cameraDistance += predkosc;
+		cameraDistance += cameraSpeed;
 	}
 }
 
@@ -435,7 +435,7 @@ long long unsigned checkSize(string fileName) {
 
 void __cdecl inform(void *arg) {
 	while (1) {
-		stringstream xs, ys, zs, fps, cameraSpeed, selectedObjectS, entitiesCountS, displayedEntitiesS, objectsCountS;
+		stringstream xs, ys, zs, fps, cameraSpeedS, selectedObjectS, entitiesCountS, displayedEntitiesS, objectsCountS;
 		xs << posX;
 		ys << posY;
 		zs << posZ;
@@ -450,7 +450,7 @@ void __cdecl inform(void *arg) {
 		if (o) {
 			objectsCountS << o->counter;
 		}
-		cameraSpeed << predkosc;
+		cameraSpeedS << cameraSpeed;
 		if (clock() - frameCounter >= CLOCKS_PER_SEC) {
 			fps << frames;
 			info.fps = fps.str();
@@ -460,7 +460,7 @@ void __cdecl inform(void *arg) {
 		info.x = xs.str();
 		info.y = ys.str();
 		info.z = zs.str();
-		info.speed = cameraSpeed.str();
+		info.speed = cameraSpeedS.str();
 		info.selectedObject = selectedObjectS.str();
 		info.allEntities = entitiesCountS.str();
 		info.displayedEntities = displayedEntitiesS.str();

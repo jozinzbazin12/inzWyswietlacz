@@ -82,7 +82,9 @@ public:
 	Entity(Object *object) {
 		Logger::log("Creating entity: " + object->name);
 		alwaysDisplay = false;
+		WaitForSingleObject(mutex, INFINITE);
 		entitiesCount++;
+		ReleaseMutex(mutex);
 		this->object = object;
 		copyFurthest();
 		this->px = 0;
@@ -104,7 +106,7 @@ public:
 		deleteFromTree();
 	}
 };
-HANDLE Entity::mutex = CreateMutex(NULL, FALSE, NULL);
+HANDLE Entity::mutex = CreateMutex(NULL, false, NULL);
 unsigned long Entity::entitiesCount = 0;
 list<Entity*> Entity::solidObjectsToDisplay;
 list<Entity*> Entity::transparentObjectsToDisplay;

@@ -52,10 +52,10 @@ private:
 		return stod(args[1]) > 0;
 	}
 	void noArgAction(Console* c, vector<string> args) {
-		c->type(arg(predkosc));
+		c->type(arg(cameraSpeed));
 	}
 	void okArgsAction(Console* c, vector<string> args) {
-		predkosc = stod(args[1]);
+		cameraSpeed = stod(args[1]);
 	}
 public:
 	SpeedAction() {

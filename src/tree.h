@@ -38,11 +38,11 @@ private:
 	}
 
 	TreeNode* getNode(int index) {
+		WaitForSingleObject(nodesMutex, INFINITE);
 		if (!children[index]) {
-			WaitForSingleObject(nodesMutex, INFINITE);
 			children[index] = new TreeNode(this, index);
-			ReleaseMutex(nodesMutex);
 		}
+		ReleaseMutex(nodesMutex);
 		return children[index];
 	}
 
