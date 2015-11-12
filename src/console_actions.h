@@ -46,6 +46,24 @@ public:
 };
 string Action::invalidArgs = "Ivalid args";
 
+class ClearAction: public Action {
+private:
+	bool validateArgs(Console* c, vector<string> args) {
+		return true;
+	}
+	void noArgAction(Console* c, vector<string> args) {
+		okArgsAction(c, args);
+	}
+	void okArgsAction(Console* c, vector<string> args) {
+		c->clear();
+	}
+public:
+	ClearAction() {
+		minArg = 0;
+		maxArg = 0;
+	}
+};
+
 class SpeedAction: public Action {
 private:
 	bool validateArgs(Console* c, vector<string> args) {

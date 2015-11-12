@@ -106,6 +106,7 @@ void Entity::deleteFromTree() {
 
 void Console::init() {
 	commands["speed"] = new SpeedAction();
+	commands["cls"] = new ClearAction();
 	commands["goto"] = new GotoAction();
 	commands["light_ambient"] = new LightAmbientAction();
 	commands["light_diffuse"] = new LightDiffuseAction();

@@ -71,6 +71,12 @@ public:
 		nextLine();
 		lines[mainLine] = str;
 	}
+
+	void clear() {
+		for (int i = 0; i < lineNumber; i++) {
+			nextLine();
+		}
+	}
 	void type(char c) {
 		switch (c) {
 		case 13:

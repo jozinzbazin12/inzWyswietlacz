@@ -49,6 +49,7 @@ private:
 		pcy = caclulate(e->getPos(), modelview[1], modelview[5], modelview[9]);
 		pcz = caclulate(e->getPos(), modelview[2], modelview[6], modelview[10]);
 		double pcz2 = selected ? caclulate(selected->getPos(), modelview[2], modelview[6], modelview[10]) : INFINITE;
+		pcz2 = pcz2 >= 0 ? pcz2 : INFINITE;
 		if (pcz < pcz2 && pcz > 0 && abs(pcy) <= e->range && abs(pcx) <= e->range) {
 			selected = e;
 		}
