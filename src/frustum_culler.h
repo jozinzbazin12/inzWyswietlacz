@@ -101,16 +101,24 @@ public:
 		} else {
 			px2 = 0;
 			py2 = 0;
-			pz2 = -cameraDistance;
+			pz2 = cameraDistance;
 			double tmpx = 0;
 			double tmpy = 0;
 			double tmpz = 0;
 
-			tmpy = py2 * cos(RAD * cx) - pz2 * sin(RAD * cx);
-			tmpz = py2 * sin(RAD * cx) + pz2 * cos(RAD * cx);
+			/* x' = x
+			 y' = y*cos q - z*sin q
+			 z' = y*sin q + z*cos q
+			 */
+			tmpy = py2 * cos(-RAD * cx) - pz2 * sin(-RAD * cx);
+			tmpz = py2 * sin(-RAD * cx) + pz2 * cos(-RAD * cx);
 			py2 = tmpy;
 			pz2 = tmpz;
 
+			/* x' = z*sin q + x*cos q
+			 y' = y
+			 z' = z*cos q - x*sin q
+			 */
 			tmpx = pz2 * sin(RAD * cy) + px2 * cos(RAD * cy);
 			tmpz = pz2 * cos(RAD * cy) - px2 * sin(RAD * cy);
 			px2 = tmpx;

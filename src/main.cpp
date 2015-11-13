@@ -273,7 +273,7 @@ void display(void) {
 	}
 
 	WaitForSingleObject(listsMutex, INFINITE);
-	entities = Entity::transparentObjectsToDisplay; //FIXME dodac mutex?
+	entities = Entity::transparentObjectsToDisplay;
 	ReleaseMutex(listsMutex);
 	glEnable(GL_BLEND);
 	for (list<Entity*>::iterator i = entities.begin(); i != entities.end(); ++i) {
@@ -413,6 +413,9 @@ void mouseWheel(int button, int dir, int x, int y) {
 		cameraDistance -= cameraSpeed;
 	} else {
 		cameraDistance += cameraSpeed;
+	}
+	if (cameraDistance < 0) {
+		cameraDistance = 0;
 	}
 }
 
