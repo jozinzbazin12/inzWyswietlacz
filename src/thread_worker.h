@@ -28,6 +28,9 @@ private:
 	}
 
 	static void loadEntityThread(xml_node<>* node) {
+		if (!node) {
+			return;
+		}
 		GLfloat a, b, c, d;
 		string stringValue;
 		string objectName = node->first_attribute("objectFile")->value();
@@ -169,6 +172,7 @@ private:
 	static void jobListener(void* arg) {
 		HGLRC context = static_cast<HGLRC>(arg);
 		wglMakeCurrent(hdc, context);
+		unsigned size;
 		glewInit();
 		while (1) {
 			xml_node<>* n;
@@ -181,7 +185,10 @@ private:
 				loadMapThread(n);
 				decCount();
 			}
-			if (objectNodes.size()) {
+			WaitForSingleObject(threadsMutex, INFINITE);
+			size = objectNodes.size();
+			ReleaseMutex(threadsMutex);
+			if (size) {
 				WaitForSingleObject(threadsMutex, INFINITE);
 				n = objectNodes.back();
 				objectNodes.pop_back();
@@ -226,6 +233,9 @@ public:
 	}
 
 	void loadEntity(xml_node<>* node) {
+		if (!node || node == (xml_node<>*) 0xfffffffffffffffe) {
+			return;
+		}
 		WaitForSingleObject(threadsMutex, INFINITE);
 		objectNodes.push_front(node);
 		ReleaseMutex(threadsMutex);
