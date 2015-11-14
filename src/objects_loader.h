@@ -52,7 +52,7 @@ private:
 		}
 
 		xml_node<> * root = document.first_node();
-		for (xml_node<> * node = root->first_node(); node; node = node->next_sibling()) {
+		for (xml_node<> * node = root->first_node(); node != root->last_node(); node = node->next_sibling()) {
 			stringValue = node->name();
 			if (stringValue == "Map") {
 				worker->loadMap(node);

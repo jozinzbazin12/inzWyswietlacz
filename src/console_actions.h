@@ -268,6 +268,7 @@ private:
 	void okArgsAction(Console* c, vector<string> args) {
 		if (!selectedEntity) {
 			c->type("Nothing selected");
+			return;
 		}
 		Entity::movingObjects.remove(selectedEntity);
 		Entity::addEntity(selectedEntity);

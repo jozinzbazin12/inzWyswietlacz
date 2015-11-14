@@ -78,9 +78,9 @@ private:
 				b = pixel & 0x00FF0000;
 				g >>= 8;
 				b >>= 16;
-				height = ((r + b + g) / 3) - (double) 128;
+				height = ((r + b + g) / 3.0) - (double) 128;
 				if (dest) {
-					*dest << "v " << mapZ / 2 - j << " " << height << " " << mapX / 2 - i << endl; //moze sie zjebac!
+					*dest << "v " << mapZ / 2.0 - j << " " << height << " " << mapX / 2.0 - i << endl; //moze sie zjebac!
 				}
 				if (max < height) {
 					max = height;
@@ -263,10 +263,10 @@ public:
 		float t1[3], t2[3], t3[3], t4[3];
 		for (int i = 0; i < mapX - 1; i++) {
 			for (int j = 0; j < mapZ - 1; j++) {
-				double x = mapX / 2 - i;
-				double z = mapZ / 2 - j;
-				double x2 = mapX / 2 - i - 1;
-				double z2 = mapZ / 2 - j - 1;
+				double x = mapX / 2.0 - i;
+				double z = mapZ / 2.0 - j;
+				double x2 = mapX / 2.0 - i - 1;
+				double z2 = mapZ / 2.0 - j - 1;
 				int hx = j;
 				int hz = mapX - i;
 				int hx2 = j + 1;
@@ -380,8 +380,20 @@ public:
 		indexX = (int) valueX;
 		indexZ = (int) valueZ;
 
-		if (indexX <= 0 || indexX > mapX || indexZ < 0 || indexZ >= mapZ) {
+		if (indexX < 0 || indexX > mapX || indexZ < 0 || indexZ >= mapZ) {
 			return ERROR_HEIGHT;
+		}
+
+		if (indexX == 0) {
+			if (valueZ - indexZ < 0.5) {
+				actual = heights[mapX - 1][indexZ - 1];
+				height1 = (actual - heights[mapX - 1][indexZ]) * (valueZ - indexZ);
+			} else {
+				actual = heights[mapX - 1][indexZ];
+				height1 = (actual - heights[mapX - 1][indexZ + 1]) * (valueZ - indexZ);
+			}
+
+			return (actual - height1) * yRate + y;
 		}
 
 		actual = heights[mapX - indexX][indexZ];
