@@ -28,6 +28,9 @@ private:
 	}
 
 	static void loadEntityThread(xml_node<>* node) {
+		if (!node) {
+			return;
+		}
 		GLfloat a, b, c, d;
 		string stringValue;
 		string objectName = node->first_attribute("objectFile")->value();
@@ -181,15 +184,15 @@ private:
 				loadMapThread(n);
 				decCount();
 			}
+			WaitForSingleObject(threadsMutex, INFINITE);
 			if (objectNodes.size()) {
-				WaitForSingleObject(threadsMutex, INFINITE);
 				n = objectNodes.back();
 				objectNodes.pop_back();
 				workingThreads++;
-				ReleaseMutex(threadsMutex);
 				loadEntityThread(n);
 				decCount();
 			}
+			ReleaseMutex(threadsMutex);
 			Sleep(5);
 		}
 	}
@@ -226,6 +229,9 @@ public:
 	}
 
 	void loadEntity(xml_node<>* node) {
+		if (!node || node == (xml_node<>*) 0xfffffffffffffffe) {
+			return;
+		}
 		WaitForSingleObject(threadsMutex, INFINITE);
 		objectNodes.push_front(node);
 		ReleaseMutex(threadsMutex);
