@@ -172,7 +172,6 @@ private:
 	static void jobListener(void* arg) {
 		HGLRC context = static_cast<HGLRC>(arg);
 		wglMakeCurrent(hdc, context);
-		unsigned size;
 		glewInit();
 		while (1) {
 			xml_node<>* n;
@@ -186,10 +185,7 @@ private:
 				decCount();
 			}
 			WaitForSingleObject(threadsMutex, INFINITE);
-			size = objectNodes.size();
-			ReleaseMutex(threadsMutex);
-			if (size) {
-				WaitForSingleObject(threadsMutex, INFINITE);
+			if (objectNodes.size()) {
 				n = objectNodes.back();
 				objectNodes.pop_back();
 				workingThreads++;
@@ -197,6 +193,7 @@ private:
 				loadEntityThread(n);
 				decCount();
 			}
+			ReleaseMutex(threadsMutex);
 			Sleep(5);
 		}
 	}
