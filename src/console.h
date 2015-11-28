@@ -28,7 +28,6 @@ class Console {
 private:
 	int actualLine = 0;
 	int mainLine;
-	map<string, Action*> commands;
 	const string LIGHT_ERROR = "Invalid light args";
 
 	void nextLine() {
@@ -52,6 +51,7 @@ private:
 	void init();
 
 public:
+	map<string, Action*> commands;
 	string* lines;
 	bool typing = false;
 	int lineNumber;
@@ -68,8 +68,16 @@ public:
 	}
 
 	void type(string str) {
-		nextLine();
-		lines[mainLine] = str;
+		vector < string > result;
+		stringstream ss(str);
+		string item;
+		while (getline(ss, item, '\n')) {
+			result.push_back(item);
+		}
+		for (unsigned i = 0; i < result.size(); i++) {
+			nextLine();
+			lines[mainLine - 1] = result[i];
+		}
 	}
 
 	void clear() {

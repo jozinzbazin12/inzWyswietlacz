@@ -59,7 +59,7 @@ int cameraDistance = 5;
 double cameraSpeed = 10;
 int frameCounter = 0;
 int frames = 0;
-int lod = 150;
+int lod = 200;
 bool rotationEnabled = false;
 GLfloat posX = -5, posY = 5, posZ = 11;
 int windowHeight = 700, windowWidth = 1300;
@@ -90,9 +90,10 @@ class TreeNode;
 #include "tree.h"
 #include "frustum_culler.h"
 #include "thread_worker.h"
-#include "objects_loader.h"
 #include "console.h"
+Console* console;
 #include "console_actions.h"
+#include "objects_loader.h"
 
 void Entity::addEntity(Entity* entity) {
 	WaitForSingleObject(mutex, INFINITE);
@@ -105,6 +106,7 @@ void Entity::deleteFromTree() {
 }
 
 void Console::init() {
+	commands["help"] = new HelpAction();
 	commands["speed"] = new SpeedAction();
 	commands["cls"] = new ClearAction();
 	commands["goto"] = new GotoAction();
@@ -138,7 +140,7 @@ void Console::parse() {
 
 FrustumCuller* culler;
 Light* light = Light::getInstance();
-Console* console;
+
 
 void resize(int width, int height) {
 	culler->commit(width, height);
@@ -150,7 +152,7 @@ void drawObject(Entity *ob) {
 		return;
 	}
 	glClearColor(1, 1, 1, 1);
-	GLfloat p1 = ob->px; //FIXME jakims cudem ni mo
+	GLfloat p1 = ob->px;
 	GLfloat p2 = ob->py;
 	GLfloat p3 = ob->pz;
 	glPushMatrix();
@@ -297,6 +299,7 @@ void klawiaturka(unsigned char key, int x, int y) {
 		key = tolower(key);
 		switch (key) {
 		case '`':
+			debug = true;
 			console->typing = true;
 			break;
 
@@ -647,18 +650,8 @@ int main(int argc, char** args) {
 	glutMainLoop();
 	return 0;
 }
-//TODO zapis
 //todo przezroczystosc  gore do obiektu || rysowanie samych podobiektow
-//TODO dorobienie animacji
-//TODO dorobienie dzieci
-//TODO wypisywanie hashu
-// TODO bufferdata zajmuje 7s z 19
-//TODO poprawic logi
-//TODO drzewa czworkowe, max 100k obiektow
-// TODO ustawianie na krawedziach
 //todo w szybie wylaczyc z buffer
-//todo poprawic wyswietlanie zwykle i przy edycji
-//todo stl_tree.h:1638
 /*x86/zlib1.dll
  x86/freeglut.dll
  x86/glew32.dll

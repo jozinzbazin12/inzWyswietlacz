@@ -87,7 +87,9 @@ private:
 		stream.str("");
 		stream << "Textures: " << texturesCount << ", resident: " << residentTexturesCount << endl;
 		Logger::log(stream.str());
-		Logger::log("Loading finished in " + to_string(time(0) - loadTime) + " s.");
+		string str = "Loading finished in " + to_string(time(0) - loadTime) + " s.";
+		Logger::log(str);
+		console->type(str);
 	}
 
 public:

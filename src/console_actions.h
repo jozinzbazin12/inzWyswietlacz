@@ -46,6 +46,33 @@ public:
 };
 string Action::invalidArgs = "Ivalid args";
 
+class HelpAction: public Action {
+private:
+	bool validateArgs(Console* c, vector<string> args) {
+		return true;
+	}
+	void noArgAction(Console* c, vector<string> args) {
+		okArgsAction(c, args);
+	}
+	void okArgsAction(Console* c, vector<string> args) {
+		string str = "Available commands: ";
+		int rowCount = 0;
+		for (map<string, Action*>::iterator it = c->commands.begin(); it != c->commands.end(); ++it) {
+			str += it->first + ", ";
+			if (rowCount++ == 5) {
+				str += "\n";
+				rowCount = 0;
+			}
+		}
+		c->type(str);
+	}
+public:
+	HelpAction() {
+		minArg = 0;
+		maxArg = 0;
+	}
+};
+
 class ClearAction: public Action {
 private:
 	bool validateArgs(Console* c, vector<string> args) {
