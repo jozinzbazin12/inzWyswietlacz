@@ -26,7 +26,6 @@ class Action;
 
 class Console {
 private:
-	int actualLine = 0;
 	int mainLine;
 	const string LIGHT_ERROR = "Invalid light args";
 
@@ -35,7 +34,6 @@ private:
 			lines[i - 1] = lines[i];
 		}
 		lines[lineNumber - 1] = "";
-		actualLine = (actualLine + 1) % lineNumber;
 		pointer = 0;
 	}
 

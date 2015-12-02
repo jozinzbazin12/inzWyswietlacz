@@ -67,6 +67,7 @@ long long unsigned totalVerticesCount = 0;
 int selectedObjectPos = 0;
 list<Entity*> transparentObjects;
 list<Entity*> solidObjects;
+bool skyEnabled = true;
 
 HANDLE informThread;
 HANDLE sortThread;
@@ -125,6 +126,7 @@ void Console::init() {
 	commands["rotate"] = new RotateEntityAction();
 	commands["new"] = new NewEntityAction();
 	commands["delete"] = new DeleteEntityAction();
+	commands["sky"] = new SkyAction();
 }
 
 void Console::parse() {
@@ -134,13 +136,12 @@ void Console::parse() {
 		action->execute(this, result);
 	} else {
 		nextLine();
-		lines[lineNumber - 2] = "Unknown command";
+		lines[lineNumber - 1] = "Unknown command";
 	}
 }
 
 FrustumCuller* culler;
 Light* light = Light::getInstance();
-
 
 void resize(int width, int height) {
 	culler->commit(width, height);
@@ -239,12 +240,22 @@ void display(void) {
 	if (!frames++) {
 		frameCounter = clock();
 	}
+	glLoadIdentity();
+	if (skyEnabled && Entity::sky) {
+		glPushMatrix();
+		glRotatef(cx, 1, 0, 0);
+		glRotatef(cy, 0, 1, 0);
+		glDisable(GL_DEPTH_TEST);
+		drawObject(Entity::sky);
+		glEnable(GL_DEPTH_TEST);
+		glPopMatrix();
+	}
 	if (debug) {
 		displayDebug();
 	} else {
 		glColor3f(0.5, 0.5, 0.5);
 	}
-	glLoadIdentity();
+
 	if (selectedEntity) {
 		glTranslatef(0, 0, -cameraDistance); //obrot kamery
 	}
@@ -592,7 +603,7 @@ int main(int argc, char** args) {
 		Logger::log("GLEW OK");
 	}
 	if (!GLEW_VERSION_3_0) {
-		Logger::log(Logger::ERR + "OpenGL version " + (char *) glGetString(GL_VERSION) + "against 4.2.0");
+		Logger::log(Logger::ERR + "OpenGL version " + (char *) glGetString(GL_VERSION) + "against 3.0");
 	} else {
 		stream << "Wersja OpenGL: " << (char*) glGetString(GL_VERSION) << ", OK";
 		Logger::log(stream.str());
@@ -650,8 +661,10 @@ int main(int argc, char** args) {
 	glutMainLoop();
 	return 0;
 }
-//todo przezroczystosc  gore do obiektu || rysowanie samych podobiektow
 //todo w szybie wylaczyc z buffer
+//todo siatka brzegowa
+//trawka oddzielnie?
+//poprawic gui
 /*x86/zlib1.dll
  x86/freeglut.dll
  x86/glew32.dll

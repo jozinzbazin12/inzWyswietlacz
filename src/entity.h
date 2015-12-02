@@ -26,6 +26,7 @@ private:
 
 	void deleteFromTree();
 public:
+	static Entity* sky;
 	static TreeNode* objects;
 	static unsigned long entitiesCount;
 	double furthest[3];
@@ -112,5 +113,6 @@ list<Entity*> Entity::solidObjectsToDisplay;
 list<Entity*> Entity::transparentObjectsToDisplay;
 list<Entity*> Entity::movingObjects;
 TreeNode* Entity::objects = NULL;
+Entity* Entity::sky = NULL;
 
 #endif /* SRC_ENTITY_H_ */

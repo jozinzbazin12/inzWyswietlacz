@@ -106,6 +106,9 @@ public:
 		string* str = new string(path);
 		void* args = static_cast<void*>(str);
 		thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) (loadThread), (void*) (args), 0, NULL);
+		Entity::sky = new Entity(new Object("models/1/1.obj", true));
+		Entity::sky->setScale(5, 5, 5);
+		Entity::sky->py = -1;
 	}
 
 	void terminate() {
