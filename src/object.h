@@ -205,18 +205,40 @@ private:
 			temp[0] = vertices[i];
 			temp[1] = vertices[i + 1];
 			temp[2] = vertices[i + 2];
+			checkMinMax(temp);
 			double length = getLength3D(&temp[0], &empty[0]);
 			if (length > actualRange) {
 				actualRange = length;
 				index = i;
 			}
 		}
-		furthest[0] = vertices[index];
-		furthest[1] = vertices[index + 1];
-		furthest[2] = vertices[index + 2];
+		copyArray(furthest, &vertices[index]);
 
 	}
 
+	void copyArray(float* t1, float* t2, int length = 3) {
+		for (int i = 0; i < length; i++) {
+			t1[i] = t2[i];
+		}
+	}
+
+	void copyArray(float* t1, double* t2, int length = 3) {
+		for (int i = 0; i < length; i++) {
+			t1[i] = t2[i];
+		}
+	}
+
+	void checkMinMax(double* temp) {
+		double oldLength = getLength3D(empty, (double*) min);
+		double newLength = getLength3D(empty, temp);
+		if (newLength < oldLength) {
+			copyArray(min, temp);
+		}
+		oldLength = getLength3D(empty, (double*) max);
+		if (newLength > oldLength) {
+			copyArray(max, temp);
+		}
+	}
 public:
 	vector<Subobject*> subobjects;
 	string name;
@@ -224,6 +246,8 @@ public:
 	GLfloat furthest[3];
 	int counter = 0;
 	bool transparent = false;
+	GLfloat min[3] = { numeric_limits < GLfloat > ::max(), numeric_limits < GLfloat > ::max(), numeric_limits < GLfloat > ::max() };
+	GLfloat max[3] = { numeric_limits < GLfloat > ::min(), numeric_limits < GLfloat > ::min(), numeric_limits < GLfloat > ::min() };
 
 	static Object* getObject(string key) {
 		WaitForSingleObject(mutex, INFINITE);

@@ -47,6 +47,16 @@ public:
 		return tab;
 	}
 
+	GLfloat* getMin() {
+		GLfloat* tab = new GLfloat[3] { px - object->min[0] * sx, py - object->min[1] * sy, pz - object->min[2] * sz };
+		return tab;
+	}
+
+	GLfloat* getMax() {
+		GLfloat* tab = new GLfloat[3] { px + object->max[0] * sx, py + object->max[1] * sy, pz + object->max[2] * sz };
+		return tab;
+	}
+
 	static void addEntity(Entity* entity);
 
 	static bool compare(Entity* e1, Entity* e2) {

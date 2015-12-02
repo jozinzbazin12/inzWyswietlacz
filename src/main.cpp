@@ -68,6 +68,7 @@ int selectedObjectPos = 0;
 list<Entity*> transparentObjects;
 list<Entity*> solidObjects;
 bool skyEnabled = true;
+bool cagesEnabled = true;
 
 HANDLE informThread;
 HANDLE sortThread;
@@ -127,15 +128,16 @@ void Console::init() {
 	commands["new"] = new NewEntityAction();
 	commands["delete"] = new DeleteEntityAction();
 	commands["sky"] = new SkyAction();
+	commands["cages"] = new CageAction();
 }
 
 void Console::parse() {
 	vector<string> result = split(lines[lineNumber - 1]);
 	Action* action = commands[result[0]];
+	nextLine();
 	if (action) {
 		action->execute(this, result);
 	} else {
-		nextLine();
 		lines[lineNumber - 1] = "Unknown command";
 	}
 }
@@ -147,26 +149,96 @@ void resize(int width, int height) {
 	culler->commit(width, height);
 }
 
-void drawObject(Entity *ob) {
-	if (ob == deleted) {
+void drawCage(Entity* e) {
+	GLfloat* min = e->getMin();
+	GLfloat* max = e->getMax();
+	glLineWidth(1.0);
+	glColor3f(0.0, 0.0, 0.0);
+
+	glBegin(GL_LINES); //bottom 1
+	glVertex3f(min[0], min[1], min[2]);
+	glVertex3f(min[0], min[1], max[2]);
+	glEnd();
+
+	glBegin(GL_LINES); //bottom 2
+	glVertex3f(min[0], min[1], min[2]);
+	glVertex3f(max[0], min[1], min[2]);
+	glEnd();
+
+	glBegin(GL_LINES); //bottom 3
+	glVertex3f(max[0], min[1], max[2]);
+	glVertex3f(min[0], min[1], max[2]);
+	glEnd();
+
+	glBegin(GL_LINES); //bottom 4
+	glVertex3f(max[0], min[1], max[2]);
+	glVertex3f(max[0], min[1], min[2]);
+	glEnd();
+
+	glBegin(GL_LINES); //top 1
+	glVertex3f(min[0], max[1], min[2]);
+	glVertex3f(min[0], max[1], max[2]);
+	glEnd();
+
+	glBegin(GL_LINES); //top 2
+	glVertex3f(min[0], max[1], min[2]);
+	glVertex3f(max[0], max[1], min[2]);
+	glEnd();
+
+	glBegin(GL_LINES); //top 3
+	glVertex3f(max[0], max[1], max[2]);
+	glVertex3f(min[0], max[1], max[2]);
+	glEnd();
+
+	glBegin(GL_LINES); //top 4
+	glVertex3f(max[0], max[1], max[2]);
+	glVertex3f(max[0], max[1], min[2]);
+	glEnd();
+
+	glBegin(GL_LINES); //side 1
+	glVertex3f(min[0], min[1], min[2]);
+	glVertex3f(min[0], max[1], min[2]);
+	glEnd();
+
+	glBegin(GL_LINES); //side 2
+	glVertex3f(max[0], min[1], min[2]);
+	glVertex3f(max[0], max[1], min[2]);
+	glEnd();
+
+	glBegin(GL_LINES); //side 3
+	glVertex3f(max[0], min[1], max[2]);
+	glVertex3f(max[0], max[1], max[2]);
+	glEnd();
+
+	glBegin(GL_LINES); //side 4
+	glVertex3f(min[0], min[1], max[2]);
+	glVertex3f(min[0], max[1], max[2]);
+	glEnd();
+}
+
+void drawObject(Entity* e) {
+	if (e == deleted) {
 		deleted = NULL;
 		return;
 	}
+	if (cagesEnabled) {
+		drawCage(e);
+	}
 	glClearColor(1, 1, 1, 1);
-	GLfloat p1 = ob->px;
-	GLfloat p2 = ob->py;
-	GLfloat p3 = ob->pz;
+	GLfloat p1 = e->px;
+	GLfloat p2 = e->py;
+	GLfloat p3 = e->pz;
 	glPushMatrix();
 	glTranslatef(p1, p2, p3);
-	glRotatef(ob->rx, 1, 0, 0);
-	glRotatef(ob->ry, 0, 1, 0);
-	glRotatef(ob->rz, 0, 0, 1);
-	glScalef(ob->sx, ob->sy, ob->sz);
+	glRotatef(e->rx, 1, 0, 0);
+	glRotatef(e->ry, 0, 1, 0);
+	glRotatef(e->rz, 0, 0, 1);
+	glScalef(e->sx, e->sy, e->sz);
 
 	Material* mtl;
 	Subobject* object;
-	for (unsigned j = 0; j < ob->object->subobjects.size(); j++) {
-		object = ob->object->subobjects[j];
+	for (unsigned j = 0; j < e->object->subobjects.size(); j++) {
+		object = e->object->subobjects[j];
 		mtl = object->mtl;
 
 		glShadeModel(mtl->s);
@@ -573,6 +645,16 @@ double getLength2D(double* p1, double* p2) {
 
 double getLength3D(double* p1, double* p2) {
 	return sqrt(pow(p1[0] - p2[0], 2) + pow(p1[1] - p2[1], 2) + pow(p1[2] - p2[2], 2));
+}
+
+double getLength3D(float* p1, double* p2) {
+	double tab[] = { p1[0], p1[1], p1[2] };
+	return getLength3D(tab, p2);
+}
+
+double getLength3D(double* p1, float* p2) {
+	double tab[] = { p2[0], p2[1], p2[2] };
+	return getLength3D(p1, tab);
 }
 
 void end() {

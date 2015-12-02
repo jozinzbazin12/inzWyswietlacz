@@ -415,4 +415,23 @@ public:
 	}
 };
 
+class CageAction: public Action {
+private:
+	bool validateArgs(Console* c, vector<string> args) {
+		return true;
+	}
+	void noArgAction(Console* c, vector<string> args) {
+		c->type(cagesEnabled ? "true" : "false");
+	}
+	void okArgsAction(Console* c, vector<string> args) {
+		cagesEnabled = args[1] == "1" || args[1] == "true";
+	}
+public:
+	CageAction() {
+		minArg = 0;
+		maxArg = 1;
+	}
+};
+
+
 #endif /* SRC_CONSOLE_ACTIONS_H_ */
