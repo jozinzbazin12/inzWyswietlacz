@@ -48,12 +48,12 @@ public:
 	}
 
 	GLfloat* getMin() {
-		GLfloat* tab = new GLfloat[3] { px - object->min[0] * sx, py - object->min[1] * sy, pz - object->min[2] * sz };
+		GLfloat* tab = new GLfloat[3] { object->min[0], object->min[1], object->min[2] };
 		return tab;
 	}
 
 	GLfloat* getMax() {
-		GLfloat* tab = new GLfloat[3] { px + object->max[0] * sx, py + object->max[1] * sy, pz + object->max[2] * sz };
+		GLfloat* tab = new GLfloat[3] { object->max[0], object->max[1], object->max[2] };
 		return tab;
 	}
 

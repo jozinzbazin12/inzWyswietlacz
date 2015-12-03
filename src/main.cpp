@@ -221,10 +221,6 @@ void drawObject(Entity* e) {
 		deleted = NULL;
 		return;
 	}
-	if (cagesEnabled) {
-		drawCage(e);
-	}
-	glClearColor(1, 1, 1, 1);
 	GLfloat p1 = e->px;
 	GLfloat p2 = e->py;
 	GLfloat p3 = e->pz;
@@ -234,7 +230,10 @@ void drawObject(Entity* e) {
 	glRotatef(e->ry, 0, 1, 0);
 	glRotatef(e->rz, 0, 0, 1);
 	glScalef(e->sx, e->sy, e->sz);
-
+	if (cagesEnabled) {
+		drawCage(e);
+	}
+	glClearColor(1, 1, 1, 1);
 	Material* mtl;
 	Subobject* object;
 	for (unsigned j = 0; j < e->object->subobjects.size(); j++) {

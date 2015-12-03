@@ -228,16 +228,20 @@ private:
 		}
 	}
 
+	void copyPoint(float* t1, double* t2, bool max = true) {
+		for (int i = 0; i < 3; i++) {
+			if (max && t1[i] < t2[i]) {
+				t1[i] = t2[i];
+			}
+			if (!max && t1[i] > t2[i]) {
+				t1[i] = t2[i];
+			}
+		}
+	}
+
 	void checkMinMax(double* temp) {
-		double oldLength = getLength3D(empty, (double*) min);
-		double newLength = getLength3D(empty, temp);
-		if (newLength < oldLength) {
-			copyArray(min, temp);
-		}
-		oldLength = getLength3D(empty, (double*) max);
-		if (newLength > oldLength) {
-			copyArray(max, temp);
-		}
+		copyPoint(min, temp, false);
+		copyPoint(max, temp);
 	}
 public:
 	vector<Subobject*> subobjects;
