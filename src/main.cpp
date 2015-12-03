@@ -68,7 +68,7 @@ int selectedObjectPos = 0;
 list<Entity*> transparentObjects;
 list<Entity*> solidObjects;
 bool skyEnabled = true;
-bool cagesEnabled = true;
+bool cagesEnabled = false;
 
 HANDLE informThread;
 HANDLE sortThread;
