@@ -23,7 +23,7 @@ private:
 		file.open(name.c_str());
 		if (!file.is_open()) {
 			Logger::log(Logger::ERR + "no mtllib");
-			exit(0);
+			_Exit(0);
 		}
 
 		Material *material = NULL;
@@ -101,7 +101,7 @@ public:
 		Material* material = mtl[name];
 		if (!material) {
 			Logger::log(prepareString(Logger::ERR + "material not found: " + name));
-			exit(0);
+			_Exit(0);
 		}
 		return material;
 	}

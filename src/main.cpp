@@ -120,9 +120,9 @@ void Console::init() {
 	commands["lod"] = new LODAction();
 	commands["edit"] = new EditEntityAction();
 	commands["end"] = new EndEditEntityAction();
-	Action* exit = new ExitAction();
-	commands["quit"] = exit;
-	commands["exit"] = exit;
+	Action* _Exit = new _ExitAction();
+	commands["quit"] = _Exit;
+	commands["_Exit"] = _Exit;
 	commands["scale"] = new ScaleEntityAction();
 	commands["rotate"] = new RotateEntityAction();
 	commands["new"] = new NewEntityAction();
@@ -513,7 +513,7 @@ long long unsigned checkSize(string fileName) {
 	ifstream stream;
 	stream.open(fileName.c_str(), fstream::binary);
 	if (!stream.is_open()) {
-		exit(0);
+		_Exit(0);
 	}
 	stream.seekg(0, ios::end);
 	size = stream.tellg();
@@ -706,7 +706,7 @@ int main(int argc, char** args) {
 	glutIdleFunc(idle);
 	if (SDL_Init(SDL_INIT_EVERYTHING) == -1) {
 		Logger::log(Logger::ERR + "SDL init");
-		exit(0);
+		_Exit(0);
 	}
 	Logger::log("SDL OK");
 	Logger::log(Logger::LINE + "\n");
@@ -732,7 +732,7 @@ int main(int argc, char** args) {
 		ObjectsLoader::getInstance()->loadObjects(args[1]);
 	} else {
 		Logger::log(Logger::ERR + ", no arguments");
-		exit(0);
+		_Exit(0);
 	}
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_NORMAL_ARRAY);
@@ -743,7 +743,6 @@ int main(int argc, char** args) {
 	return 0;
 }
 //todo w szybie wylaczyc z buffer
-//todo siatka brzegowa
 //trawka oddzielnie?
 //poprawic gui
 /*x86/zlib1.dll

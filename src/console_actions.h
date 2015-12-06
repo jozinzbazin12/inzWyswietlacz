@@ -109,7 +109,7 @@ public:
 	}
 };
 
-class ExitAction: public Action {
+class _ExitAction: public Action {
 private:
 	bool validateArgs(Console* c, vector<string> args) {
 		return true;
@@ -121,7 +121,7 @@ private:
 		_Exit(0);
 	}
 public:
-	ExitAction() {
+	_ExitAction() {
 		minArg = 0;
 		maxArg = 0;
 	}

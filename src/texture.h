@@ -133,8 +133,8 @@ public:
 
 		if (!txt) {
 			ostringstream ss;
-			Logger::log(prepareString(Logger::ERR + IMG_GetError()));
-			exit(0);
+			Logger::log(prepareString(Logger::ERR + "texture was not loaded " + IMG_GetError()));
+			_Exit(0);
 		}
 		format = whichFormat();
 		transparent = isTransparent();

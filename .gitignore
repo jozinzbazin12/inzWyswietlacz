@@ -8,3 +8,4 @@ log.txt
 /models
 /Release
 *.exe
+/lib

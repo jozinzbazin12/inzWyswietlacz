@@ -48,7 +48,7 @@ private:
 			ostringstream str;
 			str << Logger::ERR << p.what() << ", " << p.where<char**>();
 			Logger::log(str.str());
-			exit(0);
+			_Exit(0);
 		}
 
 		xml_node<> * root = document.first_node();
@@ -107,8 +107,7 @@ public:
 		void* args = static_cast<void*>(str);
 		thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) (loadThread), (void*) (args), 0, NULL);
 		Entity::sky = new Entity(new Object("models/1/1.obj", true));
-		Entity::sky->setScale(5, 5, 5);
-		Entity::sky->py = -1;
+		Entity::sky->setScale(2, 2, 2);
 	}
 
 	void terminate() {

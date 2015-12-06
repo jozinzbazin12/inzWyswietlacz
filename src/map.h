@@ -245,7 +245,7 @@ public:
 		SDL_Surface* txt = IMG_Load(mapName.c_str());
 		if (txt == NULL) {
 			Logger::log(Logger::ERR + "creating map failed");
-			exit(0);
+			_Exit(0);
 		}
 		mapX = txt->h;
 		mapZ = txt->w;

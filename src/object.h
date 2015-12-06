@@ -42,8 +42,8 @@ private:
 		ifstream file;
 		file.open(objectName.c_str(), ios::binary);
 		if (!file.is_open()) {
-			Logger::log(Logger::ERR + "no .obj");
-			exit(0);
+			Logger::log(Logger::ERR + "no object found:" + objectName);
+			_Exit(0);
 		}
 		file.seekg(0, ios::end);
 		fileSize = file.tellg();

@@ -165,7 +165,7 @@ private:
 	static void checkErrors() {
 		GLenum e;
 		while ((e = glGetError())) {
-			Logger::log(Logger::ERR + to_string(e));
+			Logger::log(Logger::ERR + "OpenGL error: " + to_string(e));
 		}
 	}
 
