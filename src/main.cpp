@@ -120,9 +120,9 @@ void Console::init() {
 	commands["lod"] = new LODAction();
 	commands["edit"] = new EditEntityAction();
 	commands["end"] = new EndEditEntityAction();
-	Action* _Exit = new _ExitAction();
-	commands["quit"] = _Exit;
-	commands["_Exit"] = _Exit;
+	Action* exit = new _ExitAction();
+	commands["quit"] = exit;
+	commands["exit"] = exit;
 	commands["scale"] = new ScaleEntityAction();
 	commands["rotate"] = new RotateEntityAction();
 	commands["new"] = new NewEntityAction();
@@ -272,9 +272,9 @@ void displayDebug() {
 	glDisable(GL_LIGHTING);
 	glColor3f(0, 0, 0);
 	glLoadIdentity();
-	GLfloat x = -windowWidth / 560.5;
-	GLfloat y = windowHeight / 560.0;
-	GLfloat z = -2.52;
+	GLfloat x = -windowWidth / 558.5;
+	GLfloat y = windowHeight / 555.0 + 0.05;
+	GLfloat z = -windowHeight / 278.0;
 	GLfloat dy = 0.05;
 	DrawString(x, y -= dy, z, "FPS: " + info.fps);
 	DrawString(x, y -= dy, z, "X: " + info.x);
