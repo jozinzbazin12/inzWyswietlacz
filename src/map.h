@@ -11,6 +11,7 @@
 
 class Map {
 private:
+	bool heightsLoaded = false;
 	static const int ERROR_HEIGHT = 1000;
 	const string MAP_NAME = "models/0/0.obj";
 	long long unsigned mapSize;
@@ -90,6 +91,7 @@ private:
 		}
 		yRate = (float) wymy / max;
 		yRate = yRate < 0 ? yRate * -1 : yRate;
+		heightsLoaded = true;
 	}
 
 	void loadHeights(string map) {
@@ -217,7 +219,7 @@ private:
 public:
 	static int **heights;
 	static int mapX, mapZ;
-	long double xRate;
+	long double xRate = 0;
 	long double yRate = 0;
 	long double zRate = 0;
 	double xLength = -1;
@@ -372,7 +374,7 @@ public:
 		long double valueX, valueZ;
 		double actual;
 		float height1 = 0, height2 = 0;
-		while (!xRate && !zRate) {
+		while (!heightsLoaded) {
 			Sleep(20);
 		}
 		valueX = (long double) (x / xRate) + (mapX / 2.0);	//-1
