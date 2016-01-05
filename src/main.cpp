@@ -273,7 +273,7 @@ void displayDebug() {
 	glColor3f(0, 0, 0);
 	glLoadIdentity();
 	GLfloat x = -windowWidth / 558.5;
-	GLfloat y = windowHeight / 555.0 + 0.05;
+	GLfloat y = windowHeight / 555.0;
 	GLfloat z = -windowHeight / 278.0;
 	GLfloat dy = 0.05;
 	DrawString(x, y -= dy, z, "FPS: " + info.fps);
