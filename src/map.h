@@ -40,10 +40,7 @@ private:
 	}
 
 	void copyMtlToModels() {
-		string destTextureName = "tex" + getFileExtension(texturePath);
 		ofstream mtlDst("models/0/0.mtl", ios::binary);
-		ifstream texSrc(texturePath.c_str(), ios::binary);
-		ofstream texDst("models/0/" + destTextureName, ios::binary);
 		ostringstream ss;
 		ss << "newmtl main" << endl;
 		ss << "Ka" << " " << mtl->ka[0] << " " << mtl->ka[1] << " " << mtl->ka[2] << endl;
@@ -51,12 +48,17 @@ private:
 		ss << "Ks" << " " << mtl->ks[0] << " " << mtl->ks[1] << " " << mtl->ks[2] << endl;
 		ss << "Ns" << " " << mtl->ns << endl;
 		ss << "d" << " " << mtl->d << endl;
-		ss << "map_Kd" << " " << destTextureName << endl;
+		if (texturePath != "") {
+			string destTextureName = "tex" + getFileExtension(texturePath);
+			ss << "map_Kd" << " " << destTextureName << endl;
+			ifstream texSrc(texturePath.c_str(), ios::binary);
+			ofstream texDst("models/0/" + destTextureName, ios::binary);
+			texDst << texSrc.rdbuf();
+			texSrc.close();
+			texDst.close();
+		}
 		mtlDst << ss.str();
-		texDst << texSrc.rdbuf();
 		mtlDst.close();
-		texSrc.close();
-		texDst.close();
 		delete mtl;
 	}
 
@@ -226,7 +228,7 @@ public:
 	double wymy;
 	double zLength = -1;
 	double scale = 1;
-	string texturePath = "maps/textures/tex.png";
+	string texturePath = "";
 	Object* mapObject;
 	MapMaterial* mtl;
 
